@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "dorado-observation-planning"
+version = "0.1.0"
+description = "Dorado observation planning simulations"
+authors = ["Leo Singer <leo.singer@ligo.org>"]
+license = "NOSA"
+include = [
+    "dorado_observation_planning/data/*.txt",
+    "dorado_observation_planning/data/*.md"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+skyfield = "*"
+astropy = "*"
+astroplan = "*"
+ortools = "*"
+"ligo.skymap" = "^0.5.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
