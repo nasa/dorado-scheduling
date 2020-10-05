@@ -7,7 +7,7 @@ import skyfield.api
 
 from . import data
 
-__all__ = ('orbit',)
+__all__ = ('position',)
 
 
 # Load two-line element for satellite (use Swift's orbit)
@@ -32,6 +32,6 @@ def position(time):
     earth_location : astropy.coordinates.EarthLocation
         The geocentric position of the satellite.
     """
-    if isinstance(time, astropy.time.Time):
+    if isinstance(time, Time):
         time = TIMESCALE.from_astropy(time)
     return EarthLocation.from_geocentric(*TLE.at(time).position.to(u.meter))
