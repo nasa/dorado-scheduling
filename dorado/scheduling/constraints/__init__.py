@@ -3,7 +3,7 @@ import astroplan
 from astropy import units as u
 
 from .saa import OutsideSouthAtlanticAnomalyConstraint
-from .. import hpx
+from ..skygrid import healpix
 
 __all__ = ('visbility_constraints',)
 
@@ -12,7 +12,7 @@ __all__ = ('visbility_constraints',)
 # <https://swift.gsfc.nasa.gov/proposals/tech_appd/swiftta_v14/node24.html>.
 visbility_constraints = [
     # SAA constraint
-    OutsideSouthAtlanticAnomalyConstraint(hpx.nside),
+    OutsideSouthAtlanticAnomalyConstraint(healpix.nside),
     # 28° from the Earth's limb (95° from the center of the Earth),
     # so 5° below "horizon"
     astroplan.AltitudeConstraint(5 * u.deg),
