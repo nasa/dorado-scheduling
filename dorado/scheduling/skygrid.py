@@ -1,5 +1,3 @@
-from functools import partial
-
 from astropy_healpix import HEALPix
 from astropy.coordinates import ICRS, SkyCoord
 from astropy import units as u
@@ -75,7 +73,7 @@ def get_footprint_healpix(center, rotate=None):
     polygon = get_footprint_polygon(center, rotate)
     xyz = polygon.cartesian.xyz.value.T
     return hp.query_polygon(healpix.nside, xyz)
-    
+
 
 def get_footprint_grid():
     """Calculate the HEALPix footprints of all pointings on the grid.
