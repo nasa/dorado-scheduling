@@ -8,7 +8,7 @@ from ..skygrid import healpix
 __all__ = ('visbility_constraints',)
 
 # Example observability constraints from the
-# Swift Technical Handbook 
+# Swift Technical Handbook
 # <https://swift.gsfc.nasa.gov/proposals/tech_appd/swiftta_v14/node24.html>.
 visbility_constraints = [
     # SAA constraint
