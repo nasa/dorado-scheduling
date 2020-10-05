@@ -1,3 +1,4 @@
+"""SAA constraints."""
 from importlib import resources
 
 from astropy.coordinates import EarthLocation
