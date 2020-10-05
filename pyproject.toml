@@ -1,12 +1,14 @@
 [tool.poetry]
-name = "dorado-observation-planning"
+name = "dorado-scheduling"
 version = "0.1.0"
-description = "Dorado observation planning simulations"
+description = "Dorado observation planning and scheduling simulations"
 authors = ["Leo Singer <leo.singer@ligo.org>"]
 license = "NOSA"
+packages = [
+    {include = "dorado"}]
 include = [
-    "dorado_observation_planning/data/*.txt",
-    "dorado_observation_planning/data/*.md"]
+    "dorado/scheduling/data/*.txt",
+    "dorado/scheduling/data/*.md"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
