@@ -1,12 +1,18 @@
+"""Command line interface."""
 import logging
 
 from astropy_healpix import nside_to_level
+from astropy import units as u
+from astropy.io import fits
+from astropy.time import Time
 from ligo.skymap.io import read_sky_map
 from ligo.skymap.bayestar import rasterize
 from ligo.skymap.tool import ArgumentParser, FileType
 import mip
 import numpy as np
 
+from .orbit import satellite
+from .regard import get_field_of_regard
 from .skygrid import get_footprint_grid, healpix, rolls
 
 log = logging.getLogger(__name__)
@@ -30,6 +36,20 @@ def main(args=None):
     prob = rasterize(skymap, nside_to_level(healpix.nside))['PROB']
     if healpix.order == 'ring':
         prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
+
+    log.info('calculating field of regard')
+
+    start_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
+    # start_time = skymap.meta['obstime']
+    orbital_period = 2 * np.pi / satellite.model.no * u.minute
+    exposure_time = 10 * u.minute
+    max_exposures_per_orbit = int(np.ceil((
+        orbital_period / exposure_time).to_value(u.dimensionless_unscaled)))
+    time_steps_per_exposure = 10  # simulation time steps per exposure
+    time_steps = max_exposures_per_orbit * time_steps_per_exposure
+    times = start_time + orbital_period * np.linspace(0, 1, time_steps)
+
+    field_of_regard = get_field_of_regard(times)
 
     log.info('building footprint grid')
 

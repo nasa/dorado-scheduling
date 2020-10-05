@@ -1,3 +1,4 @@
+"""Grid of pointings on the sky."""
 from astropy_healpix import HEALPix
 from astropy.coordinates import ICRS, SkyCoord
 from astropy import units as u
@@ -6,10 +7,14 @@ import healpy as hp
 from ligo.skymap.util import progress_map
 import numpy as np
 
-__all__ = ('healpix',)
+__all__ = ('healpix', 'centers', 'rolls', 'field_of_view',
+           'get_footprint_grid')
 
 healpix = HEALPix(nside=32, order='nested', frame=ICRS())
 """Base HEALpix resolution for all calculations."""
+
+centers = healpix.healpix_to_skycoord(np.arange(healpix.npix))
+"""Centers of pointings."""
 
 rolls = np.linspace(0, 90, 9, endpoint=False) * u.deg
 """Roll angle grid."""
@@ -86,7 +91,6 @@ def get_footprint_grid():
         where each element is a list of HEALPix indices within the grid.
 
     """
-    centers = healpix.healpix_to_skycoord(np.arange(healpix.npix))
     center_grid, roll_grid = np.meshgrid(centers, rolls, indexing='ij')
     footprints = progress_map(get_footprint_healpix,
                               center_grid.ravel(),

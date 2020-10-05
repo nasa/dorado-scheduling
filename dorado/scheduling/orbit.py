@@ -1,3 +1,4 @@
+"""Spacecraft orbit."""
 from importlib import resources
 
 from astropy.coordinates import EarthLocation
@@ -7,17 +8,17 @@ import skyfield.api
 
 from . import data
 
-__all__ = ('position',)
+__all__ = ('get_position',)
 
 
 # Load two-line element for satellite (use Swift's orbit)
 with resources.path(data, 'orbits.txt') as path:
-    TLE = skyfield.api.load.tle(str(path))['SWIFT']
+    satellite = skyfield.api.load.tle(str(path))['SWIFT']
 
-TIMESCALE = skyfield.api.load.timescale()
+timescale = skyfield.api.load.timescale()
 
 
-def position(time):
+def get_position(time):
     """Get the position of the satellite.
 
     Parameters
@@ -33,5 +34,6 @@ def position(time):
         The geocentric position of the satellite.
     """
     if isinstance(time, Time):
-        time = TIMESCALE.from_astropy(time)
-    return EarthLocation.from_geocentric(*TLE.at(time).position.to(u.meter))
+        time = timescale.from_astropy(time)
+    position = satellite.at(time).position
+    return EarthLocation.from_geocentric(*position.to(u.meter))
