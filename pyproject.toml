@@ -15,12 +15,15 @@ python = "^3.7"
 skyfield = "*"
 astropy = "*"
 astroplan = "*"
-ortools = "*"
+mip = "*"
 "ligo.skymap" = "^0.5.0"
 healpy = "*"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
+
+[tool.poetry.scripts]
+dorado-scheduling = "dorado.scheduling.script:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

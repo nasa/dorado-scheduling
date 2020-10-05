@@ -8,7 +8,7 @@ import numpy as np
 
 __all__ = ('healpix',)
 
-healpix = HEALPix(nside=32, frame=ICRS())
+healpix = HEALPix(nside=32, order='nested', frame=ICRS())
 """Base HEALpix resolution for all calculations."""
 
 rolls = np.linspace(0, 90, 9, endpoint=False) * u.deg
@@ -72,7 +72,8 @@ def get_footprint_healpix(center, rotate=None):
     """
     polygon = get_footprint_polygon(center, rotate)
     xyz = polygon.cartesian.xyz.value.T
-    return hp.query_polygon(healpix.nside, xyz)
+    return hp.query_polygon(healpix.nside, xyz,
+                            nest=(healpix.order == 'nested'))
 
 
 def get_footprint_grid():
@@ -87,8 +88,11 @@ def get_footprint_grid():
     """
     centers = healpix.healpix_to_skycoord(np.arange(healpix.npix))
     center_grid, roll_grid = np.meshgrid(centers, rolls, indexing='ij')
-    footprints = list(progress_map(get_footprint_healpix,
-                                   center_grid.ravel(),
-                                   roll_grid.ravel(),
-                                   jobs=None))
-    return np.asarray(footprints, dtype=object).reshape(center_grid.shape)
+    footprints = progress_map(get_footprint_healpix,
+                              center_grid.ravel(),
+                              roll_grid.ravel(),
+                              jobs=None)
+
+    # Manually reshape, because array is ragged
+    return ((footprint for footprint, j in zip(footprints, range(len(rolls))))
+            for i in range(len(centers)))
