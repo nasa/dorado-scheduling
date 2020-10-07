@@ -28,6 +28,8 @@ def parser():
                    type=FileType('rb'), help='Input sky map')
     p.add_argument('-n', '--nexp', type=int, default=orbit.exposures_per_orbit,
                    help='Number of exposures')
+    p.add_argument('--max-seconds', type=int, default=300,
+                   help='Time limit for solver')
     return p
 
 
@@ -72,7 +74,7 @@ def main(args=None):
     log.info('adding objective')
     m.objective = mip.maximize(mip.xsum(prob * pixel_observed))
 
-    m.optimize(max_seconds=300)
+    m.optimize(max_seconds=args.max_seconds)
 
     print('Fields observed:')
     if m.status in {mip.OptimizationStatus.FEASIBLE,
