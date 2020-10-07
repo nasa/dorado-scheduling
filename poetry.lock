@@ -590,10 +590,18 @@ python-versions = ">=3.6"
 docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
+[[package]]
+name = "zstandard"
+version = "0.14.0"
+description = "Zstandard bindings for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "0dc62deb4994365b1698d934566b81ca35af3d21458dc060b3ae7dcd52550b6e"
+content-hash = "7673a92b35f551f3f6e395e412705057db42700b3ed8cba9b5f013db2a0cb84e"
 
 [metadata.files]
 astroplan = [
@@ -1059,4 +1067,54 @@ urllib3 = [
 zipp = [
     {file = "zipp-3.3.0-py3-none-any.whl", hash = "sha256:eed8ec0b8d1416b2ca33516a37a08892442f3954dee131e92cfd92d8fe3e7066"},
     {file = "zipp-3.3.0.tar.gz", hash = "sha256:64ad89efee774d1897a58607895d80789c59778ea02185dd846ac38394a8642b"},
+]
+zstandard = [
+    {file = "zstandard-0.14.0-cp27-cp27m-macosx_10_6_intel.whl", hash = "sha256:fa660370fe5b5e4f3c3952732aea358540e56e91c9233d55a6b6e508e047b315"},
+    {file = "zstandard-0.14.0-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:f559281d181c30ba14f0446a9e1a1ea6c4980792d7249bacbc575fcbcebde4b3"},
+    {file = "zstandard-0.14.0-cp27-cp27m-manylinux1_x86_64.whl", hash = "sha256:85f59177e6a3cab285471a0e7ce048d07f6d39080b9766f8eaaf274f979f0afc"},
+    {file = "zstandard-0.14.0-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:754bcb077e2f946868e77670fb59907ac291542a14c836f89716376cd099107c"},
+    {file = "zstandard-0.14.0-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:50f7692f32ebd86b87133f25211850f5025e730f75b364dfaab30e817a7780a1"},
+    {file = "zstandard-0.14.0-cp27-cp27m-win32.whl", hash = "sha256:b021d3321107cdeba427a514d4faa35429525192e902e5b6608f346ef5ba5c8a"},
+    {file = "zstandard-0.14.0-cp27-cp27m-win_amd64.whl", hash = "sha256:a012f237fa5b00708f00e362035c032d1af5536796f9b410e76e61722176f607"},
+    {file = "zstandard-0.14.0-cp27-cp27mu-manylinux1_i686.whl", hash = "sha256:b3ac3401ae1945f3dab138819f58830fd658410aa2a53583c0a9af3e8809117d"},
+    {file = "zstandard-0.14.0-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:9d7d49b2d46233280c0a0d27046ab9321ceae329c4cbe8cffddfebb53dff3da2"},
+    {file = "zstandard-0.14.0-cp27-cp27mu-manylinux2010_i686.whl", hash = "sha256:9052870eeebbf4787fc9fc20703d16b6c32b4fffa1446045d05c64a8cb34f614"},
+    {file = "zstandard-0.14.0-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:2e66459d260d2332c5044625dc9f50ef883fe4366c15915d4d0deedb3b1dcba6"},
+    {file = "zstandard-0.14.0-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:22362a1b5bf8693692be1d1609a25159cd67d5ff93200a2978aea815a63739e8"},
+    {file = "zstandard-0.14.0-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:6525190e90d49e07c88f88ee7cf02e1af76f9bf32a693e8dd6b8a5fe01b65079"},
+    {file = "zstandard-0.14.0-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:68840f8117d087ecb82c2dfb7f32de237261220a569ea93a8bc0afeffb03ab58"},
+    {file = "zstandard-0.14.0-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:f532d4c65c6ed6202b2c8bfc166648ec2c2ec2dc1d0fb06de643e87ce0a222c8"},
+    {file = "zstandard-0.14.0-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:ef36cb399ebc0941f68a4d3a675b13ad75a6037270ec3915ee337227b8bfec90"},
+    {file = "zstandard-0.14.0-cp35-cp35m-manylinux2014_i686.whl", hash = "sha256:a1ea3108dde195f9fb18fe99ee1674f85a99056793d2ea72fb3965eb48a0bd8f"},
+    {file = "zstandard-0.14.0-cp35-cp35m-manylinux2014_x86_64.whl", hash = "sha256:9572d3047579220f950e7fd6af647cc95e361dc671d10ad63215e07f147eec31"},
+    {file = "zstandard-0.14.0-cp35-cp35m-win32.whl", hash = "sha256:9119a52758dce523e82318433d41bc8053051af6d7dadd2ff3ada24d1cbf28cf"},
+    {file = "zstandard-0.14.0-cp35-cp35m-win_amd64.whl", hash = "sha256:e149711b256fa8facbbce09b503a744c10fc03325742a9399c69c8569f0e9fe8"},
+    {file = "zstandard-0.14.0-cp36-cp36m-macosx_10_6_intel.whl", hash = "sha256:f5eccca127169257d8356069d298701fc612b05f6b768aa9ffc6e652c5169bd6"},
+    {file = "zstandard-0.14.0-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:45e96e1b3bcf8f1060fad174938bfc9825f5d864ddc717b3dda1d876ab59eaaf"},
+    {file = "zstandard-0.14.0-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:25ec0734f8c2eee8fd140cae3cde0ffc531ab6730be1f48b2b868a409a1a233d"},
+    {file = "zstandard-0.14.0-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:86494400d3923917124bd5f50b8e096de1dd7cfd890b164253bcd2283ef19539"},
+    {file = "zstandard-0.14.0-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:b711ee17b8676f367282ee654b8de750e2dfa2262e2eb07b7178b1524a273d44"},
+    {file = "zstandard-0.14.0-cp36-cp36m-manylinux2014_i686.whl", hash = "sha256:b8a1986ba41f6cf61f1234779ed492d026f87ab327cc6bf9e82d2e7a3f0b5b9c"},
+    {file = "zstandard-0.14.0-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:fff79a30845c2591718cb8798196d117402b2d5d7506b5f3bb691972731c30b3"},
+    {file = "zstandard-0.14.0-cp36-cp36m-win32.whl", hash = "sha256:8cb4cd3bb2e7213dd09432f8182d9acc8997bcd34fa3be44dffbb3f82d8d6dfd"},
+    {file = "zstandard-0.14.0-cp36-cp36m-win_amd64.whl", hash = "sha256:b637e58757a9153ad562b530b82140dad5e505ae14d806b264a0802f343bd5dd"},
+    {file = "zstandard-0.14.0-cp37-cp37m-macosx_10_6_intel.whl", hash = "sha256:45a3b64812152bf188044a1170bcaaeaee2175ec5340ea6a6810bf94b088886e"},
+    {file = "zstandard-0.14.0-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:68d15b407ac1f18e03fb89c93ade275cca766cb7eff03b26b40fdf9dba100679"},
+    {file = "zstandard-0.14.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:dd156961934f7869aecfdf68da6f3f0fa48ad01923d64e9662038dff83f314d4"},
+    {file = "zstandard-0.14.0-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:c9da20d5e16f246861158b15cc908797ee6ceb5a799c8a3b97fe6c665627f0e5"},
+    {file = "zstandard-0.14.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:83f81d7c2e45e65654ea881683e7e597e813a862ba8e0596945de46657fbc285"},
+    {file = "zstandard-0.14.0-cp37-cp37m-manylinux2014_i686.whl", hash = "sha256:2f491936999f43301c424aaa9e03461ea218d9bb8574c1672a09260d30a4096e"},
+    {file = "zstandard-0.14.0-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:a79db6a7db4ff91e7c5238d020d85aee1f4849ea357236899f9ed1773c5b66b4"},
+    {file = "zstandard-0.14.0-cp37-cp37m-win32.whl", hash = "sha256:39339ed8e0351e3a1d9e0792c5a77ac7da2091279dd78f3458d456bdc3cbb25e"},
+    {file = "zstandard-0.14.0-cp37-cp37m-win_amd64.whl", hash = "sha256:ece7f7ec03997357d61c44c50e6543123c0b7c2bdedc972b165d6832bf8868ad"},
+    {file = "zstandard-0.14.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:a927f60735fcb5c19586c846c5f28da5edf8549142e4dd62ddf4b9579800a23c"},
+    {file = "zstandard-0.14.0-cp38-cp38-manylinux1_i686.whl", hash = "sha256:b7e51d0d48153ece2db2c4e6bb2a71e781879027201dc7b718b3f27130547410"},
+    {file = "zstandard-0.14.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:f1c25e52e963dbe23a3ebc79ab904705eddcc15e14093fcde5059251090f01a6"},
+    {file = "zstandard-0.14.0-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:0c3ea262cee9c8a624ae22760466a8144c3c2b62da6f2b2671f47d9f74d8315f"},
+    {file = "zstandard-0.14.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:0646bd506cd1c83b94a5057568cbc7868f656c79ac22d2e19e9d280f64451a0c"},
+    {file = "zstandard-0.14.0-cp38-cp38-manylinux2014_i686.whl", hash = "sha256:3b41598ffc3cb3497bd6019aeeb1a55e272d3106f15d7855339eab92ed7659e8"},
+    {file = "zstandard-0.14.0-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:ae4cfd9e023702609c59f5535d95d7b19d54d42902514fe4ece8792b65b3a0af"},
+    {file = "zstandard-0.14.0-cp38-cp38-win32.whl", hash = "sha256:4286cd5d76c9a2bf7cb9f9065c8f68b12221ddbcfba754577692442dce563995"},
+    {file = "zstandard-0.14.0-cp38-cp38-win_amd64.whl", hash = "sha256:f1bfdbb37ada30bf6a08671a530e46ab24426bfad61efd28e5dc2beeb4f5b78d"},
+    {file = "zstandard-0.14.0.tar.gz", hash = "sha256:9052398da52e8702cf9929999c8986b0f68b18c793e309cd8dff5cb7863d7652"},
 ]
