@@ -39,7 +39,7 @@ def main(args=None):
     for slice in schedule:
         m += mip.xsum(slice.ravel()) <= 1
 
-    log.info('adding constraint: a pixel is observed if it is contained in any field')
+    log.info('adding constraint: a pixel is observed if it is in any field')
     exprs = [-observed >= 0 for observed in pixel_observed]
     for i, grid_i in enumerate(skygrid.get_footprint_grid()):
         for j, grid_ij in enumerate(grid_i):
