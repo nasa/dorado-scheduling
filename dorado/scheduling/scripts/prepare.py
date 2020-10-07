@@ -6,6 +6,7 @@ from ligo.skymap.tool import ArgumentParser, FileType
 import mip
 from zstandard import ZstdCompressor
 
+from .. import orbit
 from .. import skygrid
 
 log = logging.getLogger(__name__)
@@ -25,29 +26,27 @@ def main(args=None):
 
     m = mip.Model()
 
-    log.info('adding variable: whether a given field is observed')
-    field_observed = m.add_var_tensor(
-        (len(skygrid.centers), len(skygrid.rolls)),
-        'field_observed', var_type=mip.BINARY)
-
-    log.info('adding variable: number of fields observed')
-    num_fields = m.add_var('num_fields', var_type=mip.INTEGER, lb=0)
+    log.info('adding variable: observing schedule')
+    schedule = m.add_var_tensor(
+        (orbit.exposures_per_orbit, len(skygrid.centers), len(skygrid.rolls)),
+        'sched', var_type=mip.BINARY)
 
     log.info('adding variable: whether a given pixel is observed')
     pixel_observed = m.add_var_tensor(
-        (skygrid.healpix.npix,), 'pixel_observed', var_type=mip.BINARY)
+        (skygrid.healpix.npix,), 'pix', var_type=mip.BINARY)
 
-    log.info('adding constraint: pixels in fields observed')
+    log.info('adding constraint: only observe one field at a time')
+    for slice in schedule:
+        m += mip.xsum(slice.ravel()) <= 1
+
+    log.info('adding constraint: a pixel is observed if it is contained in any field')
     exprs = [-observed >= 0 for observed in pixel_observed]
     for i, grid_i in enumerate(skygrid.get_footprint_grid()):
         for j, grid_ij in enumerate(grid_i):
             for k in grid_ij:
-                exprs[k].add_var(field_observed[i, j])
+                exprs[k].add_expr(mip.xsum(schedule[:, i, j]))
     for expr in exprs:
         m.add_constr(expr)
-
-    log.info('adding contstraint: number of fields observed')
-    m.add_constr(mip.xsum(field_observed.ravel()) == num_fields)
 
     log.info('writing output')
     with tempfile.NamedTemporaryFile(suffix='.lp') as uncompressed:
