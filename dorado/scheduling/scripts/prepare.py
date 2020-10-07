@@ -21,8 +21,6 @@ def parser():
 
 def main(args=None):
     args = parser().parse_args(args)
-    if not args.output.name.endswith('.lp.zst'):
-        raise ValueError('The output file extension must be .lp.zst.')
 
     m = mip.Model()
 
