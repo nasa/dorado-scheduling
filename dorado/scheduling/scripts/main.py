@@ -74,6 +74,7 @@ def main(args=None):
     log.info('adding objective')
     m.objective = mip.maximize(mip.xsum(prob * pixel_observed))
 
+    log.info('solving')
     m.optimize(max_seconds=args.max_seconds)
 
     print('Fields observed:')
