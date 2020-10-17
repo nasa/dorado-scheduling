@@ -13,7 +13,7 @@ include = [
 [tool.poetry.dependencies]
 python = "^3.7"
 skyfield = "*"
-astropy = "*"
+astropy = "<4.0.2"  # https://github.com/astropy/astroplan/issues/479
 astroplan = "*"
 mip = "*"
 "ligo.skymap" = "^0.5.0"
