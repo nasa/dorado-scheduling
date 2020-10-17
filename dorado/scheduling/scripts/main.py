@@ -81,7 +81,7 @@ def main(args=None):
     if m.status in {mip.OptimizationStatus.FEASIBLE,
                     mip.OptimizationStatus.OPTIMAL}:
         schedule_flags = schedule.astype(float).astype(bool)
-        objective_value = prob.objective_value
+        objective_value = m.objective_value
     else:
         schedule_flags = np.zeros(schedule.shape, dtype=bool)
         objective_value = 0.0
