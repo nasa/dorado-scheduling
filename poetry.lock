@@ -1,6 +1,6 @@
 [[package]]
 name = "astroplan"
-version = "0.6"
+version = "0.7.dev1236"
 description = "Observation planning package for astronomers"
 category = "main"
 optional = false
@@ -11,6 +11,11 @@ astropy = ">=1.3"
 numpy = ">=1.10"
 pytz = "*"
 six = "*"
+
+[package.extras]
+docs = ["sphinx-rtd-theme"]
+plotting = ["matplotlib (>=1.4)"]
+test = ["pytest-astropy"]
 
 [[package]]
 name = "astropy"
@@ -206,7 +211,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "lalsuite"
-version = "6.77"
+version = "6.78"
 description = "LIGO Scientific Collaboration Algorithm Library - minimal Python package"
 category = "main"
 optional = false
@@ -512,7 +517,7 @@ socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7)", "win-inet-pton"]
 
 [[package]]
 name = "scipy"
-version = "1.5.2"
+version = "1.5.3"
 description = "SciPy: Scientific Library for Python"
 category = "main"
 optional = false
@@ -567,7 +572,7 @@ dev = ["py-make (>=0.1.0)", "twine", "argopt", "pydoc-markdown"]
 
 [[package]]
 name = "urllib3"
-version = "1.25.10"
+version = "1.25.11"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 category = "main"
 optional = false
@@ -575,7 +580,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
 [package.extras]
 brotli = ["brotlipy (>=0.6.0)"]
-secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "pyOpenSSL (>=0.14)", "ipaddress"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 
 [[package]]
@@ -601,11 +606,11 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "f785009df904577c8d3dd2f5207d1e736ff69f93214f543b978712c554825672"
+content-hash = "e961e65102a9c4664a35b3b5fa4c4ddf9c2e31fc63c60ade7ccf6f5195b3a8ef"
 
 [metadata.files]
 astroplan = [
-    {file = "astroplan-0.6.tar.gz", hash = "sha256:dd76407d372dceb3a1668353f2d8806e203e83e6930924c92decee1a9744a757"},
+    {file = "astroplan-0.7.dev1236-py3-none-any.whl", hash = "sha256:ffe265e01398ede9bcea22433d9b547c3fb4edb8bfaacc8b6a82aa4df2e04a5d"},
 ]
 astropy = [
     {file = "astropy-4.0.1.post1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:86ccbf614d63440680196c1251cb77abf3df393176aec4f441959d43f28f617d"},
@@ -813,14 +818,14 @@ kiwisolver = [
     {file = "kiwisolver-1.2.0.tar.gz", hash = "sha256:247800260cd38160c362d211dcaf4ed0f7816afb5efe56544748b21d6ad6d17f"},
 ]
 lalsuite = [
-    {file = "lalsuite-6.77-cp35-cp35m-macosx_10_12_x86_64.whl", hash = "sha256:4fa39661ca2f63fb0f6bbdc8ed9922b23b36d05f3f382a69a865c87b922649d4"},
-    {file = "lalsuite-6.77-cp35-cp35m-manylinux2014_x86_64.whl", hash = "sha256:6167826951c9621364f04eaeac931aee4f9d93e2a7562a756a1e06f218474955"},
-    {file = "lalsuite-6.77-cp36-cp36m-macosx_10_12_x86_64.whl", hash = "sha256:2f0740243b636b9e8e8ae3906630b03d3d1998acadc2d739007af373d1087fff"},
-    {file = "lalsuite-6.77-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:7e8bee57db9c4320aee46e4806c350ccfb3bb288966e2c9536a30a85522277fa"},
-    {file = "lalsuite-6.77-cp37-cp37m-macosx_10_12_x86_64.whl", hash = "sha256:432aa0254930c0ee46f4456e676931ec153970aa1bb4928922980f3c07818fed"},
-    {file = "lalsuite-6.77-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:9c429e100ec39fe73132661d831b1bd275f909f7e87647333b6879fe1da4669e"},
-    {file = "lalsuite-6.77-cp38-cp38-macosx_10_12_x86_64.whl", hash = "sha256:e3726b0dc80c79a1a9f58165d820ab6dd6c5b460600b1f209a98739b7fa77e27"},
-    {file = "lalsuite-6.77-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:4ae27a883f721575249fb4108560dd98cadb946076bcd9084a6d64a1d02e0b2a"},
+    {file = "lalsuite-6.78-cp35-cp35m-macosx_10_12_x86_64.whl", hash = "sha256:77ba76b20e9d68ac7179aaf33e50c10788e0f08e9954817ed98faec464e26753"},
+    {file = "lalsuite-6.78-cp35-cp35m-manylinux2014_x86_64.whl", hash = "sha256:cd835e7b201e1e652f425572f6884c0b423423b63526e3fbefbfa28e519f1d81"},
+    {file = "lalsuite-6.78-cp36-cp36m-macosx_10_12_x86_64.whl", hash = "sha256:ff8efaa3e21bd2c95c32a3a70db6ed014fe1ad41cbeaae03f5bb943a92a8b2b1"},
+    {file = "lalsuite-6.78-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:16eae84a747caed8def5f25eb8f386ba3ee0db3a9a89ad303b51db64f4ac4119"},
+    {file = "lalsuite-6.78-cp37-cp37m-macosx_10_12_x86_64.whl", hash = "sha256:f3679b7318070a02b855d6560e2bd3f7c9cc266d06279e7a6c42fdd910683a3f"},
+    {file = "lalsuite-6.78-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:8c170c1069713bb0588a43873a93497558f6b7b846de199cc9112e0bee3ef54e"},
+    {file = "lalsuite-6.78-cp38-cp38-macosx_10_12_x86_64.whl", hash = "sha256:4c205a22a8e8866caa623d33f161df0379e142701b664f4f7966cb05d2c2e60f"},
+    {file = "lalsuite-6.78-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:154f911e4ce63c1b0aab719a95e97ecd8612e76f094c621c46733cd0c7597375"},
 ]
 ligo-gracedb = [
     {file = "ligo-gracedb-2.7.1.tar.gz", hash = "sha256:f4e481c86426b34d1128323914aa0ca58b4e49300bf583d6ea8f882ad40a1eed"},
@@ -1004,22 +1009,25 @@ requests = [
     {file = "requests-2.24.0.tar.gz", hash = "sha256:b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b"},
 ]
 scipy = [
-    {file = "scipy-1.5.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:cca9fce15109a36a0a9f9cfc64f870f1c140cb235ddf27fe0328e6afb44dfed0"},
-    {file = "scipy-1.5.2-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:1c7564a4810c1cd77fcdee7fa726d7d39d4e2695ad252d7c86c3ea9d85b7fb8f"},
-    {file = "scipy-1.5.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:07e52b316b40a4f001667d1ad4eb5f2318738de34597bd91537851365b6c61f1"},
-    {file = "scipy-1.5.2-cp36-cp36m-win32.whl", hash = "sha256:d56b10d8ed72ec1be76bf10508446df60954f08a41c2d40778bc29a3a9ad9bce"},
-    {file = "scipy-1.5.2-cp36-cp36m-win_amd64.whl", hash = "sha256:8e28e74b97fc8d6aa0454989db3b5d36fc27e69cef39a7ee5eaf8174ca1123cb"},
-    {file = "scipy-1.5.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:6e86c873fe1335d88b7a4bfa09d021f27a9e753758fd75f3f92d714aa4093768"},
-    {file = "scipy-1.5.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:a0afbb967fd2c98efad5f4c24439a640d39463282040a88e8e928db647d8ac3d"},
-    {file = "scipy-1.5.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:eecf40fa87eeda53e8e11d265ff2254729d04000cd40bae648e76ff268885d66"},
-    {file = "scipy-1.5.2-cp37-cp37m-win32.whl", hash = "sha256:315aa2165aca31375f4e26c230188db192ed901761390be908c9b21d8b07df62"},
-    {file = "scipy-1.5.2-cp37-cp37m-win_amd64.whl", hash = "sha256:ec5fe57e46828d034775b00cd625c4a7b5c7d2e354c3b258d820c6c72212a6ec"},
-    {file = "scipy-1.5.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:fc98f3eac993b9bfdd392e675dfe19850cc8c7246a8fd2b42443e506344be7d9"},
-    {file = "scipy-1.5.2-cp38-cp38-manylinux1_i686.whl", hash = "sha256:a785409c0fa51764766840185a34f96a0a93527a0ff0230484d33a8ed085c8f8"},
-    {file = "scipy-1.5.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:0a0e9a4e58a4734c2eba917f834b25b7e3b6dc333901ce7784fd31aefbd37b2f"},
-    {file = "scipy-1.5.2-cp38-cp38-win32.whl", hash = "sha256:dac09281a0eacd59974e24525a3bc90fa39b4e95177e638a31b14db60d3fa806"},
-    {file = "scipy-1.5.2-cp38-cp38-win_amd64.whl", hash = "sha256:92eb04041d371fea828858e4fff182453c25ae3eaa8782d9b6c32b25857d23bc"},
-    {file = "scipy-1.5.2.tar.gz", hash = "sha256:066c513d90eb3fd7567a9e150828d39111ebd88d3e924cdfc9f8ce19ab6f90c9"},
+    {file = "scipy-1.5.3-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:f574558f1b774864516f3c3fe072ebc90a29186f49b720f60ed339294b7f32ac"},
+    {file = "scipy-1.5.3-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:e527c9221b6494bcd06a17f9f16874406b32121385f9ab353b8a9545be458f0b"},
+    {file = "scipy-1.5.3-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:b9751b39c52a3fa59312bd2e1f40144ee26b51404db5d2f0d5259c511ff6f614"},
+    {file = "scipy-1.5.3-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:d5e3cc60868f396b78fc881d2c76460febccfe90f6d2f082b9952265c79a8788"},
+    {file = "scipy-1.5.3-cp36-cp36m-win32.whl", hash = "sha256:1fee28b6641ecbff6e80fe7788e50f50c5576157d278fa40f36c851940eb0aff"},
+    {file = "scipy-1.5.3-cp36-cp36m-win_amd64.whl", hash = "sha256:ffcbd331f1ffa82e22f1d408e93c37463c9a83088243158635baec61983aaacf"},
+    {file = "scipy-1.5.3-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:07b083128beae040f1129bd8a82b01804f5e716a7fd2962c1053fa683433e4ab"},
+    {file = "scipy-1.5.3-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:e2602f79c85924e4486f684aa9bbab74afff90606100db88d0785a0088be7edb"},
+    {file = "scipy-1.5.3-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:aebb69bcdec209d874fc4b0c7ac36f509d50418a431c1422465fa34c2c0143ea"},
+    {file = "scipy-1.5.3-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:bc0e63daf43bf052aefbbd6c5424bc03f629d115ece828e87303a0bcc04a37e4"},
+    {file = "scipy-1.5.3-cp37-cp37m-win32.whl", hash = "sha256:8cc5c39ed287a8b52a5509cd6680af078a40b0e010e2657eca01ffbfec929468"},
+    {file = "scipy-1.5.3-cp37-cp37m-win_amd64.whl", hash = "sha256:0edd67e8a00903aaf7a29c968555a2e27c5a69fea9d1dcfffda80614281a884f"},
+    {file = "scipy-1.5.3-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:66ec29348444ed6e8a14c9adc2de65e74a8fc526dc2c770741725464488ede1f"},
+    {file = "scipy-1.5.3-cp38-cp38-manylinux1_i686.whl", hash = "sha256:12fdcbfa56cac926a0a9364a30cbf4ad03c2c7b59f75b14234656a5e4fd52bf3"},
+    {file = "scipy-1.5.3-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:a1a13858b10d41beb0413c4378462b43eafef88a1948d286cb357eadc0aec024"},
+    {file = "scipy-1.5.3-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:5163200ab14fd2b83aba8f0c4ddcc1fa982a43192867264ab0f4c8065fd10d17"},
+    {file = "scipy-1.5.3-cp38-cp38-win32.whl", hash = "sha256:33e6a7439f43f37d4c1135bc95bcd490ffeac6ef4b374892c7005ce2c729cf4a"},
+    {file = "scipy-1.5.3-cp38-cp38-win_amd64.whl", hash = "sha256:a3db1fe7c6cb29ca02b14c9141151ebafd11e06ffb6da8ecd330eee5c8283a8a"},
+    {file = "scipy-1.5.3.tar.gz", hash = "sha256:ddae76784574cc4c172f3d5edd7308be16078dd3b977e8746860c76c195fa707"},
 ]
 sgp4 = [
     {file = "sgp4-2.13-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:1e91f64a9d0f42855082b028419d06e8e20a857e0d3eeb64a138b74f394321f5"},
@@ -1065,8 +1073,8 @@ tqdm = [
     {file = "tqdm-4.50.2.tar.gz", hash = "sha256:69dfa6714dee976e2425a9aab84b622675b7b1742873041e3db8a8e86132a4af"},
 ]
 urllib3 = [
-    {file = "urllib3-1.25.10-py2.py3-none-any.whl", hash = "sha256:e7983572181f5e1522d9c98453462384ee92a0be7fac5f1413a1e35c56cc0461"},
-    {file = "urllib3-1.25.10.tar.gz", hash = "sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"},
+    {file = "urllib3-1.25.11-py2.py3-none-any.whl", hash = "sha256:f5321fbe4bf3fefa0efd0bfe7fb14e90909eb62a48ccda331726b4319897dd5e"},
+    {file = "urllib3-1.25.11.tar.gz", hash = "sha256:8d7eaa5a82a1cac232164990f04874c594c9453ec55eef02eab885aa02fc17a2"},
 ]
 zipp = [
     {file = "zipp-3.3.1-py3-none-any.whl", hash = "sha256:16522f69653f0d67be90e8baa4a46d66389145b734345d68a257da53df670903"},
