@@ -11,6 +11,8 @@ from ligo.skymap.bayestar import rasterize
 from ligo.skymap.tool import ArgumentParser, FileType
 import mip
 import numpy as np
+from scipy.signal import convolve
+from tqdm import tqdm
 from zstandard import ZstdDecompressor
 
 from .. import orbit
@@ -46,7 +48,7 @@ def main(args=None):
     if skygrid.healpix.order == 'ring':
         prob = prob[skygrid.healpix.ring_to_nested(np.arange(len(prob)))]
 
-    times = np.arange(orbit.exposures_per_orbit) * orbit.exposure_time \
+    times = np.arange(orbit.time_steps) * orbit.exposure_time / orbit.time_steps_per_exposure \
         + start_time
 
     log.info('reading initial model')
@@ -58,18 +60,22 @@ def main(args=None):
     log.info('reconstructing tensor variables')
     schedule = np.asarray(
         [[[m.var_by_name(f'sched_{i}_{j}_{k}')
-           for k in range(len(skygrid.rolls))]
-          for j in range(len(skygrid.centers))]
-         for i in range(orbit.exposures_per_orbit)]).view(mip.LinExprTensor)
+           for k in range(orbit.time_steps - orbit.time_steps_per_exposure + 1)]
+          for j in range(len(skygrid.rolls))]
+         for i in tqdm(range(len(skygrid.centers)))]).view(mip.LinExprTensor)
     pixel_observed = np.asarray([
         m.var_by_name(f'pix_{i}')
-        for i in range(skygrid.healpix.npix)]).view(mip.LinExprTensor)
+        for i in tqdm(range(skygrid.healpix.npix))]).view(mip.LinExprTensor)
 
     log.info('adding constraint: number of exposures')
     m += mip.xsum(schedule.ravel()) <= args.nexp
 
     log.info('adding constraint: field of regard')
-    m += mip.xsum(schedule[get_field_of_regard(times)].ravel()) <= 0
+    i, j = np.nonzero(
+        convolve(~get_field_of_regard(times),
+        np.ones(orbit.time_steps_per_exposure)[:, np.newaxis],
+        mode='valid', method='direct'))
+    m += mip.xsum(schedule[j, :, i].ravel()) <= 0
 
     log.info('adding objective')
     m.objective = mip.maximize(mip.xsum(prob * pixel_observed))
@@ -86,7 +92,7 @@ def main(args=None):
         schedule_flags = np.zeros(schedule.shape, dtype=bool)
         objective_value = 0.0
 
-    itime, ipix, iroll = np.nonzero(schedule_flags)
+    ipix, iroll, itime = np.nonzero(schedule_flags)
     result = Table(
         {
             'time': times[itime],
@@ -97,6 +103,7 @@ def main(args=None):
             'status': m.status.name
         }
     )
+    result.sort('time')
     print(result)
 
     log.info('done')

@@ -4,6 +4,7 @@ import tempfile
 
 from ligo.skymap.tool import ArgumentParser, FileType
 import mip
+from tqdm import tqdm
 from zstandard import ZstdCompressor
 
 from .. import orbit
@@ -26,7 +27,7 @@ def main(args=None):
 
     log.info('adding variable: observing schedule')
     schedule = m.add_var_tensor(
-        (orbit.exposures_per_orbit, len(skygrid.centers), len(skygrid.rolls)),
+        (len(skygrid.centers), len(skygrid.rolls), orbit.time_steps - orbit.time_steps_per_exposure + 1),
         'sched', var_type=mip.BINARY)
 
     log.info('adding variable: whether a given pixel is observed')
@@ -34,22 +35,27 @@ def main(args=None):
         (skygrid.healpix.npix,), 'pix', var_type=mip.BINARY)
 
     log.info('adding constraint: only observe one field at a time')
-    for slice in schedule:
-        m += mip.xsum(slice.ravel()) <= 1
+    for i in tqdm(range(schedule.shape[-1])):
+        m += mip.xsum(schedule[:, :, i:i+orbit.time_steps_per_exposure].ravel()) <= 1
 
     log.info('adding constraint: a pixel is observed if it is in any field')
     exprs = [-observed >= 0 for observed in pixel_observed]
+    field_observed = [[mip.xsum(__) for __ in _] for _ in tqdm(schedule)]
     for i, grid_i in enumerate(skygrid.get_footprint_grid()):
         for j, grid_ij in enumerate(grid_i):
             for k in grid_ij:
-                exprs[k].add_expr(mip.xsum(schedule[:, i, j]))
+                exprs[k].add_expr(field_observed[i][j])
+    del field_observed
     for expr in exprs:
         m.add_constr(expr)
+    del exprs
 
     log.info('writing output')
     with tempfile.NamedTemporaryFile(suffix='.lp') as uncompressed:
         m.write(uncompressed.name)
         ZstdCompressor().copy_stream(uncompressed, args.output)
+
+    log.info('done')
 
 
 if __name__ == '__main__':
