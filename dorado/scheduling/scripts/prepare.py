@@ -27,7 +27,8 @@ def main(args=None):
 
     log.info('adding variable: observing schedule')
     schedule = m.add_var_tensor(
-        (len(skygrid.centers), len(skygrid.rolls), orbit.time_steps - orbit.time_steps_per_exposure + 1),
+        (len(skygrid.centers), len(skygrid.rolls),
+         orbit.time_steps - orbit.time_steps_per_exposure + 1),
         'sched', var_type=mip.BINARY)
 
     log.info('adding variable: whether a given pixel is observed')
@@ -36,7 +37,8 @@ def main(args=None):
 
     log.info('adding constraint: only observe one field at a time')
     for i in tqdm(range(schedule.shape[-1])):
-        m += mip.xsum(schedule[:, :, i:i+orbit.time_steps_per_exposure].ravel()) <= 1
+        m += mip.xsum(
+            schedule[..., i:i+orbit.time_steps_per_exposure].ravel()) <= 1
 
     log.info('adding constraint: a pixel is observed if it is in any field')
     exprs = [-observed >= 0 for observed in pixel_observed]
