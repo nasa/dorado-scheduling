@@ -1,10 +1,10 @@
 """Grid of pointings on the sky."""
+from functools import partial
+
 from astropy_healpix import HEALPix
-from astropy.coordinates import ICRS, SkyCoord
+from astropy.coordinates import ICRS, SkyCoord, SkyOffsetFrame
 from astropy import units as u
-from astropy.wcs import WCS
 import healpy as hp
-from ligo.skymap.util import progress_map
 import numpy as np
 
 __all__ = ('healpix', 'centers', 'rolls', 'field_of_view',
@@ -39,46 +39,14 @@ def get_footprint_polygon(center, rotate=None):
         A sky coordinate array giving the four verticies of the footprint.
 
     """
-    center = SkyCoord(center).icrs
-    radius = 0.5 * field_of_view.to_value(u.deg)
-    header = {
-        'NAXIS': 2,
-        'NAXIS1': 512,
-        'NAXIS2': 512,
-        'CRPIX1': 256.5,
-        'CRPIX2': 256.5,
-        'CRVAL1': center.ra.deg,
-        'CRVAL2': center.dec.deg,
-        'CDELT1': -radius / 256,
-        'CDELT2': radius / 256,
-        'CTYPE1': 'RA---TAN',
-        'CTYPE2': 'DEC--TAN',
-        'RADESYS': 'ICRS'}
-    if rotate is not None:
-        header['LONPOLE'] = u.Quantity(rotate).to_value(u.deg)
-    return SkyCoord(WCS(header).calc_footprint(), unit=u.deg)
-
-
-def get_footprint_healpix(center, rotate=None):
-    """Get the footprint of the field of view for a given orientation.
-
-    Parameters
-    ----------
-    center : astropy.coordinates.SkyCoord
-        The center of the field of view.
-    rotate : astropy.units.Quantity
-        The position angle (optional, default 0 degrees).
-
-    Returns
-    -------
-    numpy.ndarray
-        Array of HEALPix coordinates within the field of view.
-
-    """
-    polygon = get_footprint_polygon(center, rotate)
-    xyz = polygon.cartesian.xyz.value.T
-    return hp.query_polygon(healpix.nside, xyz,
-                            nest=(healpix.order == 'nested'))
+    frame = SkyOffsetFrame(origin=center, rotation=rotate)
+    lon = np.asarray([0.5, 0.5, -0.5, -0.5]) * field_of_view
+    lat = np.asarray([0.5, -0.5, -0.5, 0.5]) * field_of_view
+    return SkyCoord(
+        np.tile(lon[(None,) * frame.ndim], (*frame.shape, 1)),
+        np.tile(lat[(None,) * frame.ndim], (*frame.shape, 1)),
+        frame=frame[..., None]
+    ).icrs
 
 
 def get_footprint_grid():
@@ -91,12 +59,9 @@ def get_footprint_grid():
         where each element is a list of HEALPix indices within the grid.
 
     """
-    center_grid, roll_grid = np.meshgrid(centers, rolls, indexing='ij')
-    footprints = progress_map(get_footprint_healpix,
-                              center_grid.ravel(),
-                              roll_grid.ravel(),
-                              jobs=None)
-
-    # Manually reshape, because array is ragged
-    return ((footprint for footprint, j in zip(footprints, range(len(rolls))))
-            for i in range(len(centers)))
+    xyz = np.moveaxis(
+        get_footprint_polygon(
+            centers[:, None], rolls[None, :]).cartesian.xyz.value, 0, -1)
+    query_polygon = partial(
+        hp.query_polygon, healpix.nside, nest=(healpix.order == 'nested'))
+    return ((query_polygon(_) for _ in __) for __ in xyz)
