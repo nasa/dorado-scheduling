@@ -15,7 +15,7 @@ python = "^3.7"
 skyfield = "*"
 astropy = "<4.0.2"  # https://github.com/astropy/astroplan/issues/479
 astroplan = {version = "*", allow-prereleases = true}
-mip = "*"
+mip = {git = "https://github.com/lpsinger/python-mip", branch = "local"}  # https://github.com/coin-or/python-mip/pull/149, https://github.com/coin-or/python-mip/pull/151
 "ligo.skymap" = "^0.5.0"
 healpy = "*"
 zstandard = "*"
