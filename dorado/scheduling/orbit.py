@@ -32,8 +32,6 @@ def get_position(time):
 
     Parameters
     ----------
-    satellite : skyfield.sgp4lib.EarthSatellite
-        An Earth satellite model from Skyfield.
     time : astropy.time.Time, skyfield.timelib.Timeto
         The time of the observation.
 
