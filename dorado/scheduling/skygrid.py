@@ -16,8 +16,8 @@ healpix = HEALPix(nside=32, order='nested', frame=ICRS())
 centers = healpix.healpix_to_skycoord(np.arange(healpix.npix))
 """Centers of pointings."""
 
-rolls = np.linspace(0, 45, 9, endpoint=False) * u.deg
-"""Roll angle grid. Only goes up to 45° because field of view is a square."""
+rolls = np.linspace(0, 90, 9, endpoint=False) * u.deg
+"""Roll angle grid."""
 
 field_of_view = 7.1 * u.deg
 """Width of the (square) field of view."""
