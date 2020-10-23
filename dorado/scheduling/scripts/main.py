@@ -9,6 +9,7 @@ from astropy.table import Table
 from ligo.skymap.io import read_sky_map
 from ligo.skymap.bayestar import rasterize
 from ligo.skymap.tool import ArgumentParser, FileType
+from ligo.skymap.util import Stopwatch
 import mip
 import numpy as np
 from scipy.signal import convolve
@@ -32,6 +33,9 @@ def parser():
                    help='Number of exposures')
     p.add_argument('--max-seconds', type=int, default=300,
                    help='Time limit for solver')
+    p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
+                   type=FileType('w'), default='-',
+                   help='output filename')
     return p
 
 
@@ -80,9 +84,12 @@ def main(args=None):
     m.objective = mip.maximize(mip.xsum(prob * pixel_observed))
 
     log.info('solving')
+    stopwatch = Stopwatch()
+    stopwatch.start()
     m.optimize(max_seconds=args.max_seconds)
+    stopwatch.stop()
 
-    print('Fields observed:')
+    log.info('extracting results')
     if m.status in {mip.OptimizationStatus.FEASIBLE,
                     mip.OptimizationStatus.OPTIMAL}:
         schedule_flags = schedule.astype(float).astype(bool)
@@ -99,11 +106,14 @@ def main(args=None):
             'roll': skygrid.rolls[iroll]
         }, meta={
             'prob': objective_value,
-            'status': m.status.name
+            'status': m.status.name,
+            'real': stopwatch.real,
+            'user': stopwatch.user,
+            'sys': stopwatch.sys
         }
     )
     result.sort('time')
-    print(result)
+    result.write(args.output, format='ascii.ecsv')
 
     log.info('done')
 

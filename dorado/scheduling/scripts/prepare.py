@@ -36,7 +36,7 @@ def main(args=None):
         (skygrid.healpix.npix,), 'p', var_type=mip.BINARY)
 
     log.info('adding constraint: number of exposures')
-    m.add_constr(mip.xsum(schedule.ravel()) <= 0, name='nexp')
+    m += mip.xsum(schedule.ravel()) <= 0, 'nexp'
 
     log.info('adding constraint: only observe one field at a time')
     for i in tqdm(range(schedule.shape[-1])):
@@ -46,13 +46,15 @@ def main(args=None):
     log.info('adding constraint: a pixel is observed if it is in any field')
     exprs = [-observed >= 0 for observed in pixel_observed]
     field_observed = [[mip.xsum(__) for __ in _] for _ in tqdm(schedule)]
-    for i, grid_i in enumerate(skygrid.get_footprint_grid()):
-        for j, grid_ij in enumerate(grid_i):
-            for k in grid_ij:
-                exprs[k].add_expr(field_observed[i][j])
+    with tqdm(total=len(skygrid.centers) * len(skygrid.rolls)) as progress:
+        for i, grid_i in enumerate(skygrid.get_footprint_grid()):
+            for j, grid_ij in enumerate(grid_i):
+                for k in grid_ij:
+                    exprs[k].add_expr(field_observed[i][j])
+                progress.update()
     del field_observed
-    for expr in exprs:
-        m.add_constr(expr)
+    for expr in tqdm(exprs):
+        m += expr
     del exprs
 
     log.info('writing output')
