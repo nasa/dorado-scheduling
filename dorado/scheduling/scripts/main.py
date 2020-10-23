@@ -62,14 +62,10 @@ def main(args=None):
         m.read(uncompressed.name)
 
     log.info('reconstructing tensor variables')
-    schedule = np.asarray(
-        [[[m.var_by_name(f's_{i}_{j}_{k}')
-           for k in range(orbit.time_steps - orbit.time_steps_per_exposure + 1)]
-          for j in range(len(skygrid.rolls))]
-         for i in tqdm(range(len(skygrid.centers)))]).view(mip.LinExprTensor)
-    pixel_observed = np.asarray([
-        m.var_by_name(f'p_{i}')
-        for i in tqdm(range(skygrid.healpix.npix))]).view(mip.LinExprTensor)
+    vars = np.asarray(m.vars).view(mip.LinExprTensor)
+    schedule = vars[:-skygrid.healpix.npix].reshape(
+        (len(skygrid.centers), len(skygrid.rolls), -1))
+    pixel_observed = vars[-skygrid.healpix.npix:]
 
     m.constr_by_name('nexp').rhs = args.nexp
 
