@@ -1,5 +1,7 @@
 """Command line interface."""
 import logging
+import shlex
+import sys
 import tempfile
 
 from astropy_healpix import nside_to_level
@@ -101,6 +103,7 @@ def main(args=None):
             'center': skygrid.centers[ipix],
             'roll': skygrid.rolls[iroll]
         }, meta={
+            'cmdline': shlex.join(sys.argv),
             'prob': objective_value,
             'status': m.status.name,
             'real': stopwatch.real,
