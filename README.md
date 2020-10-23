@@ -9,6 +9,11 @@ observation planner for Dorado.
 * Orbit propagation with [Skyfield]
 * Constrained optimimzation with [python-mip]
 
+## Commercial solvers
+
+If you have [Gurobi](https://www.gurobi.com) installed, then set the
+`GUROBI_HOME` environment variable.
+
 [Astroplan]: https://github.com/astropy/astroplan
 [HEALPix]: https://healpix.jpl.nasa.gov
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
