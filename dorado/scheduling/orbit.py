@@ -32,7 +32,7 @@ def get_position(time):
 
     Parameters
     ----------
-    time : astropy.time.Time, skyfield.timelib.Timeto
+    time : astropy.time.Time, skyfield.timelib.Time
         The time of the observation.
 
     Returns
