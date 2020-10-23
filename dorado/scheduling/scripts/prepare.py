@@ -29,11 +29,14 @@ def main(args=None):
     schedule = m.add_var_tensor(
         (len(skygrid.centers), len(skygrid.rolls),
          orbit.time_steps - orbit.time_steps_per_exposure + 1),
-        'sched', var_type=mip.BINARY)
+        's', var_type=mip.BINARY)
 
     log.info('adding variable: whether a given pixel is observed')
     pixel_observed = m.add_var_tensor(
-        (skygrid.healpix.npix,), 'pix', var_type=mip.BINARY)
+        (skygrid.healpix.npix,), 'p', var_type=mip.BINARY)
+
+    log.info('adding constraint: number of exposures')
+    m.add_constr(mip.xsum(schedule.ravel()) <= 0, name='nexp')
 
     log.info('adding constraint: only observe one field at a time')
     for i in tqdm(range(schedule.shape[-1])):
