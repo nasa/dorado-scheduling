@@ -9,9 +9,9 @@ observation planner for Dorado.
 ## Features
 
 *   **Global**: jointly and globally solves the problems of tiling (the set of
-    telescope boresight orientations and roll an  gles) and the scheduling
-    (which tile is observed at what time), rather than solving each sub-problem
-    one at a time
+    telescope boresight orientations and roll angles) and the scheduling (which
+    tile is observed at what time), rather than solving each sub-problem one at
+    a time
 *   **Optimal**: generally solves all the way to optimality, rather than
     finding merely a "good enough" solution
 *   **Fast**: solve an entire orbit in about 5 minutes
