@@ -8,6 +8,7 @@ import healpy as hp
 import numpy as np
 
 __all__ = ('healpix', 'centers', 'rolls', 'field_of_view',
+           'get_footprint_polygon', 'get_footprint_healpix',
            'get_footprint_grid')
 
 healpix = HEALPix(nside=32, order='nested', frame=ICRS())
@@ -47,6 +48,27 @@ def get_footprint_polygon(center, rotate=None):
         np.tile(lat[(None,) * frame.ndim], (*frame.shape, 1)),
         frame=frame[..., None]
     ).icrs
+
+
+def get_footprint_healpix(center, rotate=None):
+    """Get the HEALPix footprint of the field of view for a given orientation.
+
+    Parameters
+    ----------
+    center : astropy.coordinates.SkyCoord
+        The center of the field of view.
+    rotate : astropy.units.Quantity
+        The position angle (optional, default 0 degrees).
+
+    Returns
+    -------
+    np.ndarray
+        An array of HEALPix indices contained within the footprint.
+
+    """
+    xyz = get_footprint_polygon(center, rotate=rotate).cartesian.xyz.value
+    return hp.query_polygon(healpix.nside, xyz.T,
+                            nest=(healpix.order == 'nested'))
 
 
 def get_footprint_grid():
