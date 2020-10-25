@@ -18,6 +18,7 @@ astroplan = {version = "*", allow-prereleases = true}
 mip = {git = "https://github.com/lpsinger/python-mip", branch = "local"}  # https://github.com/coin-or/python-mip/pull/149, https://github.com/coin-or/python-mip/pull/151
 "ligo.skymap" = "^0.5.0"
 healpy = "*"
+seaborn = "*"
 zstandard = "*"
 
 [tool.poetry.dev-dependencies]
@@ -26,6 +27,7 @@ ipykernel = "*"
 
 [tool.poetry.scripts]
 dorado-scheduling = "dorado.scheduling.scripts.main:main"
+dorado-scheduling-animate = "dorado.scheduling.scripts.animate:main"
 dorado-scheduling-prepare = "dorado.scheduling.scripts.prepare:main"
 
 [build-system]
