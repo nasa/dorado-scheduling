@@ -15,7 +15,6 @@ from ligo.skymap.util import Stopwatch
 import mip
 import numpy as np
 from scipy.signal import convolve
-from tqdm import tqdm
 from zstandard import ZstdDecompressor
 
 from .. import orbit
