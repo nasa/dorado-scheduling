@@ -7,7 +7,7 @@ observation planner for Dorado.
 * Field of regard is calculated with [Astroplan]
 * Field of view footprints using [HEALPix] ([Healpy] + [astropy-healpix])
 * Orbit propagation with [Skyfield]
-* Constrained optimimzation with [python-mip]
+* Constrained optimimzation with [python-mip] and [Gurobi]
 
 ![Example Dorado observing plan](examples/6-5.gif)
 
