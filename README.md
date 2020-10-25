@@ -4,14 +4,26 @@ Dorado is a proposed space mission for ultraviolet follow-up of gravitational
 wave events. This repository contains a simple target of opportunity
 observation planner for Dorado.
 
-* Field of regard is calculated with [Astroplan]
-* Field of view footprints using [HEALPix] ([Healpy] + [astropy-healpix])
-* Orbit propagation with [Skyfield]
-* Constrained optimimzation with [python-mip] and [Gurobi]
-
 ![Example Dorado observing plan](examples/6-5.gif)
 
-## To install
+## Features
+
+* **Global**: jointly and globally solves the problems of tiling (the set of telescope boresight orientations and roll angles) and the scheduling (which tile is observed at what time), rather than solving each sub-problem one at a time
+* **Optimal**: generally solves all the way to optimality, rather than finding merely a "good enough" solution
+* **Fast**: solve an entire orbit in about 5 minutes
+* **General**: does not depend on heuristics of any kind
+* **Flexible**: problem is formulated in the versatile framework of [mixed integer programming]
+
+## Dependencies
+
+* [Astroplan] for calculating the field of regard
+* [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
+* [Skyfield] for orbit propagation
+* [python-mip] and [Gurobi] for constrained optimization
+
+## Usage
+
+### To install
 
 This Python project uses [Poetry] for packaging, dependency, and environment
 management.
@@ -25,7 +37,7 @@ management.
 
         $ poetry install
 
-## To activate the virtual environment
+### To activate the virtual environment
 
 Follow these steps to activate the environment each time you start a new shell
 session.
@@ -42,7 +54,7 @@ session.
 
         $ export GUROBI_HOME=/Library/gurobi901/mac64
 
-## To prepare the base problem
+### To prepare the base problem
 
 Generate a base problem once that you will reuse for every sky map and every
 orbit.
@@ -54,7 +66,7 @@ orbit.
 This will take 5-20 minutes and will generate a file that is about 200 MB in
 size.
 
-## To generate an observing plan
+### To generate an observing plan
 
 6.  Generate an observing plan for the included example sky map:
 
@@ -118,6 +130,7 @@ size.
 
     This will take 2-5 minutes to run.
 
+[mixed integer programming]: https://en.wikipedia.org/wiki/Integer_programming
 [Astroplan]: https://github.com/astropy/astroplan
 [HEALPix]: https://healpix.jpl.nasa.gov
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
