@@ -76,9 +76,9 @@ def get_footprint_grid():
 
     Returns
     -------
-    np.ndarray
-        An array of HEALPix footprints of size ``(healpix.npix, rolls.size)``
-        where each element is a list of HEALPix indices within the grid.
+    generator
+        A generator that yields the indices for each pointing center and for
+        each roll.
 
     """
     xyz = np.moveaxis(
