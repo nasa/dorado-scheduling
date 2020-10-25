@@ -59,6 +59,11 @@ size.
 6.  Generate an observing plan for the included example sky map:
 
         $ dorado-scheduling model.lp.zst examples/6.fits --nexp 5 -o 6-5.ecsv
+
+    This will take 5-10 minutes and will use about 16 GB of memory at peak.
+
+7.  Print out the observing plan:
+
         $ cat 6-5.ecsv 
         # %ECSV 0.9
         # ---
@@ -110,6 +115,8 @@ size.
     following command:
 
         $ dorado-scheduling-animate exaples/6.fits 6-5.ecsv 6-5.gif
+
+    This will take 2-5 minutes to run.
 
 [Astroplan]: https://github.com/astropy/astroplan
 [HEALPix]: https://healpix.jpl.nasa.gov
