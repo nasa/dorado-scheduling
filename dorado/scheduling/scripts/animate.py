@@ -43,8 +43,7 @@ def main(args=None):
 
     # Read multi-order sky map and rasterize to working resolution
     start_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
-    skymap = read_sky_map(args.skymap, moc=True)
-    skymap['UNIQ', 'PROBDENSITY']
+    skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
     prob = rasterize(skymap, nside_to_level(skygrid.healpix.nside))['PROB']
     nest = skygrid.healpix.order == 'nested'
     if not nest:
