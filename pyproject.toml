@@ -19,6 +19,7 @@ mip = {git = "https://github.com/lpsinger/python-mip", branch = "local"}  # http
 "ligo.skymap" = "^0.5.0"
 healpy = "*"
 seaborn = "*"
+shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
 zstandard = "*"
 
 [tool.poetry.dev-dependencies]
