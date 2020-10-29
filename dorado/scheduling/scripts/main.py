@@ -74,9 +74,10 @@ def main(args=None):
 
     log.info('adding constraint: field of regard')
     i, j = np.nonzero(
-        convolve(~get_field_of_regard(times),
-        np.ones(orbit.time_steps_per_exposure)[:, np.newaxis],
-        mode='valid', method='direct'))
+        convolve(
+            ~get_field_of_regard(times),
+            np.ones(orbit.time_steps_per_exposure)[:, np.newaxis],
+            mode='valid', method='direct'))
     m += mip.xsum(schedule[j, :, i].ravel()) <= 0
 
     log.info('adding objective')
