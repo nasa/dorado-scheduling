@@ -1,14 +1,7 @@
 """Generate initial MIP problem representation."""
 import logging
-import tempfile
 
 from ligo.skymap.tool import ArgumentParser, FileType
-import mip
-from tqdm import tqdm
-from zstandard import ZstdCompressor
-
-from .. import orbit
-from .. import skygrid
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +15,16 @@ def parser():
 
 def main(args=None):
     args = parser().parse_args(args)
+
+    # Late imports
+    import tempfile
+
+    import mip
+    from tqdm import tqdm
+    from zstandard import ZstdCompressor
+
+    from .. import orbit
+    from .. import skygrid
 
     m = mip.Model()
 

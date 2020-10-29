@@ -1,25 +1,9 @@
 """Command line interface."""
 import logging
-import shlex
-import sys
-import tempfile
 
-from astropy_healpix import nside_to_level
-from astropy.io import fits
-from astropy.time import Time
-from astropy.table import Table
-from ligo.skymap.io import read_sky_map
-from ligo.skymap.bayestar import rasterize
 from ligo.skymap.tool import ArgumentParser, FileType
-from ligo.skymap.util import Stopwatch
-import mip
-import numpy as np
-from scipy.signal import convolve
-from zstandard import ZstdDecompressor
 
 from .. import orbit
-from ..regard import get_field_of_regard
-from .. import skygrid
 
 log = logging.getLogger(__name__)
 
@@ -42,6 +26,26 @@ def parser():
 
 def main(args=None):
     args = parser().parse_args(args)
+
+    # Late imports
+    import shlex
+    import sys
+    import tempfile
+
+    from astropy_healpix import nside_to_level
+    from astropy.io import fits
+    from astropy.time import Time
+    from astropy.table import Table
+    from ligo.skymap.io import read_sky_map
+    from ligo.skymap.bayestar import rasterize
+    from ligo.skymap.util import Stopwatch
+    import mip
+    import numpy as np
+    from scipy.signal import convolve
+    from zstandard import ZstdDecompressor
+
+    from ..regard import get_field_of_regard
+    from .. import skygrid
 
     log.info('reading sky map')
 
