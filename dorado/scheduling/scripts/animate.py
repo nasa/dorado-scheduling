@@ -58,8 +58,7 @@ def main(args=None):
 
     cls = find_greedy_credible_levels(skymap_hires)
 
-    times = np.arange(orbit.time_steps) * orbit.exposure_time / \
-        orbit.time_steps_per_exposure + start_time
+    times = np.arange(orbit.time_steps) * orbit.time_step_duration + start_time
 
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')

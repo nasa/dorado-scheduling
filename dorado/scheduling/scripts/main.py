@@ -52,8 +52,7 @@ def main(args=None):
     if skygrid.healpix.order == 'ring':
         prob = prob[skygrid.healpix.ring_to_nested(np.arange(len(prob)))]
 
-    times = np.arange(orbit.time_steps) * orbit.exposure_time / orbit.time_steps_per_exposure \
-        + start_time
+    times = np.arange(orbit.time_steps) * orbit.time_step_duration + start_time
 
     log.info('reading initial model')
     m = mip.Model()

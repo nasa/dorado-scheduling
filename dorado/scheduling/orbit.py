@@ -21,10 +21,12 @@ timescale = skyfield.api.load.timescale()
 
 orbital_period = 2 * np.pi / satellite.model.no * u.minute
 exposure_time = 10 * u.minute
-exposures_per_orbit = int(
-    (orbital_period // exposure_time).to_value(u.dimensionless_unscaled))
 time_steps_per_exposure = 10
-time_steps = int((orbital_period / exposure_time) * time_steps_per_exposure)
+time_step_duration = exposure_time / time_steps_per_exposure
+exposures_per_orbit = int(
+    (orbital_period / exposure_time).to_value(u.dimensionless_unscaled))
+time_steps = int(
+    (orbital_period / time_step_duration).to_value(u.dimensionless_unscaled))
 
 
 def get_position(time):
