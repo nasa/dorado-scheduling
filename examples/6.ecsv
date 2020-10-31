@@ -1,0 +1,46 @@
+# %ECSV 0.9
+# ---
+# datatype:
+# - {name: time, datatype: string}
+# - {name: center.ra, unit: deg, datatype: float64}
+# - {name: center.dec, unit: deg, datatype: float64}
+# - {name: roll, unit: deg, datatype: float64}
+# meta:
+#   __serialized_columns__:
+#     center:
+#       __class__: astropy.coordinates.sky_coordinate.SkyCoord
+#       dec: !astropy.table.SerializedColumn
+#         __class__: astropy.coordinates.angles.Latitude
+#         unit: &id001 !astropy.units.Unit {unit: deg}
+#         value: !astropy.table.SerializedColumn {name: center.dec}
+#       frame: icrs
+#       ra: !astropy.table.SerializedColumn
+#         __class__: astropy.coordinates.angles.Longitude
+#         unit: *id001
+#         value: !astropy.table.SerializedColumn {name: center.ra}
+#         wrap_angle: !astropy.coordinates.Angle
+#           unit: *id001
+#           value: 360.0
+#       representation_type: spherical
+#     time:
+#       __class__: astropy.time.core.Time
+#       format: isot
+#       in_subfmt: '*'
+#       out_subfmt: '*'
+#       precision: 3
+#       scale: utc
+#       value: !astropy.table.SerializedColumn {name: time}
+#   cmdline: /Users/lpsinger/Library/Caches/pypoetry/virtualenvs/dorado-scheduling-SFXHA12M-py3.8/bin/dorado-scheduling model.lp.zst examples/6.fits
+#     -o examples/6.ecsv
+#   prob: 0.8238346278346581
+#   real: 85.565241214
+#   status: OPTIMAL
+#   sys: 24.485358000000005
+#   user: 72.93921199999998
+# schema: astropy-2.0
+time center.ra center.dec roll
+2012-05-02T18:29:32.699 54.47368421052631 -61.94383702315671 80.0
+2012-05-02T18:44:32.699 69.75 -60.434438844952275 50.0
+2012-05-02T19:32:32.699 147.65625 -7.180755781458282 70.0
+2012-05-02T19:42:32.699 115.31249999999999 18.20995686428301 20.0
+2012-05-02T19:56:32.699 133.59375 7.180755781458282 20.0

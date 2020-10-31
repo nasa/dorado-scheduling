@@ -4,7 +4,7 @@ Dorado is a proposed space mission for ultraviolet follow-up of gravitational
 wave events. This repository contains a simple target of opportunity
 observation planner for Dorado.
 
-![Example Dorado observing plan](examples/6-5.gif)
+![Example Dorado observing plan](examples/6.gif)
 
 ## Features
 
@@ -102,20 +102,20 @@ orbit.
 
         $ dorado-scheduling-prepare model.lp.zst
 
-This will take 5-20 minutes and will generate a file that is about 200 MB in
+This will take 5-10 minutes and will generate a file that is about 200 MB in
 size.
 
 ### To generate an observing plan
 
 6.  Generate an observing plan for the included example sky map:
 
-        $ dorado-scheduling model.lp.zst examples/6.fits --nexp 5 -o 6-5.ecsv
+        $ dorado-scheduling model.lp.zst examples/6.fits -o examples/6.ecsv
 
     This will take 5-10 minutes and will use about 16 GB of memory at peak.
 
 7.  Print out the observing plan:
 
-        $ cat 6-5.ecsv 
+        $ cat examples/6.ecsv 
         # %ECSV 0.9
         # ---
         # datatype:
@@ -148,26 +148,27 @@ size.
         #       precision: 3
         #       scale: utc
         #       value: !astropy.table.SerializedColumn {name: time}
-        #   cmdline: dorado-scheduling model.lp.zst examples/6.fits -o 6-5.ecsv --nexp 5
-        #   prob: 0.8881919618423365
-        #   real: 124.77953617399999
+        #   cmdline: dorado-scheduling model.lp.zst examples/6.fits
+        #     -o examples/6.ecsv
+        #   prob: 0.8238346278346581
+        #   real: 85.565241214
         #   status: OPTIMAL
-        #   sys: 21.667351000000004
-        #   user: 144.99249299999997
+        #   sys: 24.485358000000005
+        #   user: 72.93921199999998
         # schema: astropy-2.0
         time center.ra center.dec roll
-        2012-05-02T19:09:32.699 51.74999999999999 -60.434438844952275 80.0
-        2012-05-02T19:20:32.699 65.25 -60.434438844952275 0.0
-        2012-05-02T19:30:32.699 79.28571428571429 -58.91977535280316 80.0
-        2012-05-02T19:43:32.699 91.95652173913044 -55.87335043525197 60.0
-        2012-05-02T19:53:32.699 133.59375 7.180755781458282 20.0
+        2012-05-02T18:29:32.699 54.47368421052631 -61.94383702315671 80.0
+        2012-05-02T18:44:32.699 69.75 -60.434438844952275 50.0
+        2012-05-02T19:32:32.699 147.65625 -7.180755781458282 70.0
+        2012-05-02T19:42:32.699 115.31249999999999 18.20995686428301 20.0
+        2012-05-02T19:56:32.699 133.59375 7.180755781458282 20.0
 
 7.  To generate an animated visualization for this observing plan, run the
     following command:
 
-        $ dorado-scheduling-animate exaples/6.fits 6-5.ecsv 6-5.gif
+        $ dorado-scheduling-animate exaples/6.fits examples/6.ecsv examples/6.gif
 
-    This will take 2-5 minutes to run.
+    This will take about 2-5 minutes to run.
 
 [mixed integer programming]: https://en.wikipedia.org/wiki/Integer_programming
 [Astroplan]: https://github.com/astropy/astroplan

@@ -13,9 +13,11 @@ __all__ = ('get_position', 'orbital_period', 'exposure_time',
            'exposures_per_orbit')
 
 
-# Load two-line element for satellite (use Swift's orbit)
+# Load two-line element for satellite.
+# This is for Aqua, an Earth observing satellite in a low-Earth sun-synchronous
+# orbit that happens to be similar to what might be appropriate for Dorado.
 with resources.path(data, 'orbits.txt') as path:
-    satellite = skyfield.api.load.tle(str(path))['SWIFT']
+    satellite = skyfield.api.load.tle(str(path))['AQUA']
 
 timescale = skyfield.api.load.timescale()
 
