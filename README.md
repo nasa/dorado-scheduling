@@ -64,28 +64,15 @@ The constraints are:
 
 ### To install
 
-This Python project uses [Poetry] for packaging, dependency, and environment
-management.
+To install with [Pip]:
 
-1.  First, [install Poetry]:
+1.  Run the following command:
 
-        $ curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+        $ pip install git+https://github.com/dorado-science/dorado-scheduling
 
-2.  Within the directory containing this README file, run the following command
-    to create a Python virtual environment and install this package into it:
+### To set up your environment
 
-        $ poetry install
-
-### To activate the virtual environment
-
-Follow these steps to activate the environment each time you start a new shell
-session.
-
-3.  Activate the Poetry virtual environment:
-
-        $ poetry shell
-
-4.  It is recommended that you use the commercial [Gurobi] solver rather than
+2.  It is recommended that you use the commercial [Gurobi] solver rather than
     the open-source Cbc solver that is included with python-mip; Cbc is much
     slower and may fail to solve to optimality. If you have a Gurobi license,
     then activate Gurobi in this shell by setting the `GUROBI_HOME` environment
@@ -98,7 +85,7 @@ session.
 Generate a base problem once that you will reuse for every sky map and every
 orbit.
 
-5.  Generate the base problem by running the following command:
+3.  Generate the base problem by running the following command:
 
         $ dorado-scheduling-prepare model.lp.zst
 
@@ -107,13 +94,13 @@ size.
 
 ### To generate an observing plan
 
-6.  Generate an observing plan for the included example sky map:
+4.  Generate an observing plan for the included example sky map:
 
         $ dorado-scheduling model.lp.zst examples/6.fits -o examples/6.ecsv
 
     This will take 5-10 minutes and will use about 16 GB of memory at peak.
 
-7.  Print out the observing plan:
+5.  Print out the observing plan:
 
         $ cat examples/6.ecsv 
         # %ECSV 0.9
@@ -163,13 +150,14 @@ size.
         2012-05-02T19:42:32.699 115.31249999999999 18.20995686428301 20.0
         2012-05-02T19:56:32.699 133.59375 7.180755781458282 20.0
 
-7.  To generate an animated visualization for this observing plan, run the
+6.  To generate an animated visualization for this observing plan, run the
     following command:
 
         $ dorado-scheduling-animate exaples/6.fits examples/6.ecsv examples/6.gif
 
     This will take about 2-5 minutes to run.
 
+[Pip]: https://pip.pypa.io
 [mixed integer programming]: https://en.wikipedia.org/wiki/Integer_programming
 [Astroplan]: https://github.com/astropy/astroplan
 [HEALPix]: https://healpix.jpl.nasa.gov
@@ -177,6 +165,5 @@ size.
 [Healpy]: https://github.com/healpy/healpy
 [Skyfield]: https://rhodesmill.org/skyfield/
 [python-mip]: https://python-mip.com
-[Poetry]: https://python-poetry.org
 [install Poetry]: https://python-poetry.org/docs/#installation
 [Gurobi]: https://www.gurobi.com
