@@ -17,6 +17,7 @@ def main(args=None):
     args = parser().parse_args(args)
 
     # Late imports
+    import os
     import tempfile
 
     import mip
@@ -66,6 +67,9 @@ def main(args=None):
         ZstdCompressor().copy_stream(uncompressed, args.output)
 
     log.info('done')
+    # Fast exit without garbage collection
+    args.output.close()
+    os._exit(os.EX_OK)
 
 
 if __name__ == '__main__':

@@ -28,6 +28,7 @@ def main(args=None):
     args = parser().parse_args(args)
 
     # Late imports
+    import os
     import shlex
     import sys
     import tempfile
@@ -117,6 +118,9 @@ def main(args=None):
     result.write(args.output, format='ascii.ecsv')
 
     log.info('done')
+    # Fast exit without garbage collection
+    args.output.close()
+    os._exit(os.EX_OK)
 
 
 if __name__ == '__main__':
