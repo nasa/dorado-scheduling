@@ -80,27 +80,15 @@ To install with [Pip]:
 
         $ export GUROBI_HOME=/Library/gurobi901/mac64
 
-### To prepare the base problem
-
-Generate a base problem once that you will reuse for every sky map and every
-orbit.
-
-3.  Generate the base problem by running the following command:
-
-        $ dorado-scheduling-prepare model.lp.zst
-
-This will take 5-10 minutes and will generate a file that is about 200 MB in
-size.
-
 ### To generate an observing plan
 
-4.  Generate an observing plan for the included example sky map:
+3.  Generate an observing plan for the included example sky map:
 
-        $ dorado-scheduling model.lp.zst examples/6.fits -o examples/6.ecsv
+        $ dorado-scheduling examples/6.fits -o examples/6.ecsv
 
-    This will take 5-10 minutes and will use about 16 GB of memory at peak.
+    This will take 3 minutes and will use about 10 GB of memory at peak.
 
-5.  Print out the observing plan:
+4.  Print out the observing plan:
 
         $ cat examples/6.ecsv 
         # %ECSV 0.9
@@ -135,13 +123,9 @@ size.
         #       precision: 3
         #       scale: utc
         #       value: !astropy.table.SerializedColumn {name: time}
-        #   cmdline: dorado-scheduling model.lp.zst examples/6.fits
-        #     -o examples/6.ecsv
+        #   cmdline: dorado-scheduling examples/6.fits -o examples/6.ecsv
         #   prob: 0.8238346278346581
-        #   real: 85.565241214
         #   status: OPTIMAL
-        #   sys: 24.485358000000005
-        #   user: 72.93921199999998
         # schema: astropy-2.0
         time center.ra center.dec roll
         2012-05-02T18:29:32.699 54.47368421052631 -61.94383702315671 80.0
@@ -150,7 +134,7 @@ size.
         2012-05-02T19:42:32.699 115.31249999999999 18.20995686428301 20.0
         2012-05-02T19:56:32.699 133.59375 7.180755781458282 20.0
 
-6.  To generate an animated visualization for this observing plan, run the
+5.  To generate an animated visualization for this observing plan, run the
     following command:
 
         $ dorado-scheduling-animate exaples/6.fits examples/6.ecsv examples/6.gif

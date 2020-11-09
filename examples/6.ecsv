@@ -30,13 +30,9 @@
 #       precision: 3
 #       scale: utc
 #       value: !astropy.table.SerializedColumn {name: time}
-#   cmdline: /Users/lpsinger/Library/Caches/pypoetry/virtualenvs/dorado-scheduling-SFXHA12M-py3.8/bin/dorado-scheduling model.lp.zst examples/6.fits
-#     -o examples/6.ecsv
+#   cmdline: dorado-scheduling examples/6.fits -o examples/6.ecsv
 #   prob: 0.8238346278346581
-#   real: 85.565241214
 #   status: OPTIMAL
-#   sys: 24.485358000000005
-#   user: 72.93921199999998
 # schema: astropy-2.0
 time center.ra center.dec roll
 2012-05-02T18:29:32.699 54.47368421052631 -61.94383702315671 80.0

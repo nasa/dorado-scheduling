@@ -20,7 +20,6 @@ mip = {git = "https://github.com/coin-or/python-mip", rev = "25ed1e792a1ac1a607e
 healpy = "*"
 seaborn = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
-zstandard = "*"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
@@ -29,7 +28,6 @@ ipykernel = "*"
 [tool.poetry.scripts]
 dorado-scheduling = "dorado.scheduling.scripts.main:main"
 dorado-scheduling-animate = "dorado.scheduling.scripts.animate:main"
-dorado-scheduling-prepare = "dorado.scheduling.scripts.prepare:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

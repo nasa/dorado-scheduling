@@ -3,18 +3,14 @@ import logging
 
 from ligo.skymap.tool import ArgumentParser, FileType
 
-from .. import orbit
-
 log = logging.getLogger(__name__)
 
 
 def parser():
     p = ArgumentParser()
-    p.add_argument('model', metavar='MODEL.lp.zst', type=FileType('rb'),
-                   help='Prepared model')
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
-    p.add_argument('-n', '--nexp', type=int, default=orbit.exposures_per_orbit,
+    p.add_argument('-n', '--nexp', type=int,
                    help='Number of exposures')
     p.add_argument('--max-seconds', type=int, default=300,
                    help='Time limit for solver')
@@ -31,7 +27,6 @@ def main(args=None):
     import os
     import shlex
     import sys
-    import tempfile
 
     from astropy_healpix import nside_to_level
     from astropy.io import fits
@@ -43,8 +38,9 @@ def main(args=None):
     import mip
     import numpy as np
     from scipy.signal import convolve
-    from zstandard import ZstdDecompressor
+    from tqdm import tqdm
 
+    from .. import orbit
     from ..regard import get_field_of_regard
     from .. import skygrid
 
@@ -59,19 +55,47 @@ def main(args=None):
 
     times = np.arange(orbit.time_steps) * orbit.time_step_duration + start_time
 
-    log.info('reading initial model')
+    log.info('generating model')
     m = mip.Model()
-    with tempfile.NamedTemporaryFile(suffix='.lp') as uncompressed:
-        ZstdDecompressor().copy_stream(args.model, uncompressed)
-        m.read(uncompressed.name)
 
-    log.info('reconstructing tensor variables')
-    vars = np.asarray(m.vars).view(mip.LinExprTensor)
-    schedule = vars[:-skygrid.healpix.npix].reshape(
-        (len(skygrid.centers), len(skygrid.rolls), -1))
-    pixel_observed = vars[-skygrid.healpix.npix:]
+    log.info('adding variable: observing schedule')
+    shape = (len(skygrid.centers), len(skygrid.rolls),
+             orbit.time_steps - orbit.time_steps_per_exposure + 1)
+    schedule = m.add_var_tensor(shape, name='p', var_type=mip.BINARY)
 
-    m.constr_by_name('nexp').rhs = args.nexp
+    log.info('adding variable: whether a given pixel is observed')
+    pixel_observed = m.add_var_tensor(
+        (skygrid.healpix.npix,), name='s', var_type=mip.BINARY)
+
+    log.info('adding variable: whether a given field is used')
+    field_used = m.add_var_tensor(shape[:2], name='f', var_type=mip.BINARY)
+
+    log.info('adding variable: whether a given time step is used')
+    time_used = m.add_var_tensor((shape[2],), name='t', var_type=mip.BINARY)
+
+    if args.nexp is not None:
+        log.info('adding constraint: number of exposures')
+        m += mip.xsum(time_used) <= 0
+
+    log.info('adding constraint: only observe one field at a time')
+    for i in tqdm(range(shape[2])):
+        m += mip.xsum(schedule[..., i].ravel()) == time_used[i]
+        m += mip.xsum(time_used[i:i+orbit.time_steps_per_exposure]) <= 1
+
+    log.info('adding constraint: a pixel is observed if it is in any field')
+    for lhs, rhs in zip(
+            tqdm(schedule.reshape(field_used.size, -1)),
+            field_used.ravel()):
+        m += mip.xsum(lhs) >= rhs
+    indices = [[] for _ in range(skygrid.healpix.npix)]
+    with tqdm(total=len(skygrid.centers) * len(skygrid.rolls)) as progress:
+        for i, grid_i in enumerate(skygrid.get_footprint_grid()):
+            for j, grid_ij in enumerate(grid_i):
+                for k in grid_ij:
+                    indices[k].append((i, j))
+                progress.update()
+    for lhs_indices, rhs in zip(tqdm(indices), pixel_observed):
+        m += mip.xsum(field_used[inds] for inds in lhs_indices) >= rhs
 
     log.info('adding constraint: field of regard')
     i, j = np.nonzero(
