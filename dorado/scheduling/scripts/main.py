@@ -25,7 +25,7 @@ def main(args=None):
 
     # Late imports
     import os
-    import shlex
+    # import shlex
     import sys
 
     from astropy_healpix import nside_to_level
@@ -130,7 +130,8 @@ def main(args=None):
             'center': skygrid.centers[ipix],
             'roll': skygrid.rolls[iroll]
         }, meta={
-            'cmdline': shlex.join(sys.argv),
+            # FIXME: use shlex.join(sys.argv) in Python >= 3.8
+            'cmdline': ' '.join(sys.argv),
             'prob': objective_value,
             'status': m.status.name,
             'real': stopwatch.real,
