@@ -24,7 +24,7 @@ observation planner for Dorado.
 *   [Astroplan] for calculating the field of regard
 *   [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
 *   [Skyfield] for orbit propagation
-*   [python-mip] and [Gurobi] for constrained optimization
+*   [CPLEX] (via [docplex] Python interface) for constrained optimization
 
 ## Problem formulation
 
@@ -70,15 +70,14 @@ To install with [Pip]:
 
         $ pip install git+https://github.com/dorado-science/dorado-scheduling
 
-### To set up your environment
+### To set up the CPLEX optimization engine
 
-2.  It is recommended that you use the commercial [Gurobi] solver rather than
-    the open-source Cbc solver that is included with python-mip; Cbc is much
-    slower and may fail to solve to optimality. If you have a Gurobi license,
-    then activate Gurobi in this shell by setting the `GUROBI_HOME` environment
-    variable. For example, on macOS, this will be:
+2.  Set up the CPLEX optimization engine by following the
+    [docplex instructions]. If you have [installed CPLEX locally], then all you
+    have to do is determine the path to the CPLEX Python bindings and add them
+    to your `PYTHONPATH`. For example, on macOS, this might be:
 
-        $ export GUROBI_HOME=/Library/gurobi901/mac64
+        $ export PYTHONPATH=/Applications/CPLEX_Studio1210/cplex/python/3.7/x86-64_osx
 
 ### To generate an observing plan
 
@@ -177,6 +176,8 @@ sky position is contained in any of the fields in an observing plan:
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
 [Healpy]: https://github.com/healpy/healpy
 [Skyfield]: https://rhodesmill.org/skyfield/
-[python-mip]: https://python-mip.com
 [install Poetry]: https://python-poetry.org/docs/#installation
-[Gurobi]: https://www.gurobi.com
+[CPLEX]: https://www.ibm.com/products/ilog-cplex-optimization-studio
+[docplex]: https://ibmdecisionoptimization.github.io/docplex-doc/
+[docplex instructions]: https://ibmdecisionoptimization.github.io/docplex-doc/mp/getting_started.html
+[installed CPLEX locally]: https://ibmdecisionoptimization.github.io/docplex-doc/mp/getting_started.html#using-ibm-ilog-cplex-optimization-studio-on-your-computer

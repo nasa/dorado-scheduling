@@ -165,6 +165,18 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 
 [[package]]
+name = "docplex"
+version = "2.16.196"
+description = "The IBM Decision Optimization CPLEX Modeling for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = "*"
+six = "*"
+
+[[package]]
 name = "flake8"
 version = "3.8.4"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -510,17 +522,6 @@ description = "McCabe checker, plugin for flake8"
 category = "dev"
 optional = false
 python-versions = "*"
-
-[[package]]
-name = "mip"
-version = "1.13.0"
-description = "Python tools for Modeling and Solving Mixed-Integer Linear     Programs (MIPs)"
-category = "main"
-optional = false
-python-versions = ">3.5.0"
-
-[package.dependencies]
-cffi = "*"
 
 [[package]]
 name = "networkx"
@@ -1029,7 +1030,11 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
+<<<<<<< HEAD
 content-hash = "bbf7ed35825dae0271d56c76a905fe5d850142778e81d6b4bdbf5d6e7f4b3085"
+=======
+content-hash = "a18fab4b5728dbe232070a5ce358bee056b6642453c358365267c10cee2f04a2"
+>>>>>>> 5ce74c2 (Port to CPLEX)
 
 [metadata.files]
 appnope = [
@@ -1170,6 +1175,9 @@ cycler = [
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
     {file = "decorator-4.4.2.tar.gz", hash = "sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7"},
+]
+docplex = [
+    {file = "docplex-2.16.196.tar.gz", hash = "sha256:8fd96e3586444e577b356c0ac62511414e76027ff159ebe0d0b3e44b881406d1"},
 ]
 flake8 = [
     {file = "flake8-3.8.4-py2.py3-none-any.whl", hash = "sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839"},
@@ -1339,10 +1347,13 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
+<<<<<<< HEAD
 mip = [
     {file = "mip-1.13.0-py3-none-any.whl", hash = "sha256:62b75ac7580b0d13f6113ccace633160e7f9c2e07631f69ed36405f2ff035863"},
     {file = "mip-1.13.0.tar.gz", hash = "sha256:b22cb3fad91269a5f139d77fc13839e57132d90b9c697ed2791cf7bb14fbcc7a"},
 ]
+=======
+>>>>>>> 5ce74c2 (Port to CPLEX)
 networkx = [
     {file = "networkx-2.5-py3-none-any.whl", hash = "sha256:8c5812e9f798d37c50570d15c4a69d5710a18d77bafc903ee9c5fba7454c616c"},
     {file = "networkx-2.5.tar.gz", hash = "sha256:7978955423fbc9639c10498878be59caf99b44dc304c2286162fd24b458c1602"},
