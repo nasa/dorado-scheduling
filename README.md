@@ -24,7 +24,8 @@ observation planner for Dorado.
 *   [Astroplan] for calculating the field of regard
 *   [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
 *   [Skyfield] for orbit propagation
-*   [python-mip] and [Gurobi] for constrained optimization
+*   [FICO Xpress] via the excellent [xpress] Python bindings for
+    constrained optimization
 
 ## Problem formulation
 
@@ -70,15 +71,14 @@ To install with [Pip]:
 
         $ pip install git+https://github.com/dorado-science/dorado-scheduling
 
-### To set up your environment
+### To set up the FICO Xpress optimization engine
 
-2.  It is recommended that you use the commercial [Gurobi] solver rather than
-    the open-source Cbc solver that is included with python-mip; Cbc is much
-    slower and may fail to solve to optimality. If you have a Gurobi license,
-    then activate Gurobi in this shell by setting the `GUROBI_HOME` environment
-    variable. For example, on macOS, this will be:
+2.  You will need to have a full version of FICO Xpress (see [license
+    options]). Set the `XPRESS` environment variable to the folder containing
+    your `xpauth.xpr` Xpress license file, which is generally the Xpress `bin`
+    directory:
 
-        $ export GUROBI_HOME=/Library/gurobi901/mac64
+        $ export XPRESS=/Applications/FICO Xpress/xpressmp/bin
 
 ### To generate an observing plan
 
@@ -177,6 +177,7 @@ sky position is contained in any of the fields in an observing plan:
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
 [Healpy]: https://github.com/healpy/healpy
 [Skyfield]: https://rhodesmill.org/skyfield/
-[python-mip]: https://python-mip.com
 [install Poetry]: https://python-poetry.org/docs/#installation
-[Gurobi]: https://www.gurobi.com
+[FICO Xpress]: https://community.fico.com/s/optimization
+[xpress]: https://pypi.org/project/xpress/
+[license options]: https://www.fico.com/en/fico-xpress-trial-and-licensing-options

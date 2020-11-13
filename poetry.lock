@@ -468,24 +468,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "mip"
-version = "1.12.1.dev6+g25ed1e7"
-description = "Python tools for Modeling and Solving Mixed-Integer Linear     Programs (MIPs)"
-category = "main"
-optional = false
-python-versions = ">3.5.0"
-develop = false
-
-[package.dependencies]
-cffi = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/coin-or/python-mip"
-reference = "25ed1e792a1ac1a607e797bec266e4753ca564f2"
-resolved_reference = "25ed1e792a1ac1a607e797bec266e4753ca564f2"
-
-[[package]]
 name = "networkx"
 version = "2.5"
 description = "Python package for creating and manipulating graphs and networks"
@@ -892,6 +874,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "xpress"
+version = "8.11.0"
+description = "FICO Xpress Optimizer Python interface"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+numpy = ">=1.8"
+
+[[package]]
 name = "zipp"
 version = "3.4.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -906,7 +899,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "303640da068560eeca7b0d3d0a53c911ed47109096300cd210a43817fba2ada0"
+content-hash = "10c99f2df1c7c4ce4a25fd6260c292933446ea6a8d8d3a7b3026a8fdb3fa28f0"
 
 [metadata.files]
 appnope = [
@@ -1214,7 +1207,6 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-mip = []
 networkx = [
     {file = "networkx-2.5-py3-none-any.whl", hash = "sha256:8c5812e9f798d37c50570d15c4a69d5710a18d77bafc903ee9c5fba7454c616c"},
     {file = "networkx-2.5.tar.gz", hash = "sha256:7978955423fbc9639c10498878be59caf99b44dc304c2286162fd24b458c1602"},
@@ -1605,6 +1597,23 @@ urllib3 = [
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},
     {file = "wcwidth-0.2.5.tar.gz", hash = "sha256:c4d647b99872929fdb7bdcaa4fbe7f01413ed3d98077df798530e5b04f116c83"},
+]
+xpress = [
+    {file = "xpress-8.11.0-cp27-cp27m-macosx_10_7_x86_64.whl", hash = "sha256:b776918a3134dd352c96fac1f57a677babbc8122603443b8050951fe619c1f24"},
+    {file = "xpress-8.11.0-cp27-cp27m-win_amd64.whl", hash = "sha256:459dee62fdaeb4febe51dd95af73ccd5f8a77735f147455c4ac2523d9c4a8ca5"},
+    {file = "xpress-8.11.0-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:ef802a02659f905b306aafa337822bbc67e15c5bea5ff5fc5774b997e9bbb64c"},
+    {file = "xpress-8.11.0-cp35-cp35m-macosx_10_6_x86_64.whl", hash = "sha256:2aaef2cffd18641e9bab1f81e3c84884d744b9d4b4d1f8b4c3f620ff5c2acd6e"},
+    {file = "xpress-8.11.0-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:55ea557acd3cc7f8fb053d094c02b49eb1b227c19a9ff8f1bd186840cf85e1e1"},
+    {file = "xpress-8.11.0-cp35-cp35m-win_amd64.whl", hash = "sha256:e502cd0ffff318f0caf69f278754eeb7d2f4ac4b39ad528293dc8a9e9a8cf6fe"},
+    {file = "xpress-8.11.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:08fed56b0a86fb3c23abdcce873c0a2ba3181479d16fb45475fd6700cde7b0b4"},
+    {file = "xpress-8.11.0-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:c1ad7b7378b2f21d897c03b2dffc832de3bd0b9c9c16080bdb223e73a6b5f606"},
+    {file = "xpress-8.11.0-cp36-cp36m-win_amd64.whl", hash = "sha256:0b7ee5164ee0aafffde85859839281c40dbdd709b11c66f9f4c22271f25f1b64"},
+    {file = "xpress-8.11.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:1e72109f201f20c8710b5fd3adc0ef9c1de989c3fed03a1143605805d6546a33"},
+    {file = "xpress-8.11.0-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:e1d1311b8a8196aecdd270d7a3e57b638fa9c8a35e31af2835953c8173401467"},
+    {file = "xpress-8.11.0-cp37-cp37m-win_amd64.whl", hash = "sha256:43a6a1b58407f0030402478977ed1d7a4a45405ef8dd46909cdfc8e21c40847c"},
+    {file = "xpress-8.11.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:ba75227845d4af171a8b813bfce658c8dd4b9a8d4cab9870f367a28d5d6f2ec7"},
+    {file = "xpress-8.11.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:d7cf0e66a7d889e145be2abb207e13a083d2ab80496803b2548ec296a884a72e"},
+    {file = "xpress-8.11.0-cp38-cp38-win_amd64.whl", hash = "sha256:bbfa1ca98687d6ad4d0be3c7f274d7d27bee2d9ed9ba5a1437b0c08e774b481c"},
 ]
 zipp = [
     {file = "zipp-3.4.0-py3-none-any.whl", hash = "sha256:102c24ef8f171fd729d46599845e95c7ab894a4cf45f5de11a44cc7444fb1108"},
