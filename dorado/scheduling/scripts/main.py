@@ -10,8 +10,7 @@ def parser():
     p = ArgumentParser()
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
-    p.add_argument('-n', '--nexp', type=int,
-                   help='Number of exposures')
+    p.add_argument('-n', '--nexp', type=int, help='Number of exposures')
     p.add_argument('--max-seconds', type=int, default=300,
                    help='Time limit for solver')
     p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
