@@ -24,7 +24,7 @@ observation planner for Dorado.
 *   [Astroplan] for calculating the field of regard
 *   [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
 *   [Skyfield] for orbit propagation
-*   [python-mip] and [Gurobi] for constrained optimization
+*   [SCIP] via [PySCIPOpt] for constrained optimization
 
 ## Problem formulation
 
@@ -177,6 +177,6 @@ sky position is contained in any of the fields in an observing plan:
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
 [Healpy]: https://github.com/healpy/healpy
 [Skyfield]: https://rhodesmill.org/skyfield/
-[python-mip]: https://python-mip.com
 [install Poetry]: https://python-poetry.org/docs/#installation
-[Gurobi]: https://www.gurobi.com
+[SCIP]: https://www.scipopt.org
+[PySCIPOpt]: https://github.com/SCIP-Interfaces/PySCIPOpt
