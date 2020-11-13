@@ -24,7 +24,7 @@ observation planner for Dorado.
 *   [Astroplan] for calculating the field of regard
 *   [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
 *   [Skyfield] for orbit propagation
-*   [python-mip] and [Gurobi] for constrained optimization
+*   [Gurobi] for constrained optimization
 
 ## Problem formulation
 
@@ -70,15 +70,12 @@ To install with [Pip]:
 
         $ pip install git+https://github.com/dorado-science/dorado-scheduling
 
-### To set up your environment
+### To set up the Gurobi optimization engine
 
-2.  It is recommended that you use the commercial [Gurobi] solver rather than
-    the open-source Cbc solver that is included with python-mip; Cbc is much
-    slower and may fail to solve to optimality. If you have a Gurobi license,
-    then activate Gurobi in this shell by setting the `GUROBI_HOME` environment
-    variable. For example, on macOS, this will be:
+2.  You will need a full version of [Gurobi]. To [install the Gurobipy python
+    bindings], run the following command:
 
-        $ export GUROBI_HOME=/Library/gurobi901/mac64
+        $ pip install -i https://pypi.gurobi.com gurobipy
 
 ### To generate an observing plan
 
@@ -177,6 +174,6 @@ sky position is contained in any of the fields in an observing plan:
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
 [Healpy]: https://github.com/healpy/healpy
 [Skyfield]: https://rhodesmill.org/skyfield/
-[python-mip]: https://python-mip.com
 [install Poetry]: https://python-poetry.org/docs/#installation
 [Gurobi]: https://www.gurobi.com
+[install the Gurobipy python bindings]: https://www.gurobi.com/documentation/9.1/quickstart_mac/cs_using_pip_to_install_gr.html

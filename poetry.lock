@@ -468,24 +468,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "mip"
-version = "1.12.1.dev6+g25ed1e7"
-description = "Python tools for Modeling and Solving Mixed-Integer Linear     Programs (MIPs)"
-category = "main"
-optional = false
-python-versions = ">3.5.0"
-develop = false
-
-[package.dependencies]
-cffi = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/coin-or/python-mip"
-reference = "25ed1e792a1ac1a607e797bec266e4753ca564f2"
-resolved_reference = "25ed1e792a1ac1a607e797bec266e4753ca564f2"
-
-[[package]]
 name = "networkx"
 version = "2.5"
 description = "Python package for creating and manipulating graphs and networks"
@@ -906,7 +888,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "303640da068560eeca7b0d3d0a53c911ed47109096300cd210a43817fba2ada0"
+content-hash = "7a01b1c0d0031cf415fdfb07034a5644b463b62ed024852a24f78939db9c8e9f"
 
 [metadata.files]
 appnope = [
@@ -1214,7 +1196,6 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
-mip = []
 networkx = [
     {file = "networkx-2.5-py3-none-any.whl", hash = "sha256:8c5812e9f798d37c50570d15c4a69d5710a18d77bafc903ee9c5fba7454c616c"},
     {file = "networkx-2.5.tar.gz", hash = "sha256:7978955423fbc9639c10498878be59caf99b44dc304c2286162fd24b458c1602"},
