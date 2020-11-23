@@ -15,7 +15,7 @@ python = "^3.7"
 skyfield = "*"
 astropy = "^4.1"
 astroplan = "^0.7"
-mip = {git = "https://github.com/coin-or/python-mip", rev = "25ed1e792a1ac1a607e797bec266e4753ca564f2"}  # https://github.com/coin-or/python-mip/pull/151
+mip = ">=1.13.0"  # https://github.com/coin-or/python-mip/pull/149, https://github.com/coin-or/python-mip/pull/151
 "ligo.skymap" = "^0.5.0"
 healpy = "*"
 seaborn = "*"
