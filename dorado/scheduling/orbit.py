@@ -1,6 +1,7 @@
 """Spacecraft orbit."""
 from importlib import resources
 
+from astroplan import Observer
 from astropy.coordinates import EarthLocation
 from astropy.time import Time
 from astropy import units as u
@@ -8,6 +9,7 @@ import numpy as np
 import skyfield.api
 
 from . import data
+from .constraints import OrbitNightConstraint
 
 __all__ = ('get_position', 'orbital_period', 'exposure_time',
            'exposures_per_orbit')
@@ -48,3 +50,20 @@ def get_position(time):
         time = timescale.from_astropy(time)
     position = satellite.at(time).position
     return EarthLocation.from_geocentric(*position.to(u.meter))
+
+
+def is_night(time):
+    """Determine if the spacecraft is in orbit night.
+
+    Parameters
+    ----------
+    time : astropy.time.Time, skyfield.timelib.Time
+        The time of the observation.
+
+    Returns
+    -------
+    bool, np.ndarray
+        True when the spacecraft is in orbit night, False otherwise.
+    """
+    return OrbitNightConstraint().compute_constraint(
+        time, Observer(get_position(time)))

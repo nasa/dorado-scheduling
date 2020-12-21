@@ -3,11 +3,13 @@ import astroplan
 from astropy import units as u
 
 from .earth_limb import EarthLimbConstraint
+from .orbit_night import OrbitNightConstraint
 from .saa import OutsideSouthAtlanticAnomalyConstraint
 from ..skygrid import healpix
 
 __all__ = ('visibility_constraints',
            'EarthLimbConstraint',
+           'OrbitNightConstraint',
            'OutsideSouthAtlanticAnomalyConstraint')
 
 # Example observability constraints from the
