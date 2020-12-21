@@ -23,7 +23,9 @@ shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
+hypothesis = "*"
 ipykernel = "*"
+pytest = "*"
 
 [tool.poetry.scripts]
 dorado-scheduling = "dorado.scheduling.scripts.main:main"
