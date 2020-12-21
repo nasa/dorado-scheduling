@@ -6,7 +6,7 @@ from .earth_limb import EarthLimbConstraint
 from .saa import OutsideSouthAtlanticAnomalyConstraint
 from ..skygrid import healpix
 
-__all__ = ('visbility_constraints',)
+__all__ = ('visibility_constraints',)
 
 # Example observability constraints from the
 # Swift Technical Handbook
