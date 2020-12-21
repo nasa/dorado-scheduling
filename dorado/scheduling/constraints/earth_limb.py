@@ -28,5 +28,4 @@ class EarthLimbConstraint(Constraint):
         alt = cached_altaz['altaz'].alt
         h_r = np.maximum(0, observer.location.height / R_earth)
         limb_alt = np.arccos(1 / (1 + h_r))
-        print(observer.location.height, h_r, limb_alt)
         return alt >= self.min - limb_alt
