@@ -30,6 +30,7 @@ jobs:
       run: |
         pip install flake8
         flake8 . --count --exit-zero --show-source --statistics
-    # - name: Test with pytest
-    #   run: |
-    #     pytest
+    - name: Test with pytest
+      run: |
+        pip install pytest hypothesis
+        pytest
