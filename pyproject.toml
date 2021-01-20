@@ -11,10 +11,11 @@ include = [
     "dorado/scheduling/data/*.md"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "~3.7"  # https://pypi.org/project/cplex/ has incorrect wheel ABI tags for Python 3.8
 skyfield = "*"
 astropy = "^4.1"
 astroplan = "^0.7"
+cplex = "*"
 docplex = "*"
 "ligo.skymap" = "^0.5.0"
 healpy = "*"
