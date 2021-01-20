@@ -19,6 +19,6 @@ def _observable(time, location):
     ).ravel()
 
 
-def get_field_of_regard(times):
+def get_field_of_regard(times, jobs=None):
     return np.asarray(list(progress_map(
-        _observable, times, orbit.get_position(times), jobs=None)))
+        _observable, times, orbit.get_position(times), jobs=jobs)))

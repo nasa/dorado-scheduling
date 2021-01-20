@@ -14,6 +14,8 @@ def parser():
     p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
                    type=FileType('w'), default='-',
                    help='output filename')
+    p.add_argument('-j', '--jobs', type=int, default=1, const=None, nargs='?',
+                   help='Number of threads')
     return p
 
 
@@ -53,6 +55,8 @@ def main(args=None):
 
     log.info('generating model')
     m = Model()
+    if args.jobs is not None:
+        m.context.cplex_parameters.threads = args.jobs
 
     log.info('adding variable: observing schedule')
     shape = (len(skygrid.centers), len(skygrid.rolls),
@@ -108,7 +112,7 @@ def main(args=None):
     log.info('adding constraint: field of regard')
     i, j = np.nonzero(
         convolve(
-            ~get_field_of_regard(times),
+            ~get_field_of_regard(times, jobs=args.jobs),
             np.ones(orbit.time_steps_per_exposure)[:, np.newaxis],
             mode='valid', method='direct'))
     m.add_constraint_(m.sum(schedule[j, :, i].ravel()) <= 0)
