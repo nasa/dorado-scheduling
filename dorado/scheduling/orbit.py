@@ -23,21 +23,22 @@ __all__ = ('get_position', 'orbital_period', 'exposure_time',
 
 
 # Load two-line element for satellite.
-# This is for Aqua, an Earth observing satellite in a low-Earth sun-synchronous
-# orbit that happens to be similar to what might be appropriate for Dorado.
+# This is for GOES 17, an Earth observing satellite in a geosynchronous
+# orbit that happens to be similar to what might be appropriate for Ultrasat.
 with resources.path(data, 'orbits.txt') as path:
-    satellite = skyfield.api.load.tle(str(path))['AQUA']
+    satellite = skyfield.api.load.tle(str(path))['GOES 17']
 
 timescale = skyfield.api.load.timescale()
 
+schedule_duration = 2 * u.hour
 orbital_period = 2 * np.pi / satellite.model.no * u.minute
-exposure_time = 10 * u.minute
+exposure_time = 900 * u.s
 time_steps_per_exposure = 10
 time_step_duration = exposure_time / time_steps_per_exposure
 exposures_per_orbit = int(
     (orbital_period / exposure_time).to_value(u.dimensionless_unscaled))
 time_steps = int(
-    (orbital_period / time_step_duration).to_value(u.dimensionless_unscaled))
+    (schedule_duration / time_step_duration).to_value(u.dimensionless_unscaled))
 
 
 def get_position(time):

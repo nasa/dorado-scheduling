@@ -27,7 +27,7 @@ centers = healpix.healpix_to_skycoord(np.arange(healpix.npix))
 rolls = np.linspace(0, 90, 9, endpoint=False) * u.deg
 """Roll angle grid."""
 
-field_of_view = 7.1 * u.deg
+field_of_view = 14.1 * u.deg
 """Width of the (square) field of view."""
 
 
