@@ -4,6 +4,11 @@ Dorado is a proposed space mission for ultraviolet follow-up of gravitational
 wave events. This repository contains a simple target of opportunity
 observation planner for Dorado.
 
+Given a gravitational-wave HEALPix probability sky map, this Python package
+finds an optimal sequence of Dorado observations to maximize the probability of
+observing the (unknown) location of the gravitational-wave event, within one
+orbit.
+
 ![Example Dorado observing plan](examples/6.gif)
 
 ## Features
