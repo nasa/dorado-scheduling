@@ -10,15 +10,19 @@ on:
     branches: [master]
 
 jobs:
-  
-  build:
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: TrueBrain/actions-flake8@v1.4.1
+
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.7, 3.8]
         os: [ubuntu-latest, macos-latest]
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -28,10 +32,6 @@ jobs:
     - name: Install Python package
       run: |
         pip install .
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        flake8 . --count --exit-zero --show-source --statistics
     - name: Test with pytest
       run: |
         pip install pytest hypothesis
