@@ -49,9 +49,9 @@ def test_low_earth_orbit(lon, lat, ra, dec, time, min):
     observable = constraint.compute_constraint(obstime, observer, target)
     alt = observer.altaz(obstime, target).alt
 
-    if alt > (min + 23.5) * u.deg:
+    if alt > (min - 22.5) * u.deg:
         assert observable
-    elif alt < (min - 22.5) * u.deg:
+    elif alt < (min - 23.5) * u.deg:
         assert not observable
 
 
