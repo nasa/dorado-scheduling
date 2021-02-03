@@ -12,7 +12,7 @@ import numpy as np
 __all__ = ('EarthLimbConstraint',)
 
 
-class  EarthLimbConstraint(Constraint):
+class EarthLimbConstraint(Constraint):
     """
     Constrain the angle from the Earth limb.
 
