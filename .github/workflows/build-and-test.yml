@@ -34,5 +34,8 @@ jobs:
         pip install .
     - name: Test with pytest
       run: |
-        pip install pytest hypothesis
-        pytest
+        pip install pytest pytest-cov hypothesis
+        pytest --cov=. --cov-report=xml
+        coverage report
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
