@@ -22,9 +22,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install Python package
-      # FIXME: astropy-helpers dependency requires wheel to already be installed
       run: |
-        pip install wheel
         pip install .
     - name: Lint with flake8
       run: |
