@@ -67,6 +67,7 @@ def test_distant_obsever(lon, lat, ra, dec, time, min):
     target = FixedTarget(SkyCoord(ra*u.deg, dec*u.deg))
     constraint = EarthLimbConstraint(min * u.deg)
     observable = constraint.compute_constraint(obstime, observer, target)
+    alt = observer.altaz(obstime, target).alt
 
     if alt > (min - 90) * u.deg:
         assert observable
