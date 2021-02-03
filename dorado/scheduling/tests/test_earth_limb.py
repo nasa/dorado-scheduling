@@ -62,10 +62,13 @@ def test_low_earth_orbit(lon, lat, ra, dec, time, min):
 def test_distant_obsever(lon, lat, ra, dec, time, min):
     """Test a very distant observer."""
     obstime = Time(time, format='mjd')
-    location = EarthLocation.from_geodetic(lon*u.deg, lat*u.deg, 1*u.pc)
+    location = EarthLocation.from_geodetic(lon*u.deg, lat*u.deg, 1*u.au)
     observer = Observer(location)
     target = FixedTarget(SkyCoord(ra*u.deg, dec*u.deg))
     constraint = EarthLimbConstraint(min * u.deg)
     observable = constraint.compute_constraint(obstime, observer, target)
 
-    assert observable
+    if alt > (min - 90) * u.deg:
+        assert observable
+    elif alt < (min - 90 - 1e-2) * u.deg:
+        assert not observable
