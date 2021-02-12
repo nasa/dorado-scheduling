@@ -21,6 +21,7 @@ observation planner for Dorado.
 
 ## Dependencies
 
+*   [Astropy]
 *   [Astroplan] for calculating the field of regard
 *   [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
 *   [Skyfield] for orbit propagation
@@ -171,6 +172,7 @@ sky position is contained in any of the fields in an observing plan:
 
 [Pip]: https://pip.pypa.io
 [mixed integer programming]: https://en.wikipedia.org/wiki/Integer_programming
+[Astropy]: https://www.astropy.org
 [Astroplan]: https://github.com/astropy/astroplan
 [HEALPix]: https://healpix.jpl.nasa.gov
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
