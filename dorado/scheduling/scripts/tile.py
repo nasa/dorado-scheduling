@@ -7,7 +7,7 @@
 #
 """Create a tesselation."""
 import logging
-import healpy as hp
+from astropy.coordinates import SkyCoord
 import numpy as np
 
 from ligo.skymap.tool import ArgumentParser, FileType
