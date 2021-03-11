@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Create a tesselation."""
-import logging
 from astropy.coordinates import SkyCoord
 import numpy as np
 
