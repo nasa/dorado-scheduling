@@ -137,7 +137,7 @@ To install with [Pip]:
 5.  To generate an animated visualization for this observing plan, run the
     following command:
 
-        $ dorado-scheduling-animate exaples/6.fits examples/6.ecsv examples/6.gif
+        $ dorado-scheduling-animate examples/6.fits examples/6.ecsv examples/6.gif
 
     This will take about 2-5 minutes to run.
 
