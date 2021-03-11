@@ -6,7 +6,9 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Create a tesselation."""
+import logging
 from astropy.coordinates import SkyCoord
+import astropy.units as u
 import numpy as np
 
 from ligo.skymap.tool import ArgumentParser, FileType
@@ -38,24 +40,21 @@ def tesselation_spiral(FOV_size, scale=0.80):
     z = np.linspace(1 - 1.0 / n, 1.0 / n - 1, n)
     radius = np.sqrt(1 - z * z)
 
-    points = np.zeros((n, 3))
-    points[:, 0] = radius * np.cos(theta)
-    points[:, 1] = radius * np.sin(theta)
-    points[:, 2] = z
-
-    ra, dec = hp.pixelfunc.vec2ang(points, lonlat=True)
-    return ra, dec
+    coords = SkyCoord(radius, theta * u.rad, z,
+                      representation_type='cylindrical')
+    coords.representation_type = 'unitspherical'
+    return coords
 
 
 def main(args=None):
     args = parser().parse_args(args)
 
     log.info('creating tesselation')
-    ras, decs = tesselation_spiral(args.fovsize, scale=args.scale)
+    coords = tesselation_spiral(args.fovsize, scale=args.scale)
 
     fid = open(args.output.name, 'w')
-    for ii in range(len(ras)):
-        fid.write('%d %.5f %.5f\n' % (ii, ras[ii], decs[ii]))
+    for ii, coord in enumerate(coords):
+        fid.write('%d %.5f %.5f\n' % (ii, coord.ra.deg, coord.dec.deg))
     fid.close()
 
 
