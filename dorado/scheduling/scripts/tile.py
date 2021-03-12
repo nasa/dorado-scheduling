@@ -29,7 +29,17 @@ def parser():
     return p
 
 
-def tesselation_spiral(FOV_size, scale=0.80):
+def tesselation_spiral_packing(FOV_size, scale=0.80):
+    """
+    Spiral-based spherical packing scheme for tiling
+    Used by GRANDMA follow-up during O3 (2004.04277)
+
+    :param FOV_size: FOV in degrees for packing
+    :param scale: scaling term for tile overlaps
+
+    :return: SkyCoord
+    """
+
     FOV = FOV_size*FOV_size*scale
 
     area_of_sphere = 4*np.pi*(180/np.pi)**2
@@ -46,7 +56,17 @@ def tesselation_spiral(FOV_size, scale=0.80):
     return coords
 
 
-def tesselation_packing(FOV_size, scale=0.97):
+def tesselation_phi_theta_packing(FOV_size, scale=0.97):
+    """
+    Phi/Theta spherical packing scheme for tiling
+    Used by GROWTH DECam follow-up during O3 (1906.00806)
+
+    :param FOV_size: FOV in degrees for packing
+    :param scale: scaling term for tile overlaps
+
+    :return: SkyCoord
+    """
+
     sphere_radius = 1.0
     circle_radius = np.deg2rad(FOV_size/2.0) * scale
     vertical_count = int((np.pi*sphere_radius)/(2*circle_radius))
@@ -80,7 +100,7 @@ def main(args=None):
     args = parser().parse_args(args)
 
     log.info('creating tesselation')
-    coords = tesselation_packing(args.fovsize, scale=args.scale)
+    coords = tesselation_phi_theta_packing(args.fovsize, scale=args.scale)
 
     fid = open(args.output.name, 'w')
     for ii, coord in enumerate(coords):
