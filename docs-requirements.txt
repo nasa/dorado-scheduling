@@ -1,0 +1,3 @@
+packaging
+pep517
+pydata-sphinx-theme
