@@ -36,14 +36,14 @@ def get_footprint_polygon(center, rotate=None):
 
     Parameters
     ----------
-    center : astropy.coordinates.SkyCoord
+    center : :class:`astropy.coordinates.SkyCoord`
         The center of the field of view.
-    rotate : astropy.units.Quantity
+    rotate : :class:`astropy.units.Quantity`
         The position angle (optional, default 0 degrees).
 
     Returns
     -------
-    astropy.coordinates.SkyCoord
+    :class:`astropy.coordinates.SkyCoord`
         A sky coordinate array giving the four verticies of the footprint.
 
     """
@@ -62,14 +62,14 @@ def get_footprint_healpix(center, rotate=None):
 
     Parameters
     ----------
-    center : astropy.coordinates.SkyCoord
+    center : :class:`astropy.coordinates.SkyCoord`
         The center of the field of view.
-    rotate : astropy.units.Quantity
+    rotate : class:`astropy.units.Quantity`
         The position angle (optional, default 0 degrees).
 
     Returns
     -------
-    np.ndarray
+    class:`np.ndarray`
         An array of HEALPix indices contained within the footprint.
 
     """

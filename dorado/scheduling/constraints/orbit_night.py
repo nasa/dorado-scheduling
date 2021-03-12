@@ -20,7 +20,7 @@ class OrbitNightConstraint(EarthLimbConstraint):
 
     Parameters
     ----------
-    min : `~astropy.units.Quantity`
+    min : :class:`astropy.units.Quantity`
         Minimum angle of the edge of the sun's disc from the Earth's limb.
 
     Notes

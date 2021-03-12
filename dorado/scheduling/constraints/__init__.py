@@ -19,9 +19,6 @@ __all__ = ('visibility_constraints',
            'OrbitNightConstraint',
            'OutsideSouthAtlanticAnomalyConstraint')
 
-# Example observability constraints from the
-# Swift Technical Handbook
-# <https://swift.gsfc.nasa.gov/proposals/tech_appd/swiftta_v14/node24.html>.
 visibility_constraints = [
     # SAA constraint
     OutsideSouthAtlanticAnomalyConstraint(healpix.nside),
@@ -34,3 +31,10 @@ visibility_constraints = [
     # 10° from Galactic plane
     astroplan.GalacticLatitudeConstraint(10 * u.deg)
 ]
+"""Example observability constraints from Swift.
+
+See also
+--------
+`Swift Technical Handbook
+<https://swift.gsfc.nasa.gov/proposals/tech_appd/swiftta_v14/node24.html>`_
+"""
