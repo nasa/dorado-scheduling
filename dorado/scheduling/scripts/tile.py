@@ -46,11 +46,41 @@ def tesselation_spiral(FOV_size, scale=0.80):
     return coords
 
 
+def tesselation_packing(FOV_size, scale=0.97):
+    sphere_radius = 1.0
+    circle_radius = np.deg2rad(FOV_size/2.0) * scale
+    vertical_count = int((np.pi*sphere_radius)/(2*circle_radius))
+
+    phis = []
+    thetas = []
+
+    phi = -0.5*np.pi
+    phi_step = np.pi/vertical_count
+    while phi < 0.5*np.pi:
+        horizontal_count = int((2*np.pi*np.cos(phi)*sphere_radius) /
+                               (2*circle_radius))
+        if horizontal_count == 0:
+            horizontal_count = 1
+        theta = 0
+        theta_step = 2*np.pi/horizontal_count
+        while theta < 2*np.pi-1e-8:
+            phis.append(phi)
+            thetas.append(theta)
+            theta += theta_step
+        phi += phi_step
+    dec = np.array(np.rad2deg(phis))
+    ra = np.array(np.rad2deg(thetas))
+
+    coords = SkyCoord(ra * u.deg, dec*u.deg)
+    coords.representation_type = 'unitspherical'
+    return coords
+
+
 def main(args=None):
     args = parser().parse_args(args)
 
     log.info('creating tesselation')
-    coords = tesselation_spiral(args.fovsize, scale=args.scale)
+    coords = tesselation_packing(args.fovsize, scale=args.scale)
 
     fid = open(args.output.name, 'w')
     for ii, coord in enumerate(coords):
