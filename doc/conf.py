@@ -77,7 +77,14 @@ intersphinx_mapping = {
 html_theme = 'pydata_sphinx_theme'
 
 html_theme_options = {
-    "github_url": "https://github.com/nasa/dorado-scheduling"
+    "github_url": f"https://github.com/nasa/{project}",
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": f"https://pypi.org/project/{project}",
+            "icon": "fas fa-box",
+        }
+    ]
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
