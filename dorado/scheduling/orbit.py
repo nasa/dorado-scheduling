@@ -19,7 +19,7 @@ from . import data
 from .constraints import OrbitNightConstraint
 
 __all__ = ('get_position', 'orbital_period', 'exposure_time',
-           'exposures_per_orbit')
+           'exposures_per_orbit', 'is_night')
 
 
 # Load two-line element for satellite.
@@ -45,12 +45,12 @@ def get_position(time):
 
     Parameters
     ----------
-    time : astropy.time.Time, skyfield.timelib.Time
+    time : :class:`astropy.time.Time`, :class:`skyfield.timelib.Time`
         The time of the observation.
 
     Returns
     -------
-    earth_location : astropy.coordinates.EarthLocation
+    earth_location : :class:`astropy.coordinates.EarthLocation`
         The geocentric position of the satellite.
     """
     if isinstance(time, Time):
@@ -64,12 +64,12 @@ def is_night(time):
 
     Parameters
     ----------
-    time : astropy.time.Time, skyfield.timelib.Time
+    time : :class:`astropy.time.Time`, :class:`skyfield.timelib.Time`
         The time of the observation.
 
     Returns
     -------
-    bool, np.ndarray
+    bool, :class:`np.ndarray`
         True when the spacecraft is in orbit night, False otherwise.
     """
     return OrbitNightConstraint().compute_constraint(
