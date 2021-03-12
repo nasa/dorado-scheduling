@@ -34,6 +34,7 @@ Administrator of the National Aeronautics and Space Administration'''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.intersphinx',
@@ -68,6 +69,14 @@ intersphinx_mapping = {
     'astroplan': ('https://astroplan.readthedocs.io/en/latest/', None),
     'astropy': ('https://docs.astropy.org/en/stable/', None),
 }
+
+
+# -- Options for plot_directive ----------------------------------------------
+
+plot_include_source = True
+plot_formats = [('svg', 300), ('pdf', 300)]
+plot_html_show_formats = False
+
 
 # -- Options for HTML output -------------------------------------------------
 
