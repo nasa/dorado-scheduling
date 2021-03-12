@@ -1,3 +1,4 @@
 packaging
 pep517
 pydata-sphinx-theme
+sphinx >= 3
