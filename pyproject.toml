@@ -36,9 +36,12 @@ numpy = "<1.20.0"  # https://git.ligo.org/lscsoft/lalsuite/-/issues/414
 flake8 = "*"
 hypothesis = "*"
 ipykernel = "*"
-sphinx = "*"
-pydata-sphinx-theme = "*"
 pytest = "*"
+
+# For docs
+packaging = "*"
+pep517 = "*"
+pydata-sphinx-theme = "*"
 
 [tool.poetry.scripts]
 dorado-scheduling = "dorado.scheduling.scripts.main:main"

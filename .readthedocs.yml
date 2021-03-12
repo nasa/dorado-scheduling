@@ -4,6 +4,5 @@ python:
   install:
     - method: pip
       path: .
-  install:
     - method: pip
-      path: pydata-sphinx-theme
+      requirements: docs-requirements.txt
