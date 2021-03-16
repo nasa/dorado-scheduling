@@ -170,6 +170,12 @@ sky position is contained in any of the fields in an observing plan:
 2012-05-02T19:56:32.699          133.59375,7.180755781458282    20.0 False
 ```
 
+### To generate a tiling on the sphere
+
+Generate a tiling for a 3.3 x 3.3 degree FOV imager with small overlap between tiles (0.8)
+
+        $ dorado-scheduling-tile 3.3 0.8 examples/tiles.dat
+
 [Pip]: https://pip.pypa.io
 [mixed integer programming]: https://en.wikipedia.org/wiki/Integer_programming
 [Astropy]: https://www.astropy.org
