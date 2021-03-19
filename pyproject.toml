@@ -21,17 +21,17 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-skyfield = "*"
-astropy = "^4.1"
+antiprism-python = "*"
 astroplan = ">=0.7"
+astropy = "^4.1"
 cplex = "*"
 docplex = "*"
 "ligo.skymap" = "^0.5.0"
 healpy = "*"
+numpy = "<1.20.0"  # https://git.ligo.org/lscsoft/lalsuite/-/issues/414
 seaborn = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
-numpy = "<1.20.0"  # https://git.ligo.org/lscsoft/lalsuite/-/issues/414
-antiprism-python = "*"
+skyfield = "*"
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
