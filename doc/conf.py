@@ -37,6 +37,7 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosectionlabel',
+    'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon'
 ]
@@ -60,6 +61,14 @@ autodoc_default_options = {
 }
 autodoc_member_order = 'bysource'
 autosummary_generate = True
+
+
+# -- Options for extlinks extension ------------------------------------------
+
+extlinks = {
+    'arxiv': ('https://arxiv.org/abs/%s', 'arXiv:'),
+    'doi': ('https://doi.org/%s', 'doi:')
+}
 
 
 # -- Options for intersphinx -------------------------------------------------

@@ -9,6 +9,7 @@ from math import gcd
 
 from anti_lib_progs.geodesic import get_poly, grid_to_points, make_grid
 from astropy.coordinates import SkyCoord
+from astropy import units as u
 import numpy as np
 
 
@@ -45,19 +46,20 @@ def solve_number_of_vertices(n, base, class_):
     return base_count * t + 2, t, b, c
 
 
-def geodesic(n, base='icosahedron', class_='I'):
+def geodesic(area, base='icosahedron', class_='I'):
     """Generate a geodesic polyhedron with the fewest vertices >= `n`.
 
     Parameters
     ----------
-    n : int
-        The target number of vertices.
+    area : :class:`astropy.units.Quantity`
+        The average area per tile in any Astropy solid angle units:
+        for example, :samp:`10 * astropy.units.deg**2` or
+        :samp:`0.1 * astropy.units.steradian`.
     base : {``'icosahedron'``,  ``'octahedron'``, ``'tetrahedron'``}
         The base polyhedron of the tesselation.
     class_ : {``'I'``, ``'II'``, ``'III'``}
-        The class of the geodesic polyhedron, which constrains how the faces of
-        the base polyhedron may be broken down. Class III permits the most
-        freedom.
+        The class of the geodesic polyhedron, which constrains the allowed
+        values of the number of points. Class III permits the most freedom.
 
     Returns
     -------
@@ -74,6 +76,7 @@ def geodesic(n, base='icosahedron', class_='I'):
     .. plot::
         :context: reset
 
+        from astropy import units as u
         from matplotlib import pyplot as plt
         import ligo.skymap.plot
         import numpy as np
@@ -81,7 +84,7 @@ def geodesic(n, base='icosahedron', class_='I'):
         from dorado.scheduling import tesselation
 
         n_vertices_target = 1024
-        vertices = tesselation.geodesic(n_vertices_target)
+        vertices = tesselation.geodesic(4 * np.pi * u.sr / n_vertices_target)
         n_vertices = len(vertices)
 
         ax = plt.axes(projection='astro globe', center='0d 25d')
@@ -93,7 +96,8 @@ def geodesic(n, base='icosahedron', class_='I'):
     .. plot::
         :context: close-figs
 
-        vertices = tesselation.geodesic(n_vertices_target, class_='II')
+        vertices = tesselation.geodesic(4 * np.pi * u.sr / n_vertices_target,
+                                        class_='II')
         n_vertices = len(vertices)
 
         ax = plt.axes(projection='astro globe', center='0d 25d')
@@ -105,7 +109,8 @@ def geodesic(n, base='icosahedron', class_='I'):
     .. plot::
         :context: close-figs
 
-        vertices = tesselation.geodesic(n_vertices_target, class_='III')
+        vertices = tesselation.geodesic(4 * np.pi * u.sr / n_vertices_target,
+                                        class_='III')
         n_vertices = len(vertices)
 
         ax = plt.axes(projection='astro globe', center='0d 25d')
@@ -115,6 +120,8 @@ def geodesic(n, base='icosahedron', class_='I'):
         ax.grid()
 
     """
+    n = int(np.ceil(1 / area.to_value(u.spat)))
+
     # Adapted from
     # https://github.com/antiprism/antiprism_python/blob/master/anti_lib_progs/geodesic.py
     verts = []

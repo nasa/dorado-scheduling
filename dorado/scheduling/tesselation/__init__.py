@@ -7,5 +7,7 @@
 #
 """Methods for tesselating the sky into survey tiles."""
 from ._geodesic import geodesic
+from ._spiral import golden_angle_spiral
+from ._sinusoidal import sinusoidal
 
-__all__ = ('geodesic',)
+__all__ = ('geodesic', 'golden_angle_spiral', 'sinusoidal')
