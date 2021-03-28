@@ -32,7 +32,6 @@ numpy = "<1.20.0"  # https://git.ligo.org/lscsoft/lalsuite/-/issues/414
 seaborn = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
 skyfield = "*"
-radbelt = {git = "https://github.com/dorado-science/radbelt.git"}
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
