@@ -2,3 +2,4 @@
 .vscode
 __pycache__
 _build
+*.egg-info
