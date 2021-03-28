@@ -11,17 +11,20 @@ from astropy import units as u
 
 from .earth_limb import EarthLimbConstraint
 from .orbit_night import OrbitNightConstraint
-from .saa import OutsideSouthAtlanticAnomalyConstraint
+from .radiation import TrappedParticleFluxConstraint
 from ..skygrid import healpix
 
 __all__ = ('visibility_constraints',
            'EarthLimbConstraint',
            'OrbitNightConstraint',
-           'OutsideSouthAtlanticAnomalyConstraint')
+           'OutsideSouthAtlanticAnomalyConstraint',
+           'TrappedParticleFluxConstraint')
 
 visibility_constraints = [
-    # SAA constraint
-    OutsideSouthAtlanticAnomalyConstraint(healpix.nside),
+    # SAA constraint, modeled after Fermi:
+    # flux of particles with energies ≥ 20 MeV is ≤ 1 cm^-2 s^-1
+    TrappedParticleFluxConstraint(flux=1*u.cm**-2*u.s**-1, energy=20*u.MeV,
+                                  particle='p', solar='max'),
     # 28° from the Earth's limb
     EarthLimbConstraint(28 * u.deg),
     # 46° from the Sun

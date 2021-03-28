@@ -30,6 +30,7 @@ healpy = "*"
 seaborn = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
 skyfield = "*"
+radbelt = {git = "https://github.com/dorado-science/radbelt.git"}
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"

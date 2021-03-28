@@ -935,6 +935,25 @@ cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 py = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
+name = "radbelt"
+version = "0.0.0"
+description = "Astropy-friendly wrapper for the AE-8/AP-8 Van Allen belt model"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+develop = false
+
+[package.dependencies]
+astropy = "*"
+numpy = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/dorado-science/radbelt.git"
+reference = "master"
+resolved_reference = "3a6ffb5074809e57a3803f79385e1c275842c988"
+
+[[package]]
 name = "reproject"
 version = "0.7.1"
 description = "Reproject astronomical images"
@@ -1252,7 +1271,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "589e0cba99639ae513b8ca9f61fbb4b4d313955b5b143d28db13c3636aebf25f"
+content-hash = "8906ad2e872f23d4929d91af4818d38222a941d4ea077ccfb84d171d29f6e652"
 
 [metadata.files]
 alabaster = [
@@ -1900,6 +1919,7 @@ pyzmq = [
     {file = "pyzmq-22.0.3-pp37-pypy37_pp73-win32.whl", hash = "sha256:279cc9b51db48bec2db146f38e336049ac5a59e5f12fb3a8ad864e238c1c62e3"},
     {file = "pyzmq-22.0.3.tar.gz", hash = "sha256:f7f63ce127980d40f3e6a5fdb87abf17ce1a7c2bd8bf2c7560e1bbce8ab1f92d"},
 ]
+radbelt = []
 reproject = [
     {file = "reproject-0.7.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:def9d0b104df78e6dac24cb33250bb13c896fc8722b4b1186594094b195b4740"},
     {file = "reproject-0.7.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:8b48399c805f5886ad25bb712e57a99c69ead76b69d744c9e1937760df11f317"},
