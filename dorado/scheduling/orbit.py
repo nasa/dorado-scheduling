@@ -9,28 +9,25 @@
 from importlib import resources
 
 from astroplan import Observer
-from astropy.coordinates import EarthLocation
-from astropy.time import Time
+from astropy.coordinates import ITRS, SkyCoord, TEME
 from astropy import units as u
 import numpy as np
-import skyfield.api
+from sgp4.api import Satrec, SGP4_ERRORS
 
 from . import data
 from .constraints import OrbitNightConstraint
 
-__all__ = ('get_position', 'orbital_period', 'exposure_time',
+__all__ = ('get_posvel', 'orbital_period', 'exposure_time',
            'exposures_per_orbit', 'is_night')
-
 
 # Load two-line element for satellite.
 # This is for Aqua, an Earth observing satellite in a low-Earth sun-synchronous
 # orbit that happens to be similar to what might be appropriate for Dorado.
-with resources.path(data, 'orbits.txt') as path:
-    satellite = skyfield.api.load.tle(str(path))['AQUA']
+with resources.open_text(data, 'orbits.txt') as f:
+    _, line1, line2 = f.readlines()
+    satellite = Satrec.twoline2rv(line1, line2)
 
-timescale = skyfield.api.load.timescale()
-
-orbital_period = 2 * np.pi / satellite.model.no * u.minute
+orbital_period = 2 * np.pi / satellite.no * u.minute
 exposure_time = 10 * u.minute
 time_steps_per_exposure = 10
 time_step_duration = exposure_time / time_steps_per_exposure
@@ -40,23 +37,46 @@ time_steps = int(
     (orbital_period / time_step_duration).to_value(u.dimensionless_unscaled))
 
 
-def get_position(time):
-    """Get the position of the satellite.
+def get_posvel(time):
+    """Get the position and velocity of the satellite.
 
     Parameters
     ----------
-    time : :class:`astropy.time.Time`, :class:`skyfield.timelib.Time`
+    time : :class:`astropy.time.Time`
         The time of the observation.
 
     Returns
     -------
-    earth_location : :class:`astropy.coordinates.EarthLocation`
-        The geocentric position of the satellite.
+    coord : :class:`astropy.coordinates.SkyCoord`
+        The coordinates of the satellite in the ITRS frame.
+
+    Notes
+    -----
+    This is based on
+    https://docs.astropy.org/en/stable/coordinates/satellites.html.
     """
-    if isinstance(time, Time):
-        time = timescale.from_astropy(time)
-    position = satellite.at(time).position
-    return EarthLocation.from_geocentric(*position.to(u.meter))
+    shape = time.shape
+    time = time.ravel()
+
+    time = time.utc
+    e, xyz, vxyz = satellite.sgp4_array(time.jd1, time.jd2)
+    x, y, z = xyz.T
+    vx, vy, vz = vxyz.T
+
+    # If any errors occurred, only raise for the first error
+    e = e[e != 0]
+    if e.size > 0:
+        raise RuntimeError(SGP4_ERRORS[e[0]])
+
+    coord = SkyCoord(x=x*u.km, v_x=vx*u.km/u.s,
+                     y=y*u.km, v_y=vy*u.km/u.s,
+                     z=z*u.km, v_z=vz*u.km/u.s,
+                     frame=TEME(obstime=time)).itrs
+    if shape:
+        coord = coord.reshape(shape)
+    else:
+        coord = coord[0]
+    return coord
 
 
 def is_night(time):
@@ -64,7 +84,7 @@ def is_night(time):
 
     Parameters
     ----------
-    time : :class:`astropy.time.Time`, :class:`skyfield.timelib.Time`
+    time : :class:`astropy.time.Time`
         The time of the observation.
 
     Returns
@@ -73,4 +93,4 @@ def is_night(time):
         True when the spacecraft is in orbit night, False otherwise.
     """
     return OrbitNightConstraint().compute_constraint(
-        time, Observer(get_position(time)))
+        time, Observer(get_posvel(time).earth_location))
