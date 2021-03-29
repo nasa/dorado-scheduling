@@ -26,7 +26,7 @@ astroplan = ">=0.7"
 astropy = "^4.1"
 cplex = "*"
 docplex = "*"
-"ligo.skymap" = "^0.5.0"
+"ligo.skymap" = {git = "https://git.ligo.org/lscsoft/ligo.skymap"}
 healpy = "*"
 seaborn = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian

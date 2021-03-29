@@ -44,19 +44,18 @@ test = ["pytest-astropy"]
 
 [[package]]
 name = "astropy"
-version = "4.2"
+version = "4.1"
 description = "Astronomy and astrophysics core library"
 category = "main"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.6"
 
 [package.dependencies]
-numpy = ">=1.17"
-pyerfa = "*"
+numpy = ">=1.16"
 
 [package.extras]
-all = ["scipy (>=1.1)", "dask", "h5py", "beautifulsoup4", "html5lib", "bleach", "PyYAML (>=3.13)", "pandas", "sortedcontainers", "pytz", "jplephem", "matplotlib (>=3.0)", "mpmath", "asdf (>=2.6)", "bottleneck", "ipython", "pytest"]
-docs = ["sphinx", "sphinx-astropy (>=1.3)", "pytest", "PyYAML (>=3.13)", "scipy (>=1.1)", "matplotlib (>=3.1)"]
+all = ["scipy (>=0.18)", "dask", "h5py", "beautifulsoup4", "html5lib", "bleach", "PyYAML (>=3.12)", "pandas", "sortedcontainers", "pytz", "jplephem", "matplotlib (>=2.1)", "mpmath", "asdf (>=2.6)", "bottleneck", "ipython", "pytest"]
+docs = ["sphinx-astropy (>=1.3)", "pytest", "PyYAML (>=3.12)", "scipy", "matplotlib"]
 test = ["pytest-astropy (>=0.8)", "pytest-xdist", "objgraph", "ipython", "coverage", "skyfield (>=1.20)", "sgp4 (>=2.3)"]
 
 [[package]]
@@ -542,35 +541,42 @@ six = "*"
 
 [[package]]
 name = "ligo.skymap"
-version = "0.5.0"
+version = "0.5.2.dev15+gc5c1074"
 description = "Tools for reading, writing, manipulating, and making LIGO and Virgo sky maps"
 category = "main"
 optional = false
 python-versions = "*"
+develop = false
 
 [package.dependencies]
-astroplan = ">=0.5"
-astropy = ">=3.1,<4.0.1 || >4.0.1"
+astroplan = ">=0.7"
+astropy = ">=4.0.2,<4.2 || >4.2"
 astropy-healpix = ">=0.3"
 h5py = "*"
 healpy = "*"
-lalsuite = ">=6.53"
+lalsuite = ">=6.82"
 ligo-gracedb = ">=2.0.1"
 ligo-segments = ">=1.2.0"
-matplotlib = ">=3.0.2"
+matplotlib = ">=3.4.0"
 networkx = "*"
-numpy = ">=1.14,<1.15.3 || >1.15.3"
+numpy = ">=1.19.3"
 pillow = ">=2.5.0"
 ptemcee = "*"
-python-ligo-lw = "*"
+python-ligo-lw = ">=1.7.0"
 pytz = "*"
 reproject = ">=0.3.2"
 scipy = ">=0.14"
 tqdm = ">=4.27.0"
 
 [package.extras]
-docs = ["sphinx-argparse", "sphinx-astropy", "sphinxcontrib-mermaid"]
+docs = ["sphinx-argparse", "sphinx-astropy", "sphinxcontrib-mermaid (!=0.6.1)"]
 test = ["astroquery", "pytest-astropy", "pytest-doctest-ufunc", "pytest-mpl"]
+
+[package.source]
+type = "git"
+url = "https://git.ligo.org/lscsoft/ligo.skymap"
+reference = "master"
+resolved_reference = "c5c1074fa3b4bdd874170c1b7f21e70368c831b5"
 
 [[package]]
 name = "lscsoft-glue"
@@ -808,21 +814,6 @@ python-versions = ">=3.5"
 [package.dependencies]
 beautifulsoup4 = "*"
 sphinx = "*"
-
-[[package]]
-name = "pyerfa"
-version = "1.7.2"
-description = "Python bindings for ERFA"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-numpy = ">=1.16"
-
-[package.extras]
-docs = ["sphinx-astropy (>=1.3)"]
-test = ["pytest", "pytest-doctestplus (>=0.7)"]
 
 [[package]]
 name = "pyflakes"
@@ -1268,7 +1259,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "0996a270f5c0fcf523936ce1fab32f5f53e7b0456c8b15e70ea870cf58a68776"
+content-hash = "6f98ab82e27947b8c275a9ac5f23816dff3011ba2968e9fb88287f32163b0da8"
 
 [metadata.files]
 alabaster = [
@@ -1286,22 +1277,22 @@ astroplan = [
     {file = "astroplan-0.8.tar.gz", hash = "sha256:0cc463474e034f5f58f7399ef830ff60e91d2fac32e89cf2224e1de50946bdc7"},
 ]
 astropy = [
-    {file = "astropy-4.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:882434f6fe29a2aba9fe61bddac13943c95a9d6e8fdb19f3e35a9f9ae039bd10"},
-    {file = "astropy-4.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:2fea9cf1fb1ef4e68e5c93c679a26dcc6313be55783fa1ee162eb72c8c9eb0b4"},
-    {file = "astropy-4.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:4f33707d1bafd11884fc4aacc38f76f4c5c6f8d6f15dd968aad50bc197bc6edb"},
-    {file = "astropy-4.2-cp37-cp37m-win32.whl", hash = "sha256:e749b2ecfedceac0e316a5332eaf73c833d2f5e1c3b9524a4780105dc802f27b"},
-    {file = "astropy-4.2-cp37-cp37m-win_amd64.whl", hash = "sha256:c9d65d0071215995e1e637bc74e84afcf37fc5492e54451015981f2cb6ca9e60"},
-    {file = "astropy-4.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:a6890ec88220e2cbeaa1f70f012b19b4ffe908b19e3c264847ca87b710d5918f"},
-    {file = "astropy-4.2-cp38-cp38-manylinux1_i686.whl", hash = "sha256:ddaa04ba229b69c7a16efdd16dac77fcf8eb8923272cdc290b033992fe679323"},
-    {file = "astropy-4.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:6767b8dd29be6c7ec5d934b955875b71400464b2a33eb58b59d575302e4a1892"},
-    {file = "astropy-4.2-cp38-cp38-win32.whl", hash = "sha256:3638fd0c489fe4321d72056086acbdd48f767b19af8f6c39b865966c638e0efa"},
-    {file = "astropy-4.2-cp38-cp38-win_amd64.whl", hash = "sha256:e80117502290e97819e2328243221d89f3749c14526f3ad7c75613a07b56ae8e"},
-    {file = "astropy-4.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:daaf9f0264b686c870032987483f2ddbdd5ce31762ab53f53f84bf9c68e2720a"},
-    {file = "astropy-4.2-cp39-cp39-manylinux1_i686.whl", hash = "sha256:1b3d6e801ab719d448e179dffe23a2f3c5646b81090db9f4d95a6b3acd643888"},
-    {file = "astropy-4.2-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:ae3d690b6c20ce47d0644129046c08b7715cbafd2e7a49aba8d7c169dcfadbc1"},
-    {file = "astropy-4.2-cp39-cp39-win32.whl", hash = "sha256:21c293609741bb7e3fe43e0c9f906f41962b04bb8c799a221fc1aa2100353fad"},
-    {file = "astropy-4.2-cp39-cp39-win_amd64.whl", hash = "sha256:949b6111badc371129d811b74d7fe6df711719e41385b37189af0a4d325b811d"},
-    {file = "astropy-4.2.tar.gz", hash = "sha256:2c194f8a429b8399de64a413a06881ea49f0525cabaa2d78fc132b9e970adc6a"},
+    {file = "astropy-4.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:0804f601dddfd6b5b72e11eb6e58133ff7db25bb8c26851449352ba1f414b74c"},
+    {file = "astropy-4.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:85f199c41d28da78c0a09076904fe3c3034c0f4917d251a23ad364ed0e9ff2d5"},
+    {file = "astropy-4.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:6d6792e4e49f4662be075477f75aff7d3cc5bf5c58702d6b55f0048f14610c00"},
+    {file = "astropy-4.1-cp36-cp36m-win32.whl", hash = "sha256:f0fe5387992e0c96d9186752b2ac6a5801a51af0316d75427823588af9be75da"},
+    {file = "astropy-4.1-cp36-cp36m-win_amd64.whl", hash = "sha256:27544cb41ba54a60acaf195c53b4912edbbfa4b0ab005c06d5d929553e0d8329"},
+    {file = "astropy-4.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:4a70a44a9f773acbb75ba24bf36e4f3a8b702f37384d03f9ff9097edd8ad0890"},
+    {file = "astropy-4.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:83cfa44aa6cac0c434b238be6a758d49a33ab608aad7bb2f7410ce497c28312d"},
+    {file = "astropy-4.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:2fb991128b522eb1f133e6ca1c14425368bda8888eb387dba1abc18ee76582ee"},
+    {file = "astropy-4.1-cp37-cp37m-win32.whl", hash = "sha256:aca1dbca1c9f6d6ba17682e44dc53ffd62dd0d13448d38713140d634ec45b295"},
+    {file = "astropy-4.1-cp37-cp37m-win_amd64.whl", hash = "sha256:70c4b97d2ac5d19fad753d0a7dccc7b14e12786546e78ae27cae3a7a73ecd11d"},
+    {file = "astropy-4.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:5083e1e8fbd065da521b761ee14382bb561d8bbe3957653b2f941690128f8940"},
+    {file = "astropy-4.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:51c3a29c4252b1697fd950e2b333d84cb6baf8d9a5258bbef6d0089b65c303b3"},
+    {file = "astropy-4.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:cd4390da737a5123397a1bb00cf597842bf21fd199862ba161d9c18cd2d12c14"},
+    {file = "astropy-4.1-cp38-cp38-win32.whl", hash = "sha256:d51f3b9091004a3ed263bc2a51a677762a6c8c7437da5115d3149dc1de6f71bf"},
+    {file = "astropy-4.1-cp38-cp38-win_amd64.whl", hash = "sha256:10e45a5456929b75b3a29d8174d39466b1823280bcf99f3b4c6c51e521a6f04d"},
+    {file = "astropy-4.1.tar.gz", hash = "sha256:a3bad6e1c2619135ad33e4d80452866eb9468f610bf00754da4001c63c1f7049"},
 ]
 astropy-healpix = [
     {file = "astropy_healpix-0.6-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:36d78de51a1a6e16351758e185bf69a1080bd9dbb846cae92e7a20fd022cff32"},
@@ -1587,11 +1578,7 @@ ligo-gracedb = [
 ligo-segments = [
     {file = "ligo-segments-1.3.0.tar.gz", hash = "sha256:13e0e278f9a14b247793884b368d6fae3b806cd794284e7afba158a2ccc016b3"},
 ]
-"ligo.skymap" = [
-    {file = "ligo.skymap-0.5.0-cp36-abi3-macosx_10_12_x86_64.whl", hash = "sha256:49328b1da7e5496d1902989bef463a9a8fb55ad2ac36eb7fc661fe32c45e25dc"},
-    {file = "ligo.skymap-0.5.0-cp36-abi3-manylinux2014_x86_64.whl", hash = "sha256:7bbdcd8fe20879095d1833b2b4aae7cee63cc7e0048ebed37adb0b0fdf353cb6"},
-    {file = "ligo.skymap-0.5.0.tar.gz", hash = "sha256:67e0a47406ba822d9f51e616fd1146d72b7b997f3421501192cc0e1e7d7713d4"},
-]
+"ligo.skymap" = []
 lscsoft-glue = [
     {file = "lscsoft-glue-2.0.0.tar.gz", hash = "sha256:9bdfaebe4c921d83d1e3d1ca24379a644665e9d7530e7070665f387767c66923"},
 ]
@@ -1815,37 +1802,6 @@ pycparser = [
 pydata-sphinx-theme = [
     {file = "pydata-sphinx-theme-0.5.2.tar.gz", hash = "sha256:3433ab90eb4c689deeedc6c4828c548e68d7555740e8edfa5807c01f49f63a1d"},
     {file = "pydata_sphinx_theme-0.5.2-py3-none-any.whl", hash = "sha256:bbdae0f3fd17924cc1a90192de121dae6c5e1b40c959d65be09811139bd11bd0"},
-]
-pyerfa = [
-    {file = "pyerfa-1.7.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:8609be0e659c99fde396b723bbbae9d5074deb0afeba5736c42591877ec01115"},
-    {file = "pyerfa-1.7.2-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:f0f440d352e7a16c8ca96c9eb28cc70f8f280b93a7834ff4bca92dfc41ae3427"},
-    {file = "pyerfa-1.7.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:152cea1d8feccc098ba762e47a097da0190a46452845f29de5d4494ee5461a0a"},
-    {file = "pyerfa-1.7.2-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:9cb49956dc3859f42229869dc011b38550d34a9922666f540ef474c3f90930eb"},
-    {file = "pyerfa-1.7.2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:2ffb92d6dd0b951de93e74967675c0acc8eb9f8df75b66492bbe57b83bfed10e"},
-    {file = "pyerfa-1.7.2-cp36-cp36m-win32.whl", hash = "sha256:d32835fc2ddf67de6c2d0f07274cdbff9fb74ee6992b8046d91a6cbba5a999c2"},
-    {file = "pyerfa-1.7.2-cp36-cp36m-win_amd64.whl", hash = "sha256:317fb9ce3e486b51470854e6656cfdf0cd380173b4ac9965f0e16a52b7452d3e"},
-    {file = "pyerfa-1.7.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:b44306c4f8126e05fff84e993e41f717b7490796e27a8ed2af66fd08d3d448e4"},
-    {file = "pyerfa-1.7.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:e2357dc8582493ad0537ed39be5a493457992c043ec788829dc41d4b3d2f3349"},
-    {file = "pyerfa-1.7.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:9a1a1ec5977f246613adcb6b302a768fd05c03f330502dde2c422fb5e36685c3"},
-    {file = "pyerfa-1.7.2-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:6bb62da1b1ab7a80059340d72dd22cacbff437150feb824d91462e259bae8b58"},
-    {file = "pyerfa-1.7.2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:a4282afa9991deba2b26d97aca3c06450c74cf30e5a6b0a38118fc6f8b3f3e58"},
-    {file = "pyerfa-1.7.2-cp37-cp37m-win32.whl", hash = "sha256:e7dd0dfb1483302315c37b9bd0e0f05a1c5a7c96982fb111547272b030a8b0a9"},
-    {file = "pyerfa-1.7.2-cp37-cp37m-win_amd64.whl", hash = "sha256:6906b95a752c33da9d717c60bdcfc0004548e6b3f4d2d751aa8ee262aa6b7c78"},
-    {file = "pyerfa-1.7.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:35a7a63d995395d52eebcdb472e3ac1987164c95dd4acc3c3815a0e9cab2353d"},
-    {file = "pyerfa-1.7.2-cp38-cp38-manylinux1_i686.whl", hash = "sha256:f6a4fc532b9023ebeb0ecf05ba92cc340fe0dd578ca8a57644c359ae49a7a32e"},
-    {file = "pyerfa-1.7.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:ce28d076aad6cc173a5f7cdaaa023c0f893d6e3bdae4d47ce26d787df4603a17"},
-    {file = "pyerfa-1.7.2-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:1067401b4c1e3bd389f5c988a4e53a7aa8d21062d4cae480417f8b63cd17b8d5"},
-    {file = "pyerfa-1.7.2-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:d120b34e9fc055108f636cce8e9dd0b23294b7266c61587bbaee15a2d3e3b956"},
-    {file = "pyerfa-1.7.2-cp38-cp38-win32.whl", hash = "sha256:252163a61c33a9d2f1290a9b41f47a80cfe19414af866371f952e67aa8489cf5"},
-    {file = "pyerfa-1.7.2-cp38-cp38-win_amd64.whl", hash = "sha256:94c405c00de83bea864e3d01d39b4b4b8bb4ccc85e8306f4ded0fdc960f2d9f3"},
-    {file = "pyerfa-1.7.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:e75a7a5799e4ad187b77f2afd5ca39116ba00f0df109012f5ac7ad4279165495"},
-    {file = "pyerfa-1.7.2-cp39-cp39-manylinux1_i686.whl", hash = "sha256:75a39f680efcdb7ea2fc21731723d91c0c134403cf57954f1200a9a4272a6524"},
-    {file = "pyerfa-1.7.2-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:32326d2cb8333585c6d9aa804d1f673d98c449f864a377dbc1d246b207bf860c"},
-    {file = "pyerfa-1.7.2-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:ba8765e4dc7bf36fd4851d7217ad1417f57ec88670a5857b3e32ae1aa8d0eb0f"},
-    {file = "pyerfa-1.7.2-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:9e5441baa3100bd04691a935d11c5090dc811313002a7a117cc239d9e6c1f6f2"},
-    {file = "pyerfa-1.7.2-cp39-cp39-win32.whl", hash = "sha256:bd2186f2e162e1ed2bbbb4358a87e9421dd587000a6c664dc8fbec8f25464e19"},
-    {file = "pyerfa-1.7.2-cp39-cp39-win_amd64.whl", hash = "sha256:a0742218178e01669ca56e67b6877115a0773fa1960edefbe24813fe197a8e08"},
-    {file = "pyerfa-1.7.2.tar.gz", hash = "sha256:31776213ec36e6bb5382b526be02e417b8697d791c6837199342c19e7dabe8e8"},
 ]
 pyflakes = [
     {file = "pyflakes-2.3.1-py2.py3-none-any.whl", hash = "sha256:7893783d01b8a89811dd72d7dfd4d84ff098e5eed95cfa8905b22bbffe52efc3"},
