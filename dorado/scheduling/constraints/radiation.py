@@ -6,7 +6,6 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 from astroplan.constraints import Constraint
-from astropy import units as u
 from radbelt import get_flux
 
 __all__ = ('TrappedParticleFluxConstraint')

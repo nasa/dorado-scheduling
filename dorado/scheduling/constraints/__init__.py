@@ -12,7 +12,6 @@ from astropy import units as u
 from .earth_limb import EarthLimbConstraint
 from .orbit_night import OrbitNightConstraint
 from .radiation import TrappedParticleFluxConstraint
-from ..skygrid import healpix
 
 __all__ = ('visibility_constraints',
            'EarthLimbConstraint',
