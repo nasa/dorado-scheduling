@@ -80,6 +80,12 @@ To install with [Pip]:
 
         $ export PYTHONPATH=/Applications/CPLEX_Studio1210/cplex/python/3.7/x86-64_osx
 
+For those using CPLEX_Studio1210 through IBM's Academic Initiative program,
+instead of an API key, instead the download contains everything that is
+needed. For HPC resources, simply download the Linux bin and the standard
+installer (e.g. bin ILOG_COS_20.10_LINUX_X86_64.bin) allows you to install
+to your local home directory (and then the instructions above are the same).
+
 ### To generate an observing plan
 
 3.  Generate an observing plan for the included example sky map:
