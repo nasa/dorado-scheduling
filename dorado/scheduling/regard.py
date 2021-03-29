@@ -28,4 +28,5 @@ def _observable(time, location):
 
 def get_field_of_regard(times, jobs=None):
     return np.asarray(list(progress_map(
-        _observable, times, orbit.get_position(times), jobs=jobs)))
+        _observable, times, orbit.get_posvel(times).earth_location,
+        jobs=jobs)))

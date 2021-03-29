@@ -24,7 +24,7 @@ observation planner for Dorado.
 *   [Astropy]
 *   [Astroplan] for calculating the field of regard
 *   [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
-*   [Skyfield] for orbit propagation
+*   [sgp4] for orbit propagation
 *   [CPLEX] (via [docplex] Python interface) for constrained optimization
 
 ## Problem formulation
@@ -201,7 +201,7 @@ Generate a tiling for a 3.3 x 3.3 degree FOV imager with small overlap between t
 [HEALPix]: https://healpix.jpl.nasa.gov
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
 [Healpy]: https://github.com/healpy/healpy
-[Skyfield]: https://rhodesmill.org/skyfield/
+[sgp4]: https://pypi.org/project/sgp4/
 [install Poetry]: https://python-poetry.org/docs/#installation
 [CPLEX]: https://www.ibm.com/products/ilog-cplex-optimization-studio
 [docplex]: https://ibmdecisionoptimization.github.io/docplex-doc/
