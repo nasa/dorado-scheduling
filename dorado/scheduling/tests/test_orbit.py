@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
-from astropy.coordinates import ITRS, SkyCoord
+from astropy.coordinates import ITRS
 from astropy.time import Time
 from astropy import units as u
 import numpy as np

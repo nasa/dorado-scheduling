@@ -9,7 +9,7 @@
 from importlib import resources
 
 from astroplan import Observer
-from astropy.coordinates import ITRS, SkyCoord, TEME
+from astropy.coordinates import SkyCoord, TEME
 from astropy import units as u
 import numpy as np
 from sgp4.api import Satrec, SGP4_ERRORS
