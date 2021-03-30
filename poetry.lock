@@ -949,7 +949,7 @@ numpy = "*"
 
 [package.source]
 type = "git"
-url = "https://github.com/dorado-science/radbelt.git"
+url = "git@github.com:dorado-science/radbelt.git"
 reference = "master"
 resolved_reference = "3a6ffb5074809e57a3803f79385e1c275842c988"
 
@@ -1271,7 +1271,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "9b88c7321f975099689ffd1d555039805d8dbd25c6c5ef858e878fc9e8525921"
+content-hash = "e65d9da0bbea9de189d0c0d15bf87dd0e55e70e15b2409cac42364e50bb187f1"
 
 [metadata.files]
 alabaster = [
