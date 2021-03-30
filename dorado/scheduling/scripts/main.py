@@ -147,11 +147,21 @@ def main(args=None):
 
     ipix, iroll, itime = np.nonzero(schedule_flags)
     result = Table(
-        {
+        data={
             'time': times[itime],
+            'exptime': np.repeat(orbit.exposure_time, len(times[itime])),
+            'location': orbit.get_posvel(times[itime]).earth_location,
             'center': skygrid.centers[ipix],
             'roll': skygrid.rolls[iroll]
-        }, meta={
+        },
+        descriptions={
+            'time': 'Start time of observation',
+            'exptime': 'Exposure time',
+            'location': 'Location of the spacecraft',
+            'center': "Pointing of the center of the spacecraft's FOV",
+            'roll': 'Roll angle of spacecraft, position angle of FOV',
+        },
+        meta={
             # FIXME: use shlex.join(sys.argv) in Python >= 3.8
             'cmdline': ' '.join(sys.argv),
             'prob': objective_value,
