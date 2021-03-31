@@ -150,7 +150,7 @@ def main(args=None):
         data={
             'time': times[itime],
             'exptime': np.repeat(orbit.exposure_time, len(times[itime])),
-            'location': orbit.get_posvel(times[itime]).earth_location,
+            'location': orbit.get_posvel(times).earth_location[itime],
             'center': skygrid.centers[ipix],
             'roll': skygrid.rolls[iroll]
         },
