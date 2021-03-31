@@ -1,0 +1,5 @@
+[survey]
+satfile = orbits.txt
+exposure_time = 10
+time_steps_per_exposure = 10
+field_of_view = 7.1
