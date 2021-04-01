@@ -73,18 +73,7 @@ Gallery
                 ax.coords[key].set_ticks_visible(False)
             ax.plot_coord(method(area), '.')
             ax.grid()
-    # for gridspec_row, method in zip(gridspecs[1:], methods):
-    #     ax = fig.add_subplot(gridspec_row[0], frameon=False)
-    #     ax.text(0.5, 0.5, method.__name__, transform=ax.transAxes, rotation=90)
 
-    #     for gridspec, area in zip(gridspec_row[1:], areas):
-    #         ax = fig.add_subplot(gridspec,
-    #                              projection='astro globe', center='0d 25d')
-    #         for key in ['ra', 'dec']:
-    #             ax.coords[key].set_ticklabel_visible(False)
-    #             ax.coords[key].set_ticks_visible(False)
-    #         ax.plot_coord(method(area), '.')
-    #         ax.grid()
 """
 from ._geodesic import geodesic
 from ._spiral import golden_angle_spiral
