@@ -12,6 +12,9 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 import numpy as np
 
+# FIXME: added in Astopy 4.2
+spat = 4 * np.pi * u.steradian
+
 
 def triangulation_number(b, c):
     return b * b + b * c + c * c
@@ -120,7 +123,7 @@ def geodesic(area, base='icosahedron', class_='I'):
         ax.grid()
 
     """
-    n = int(np.ceil(1 / area.to_value(u.spat)))
+    n = int(np.ceil(1 / area.to_value(spat)))
 
     # Adapted from
     # https://github.com/antiprism/antiprism_python/blob/master/anti_lib_progs/geodesic.py
