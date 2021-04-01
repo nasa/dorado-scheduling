@@ -32,23 +32,6 @@ def sinusoidal(area):
     --------
     <https://en.wikipedia.org/wiki/Sinusoidal_projection>
 
-    Example
-    -------
-
-    .. plot::
-
-        from astropy import units as u
-        from matplotlib import pyplot as plt
-        import ligo.skymap.plot
-
-        from dorado.scheduling import tesselation
-
-        vertices = tesselation.sinusoidal(100 * u.deg**2)
-
-        ax = plt.axes(projection='astro globe', center='0d 25d')
-        ax.set_title('Sinusoidal projection grid')
-        ax.plot_coord(vertices, '.')
-        ax.grid()
     """
     # Diameter of the field of view
     diameter = 2 * np.sqrt(area.to_value(u.sr) / np.pi)

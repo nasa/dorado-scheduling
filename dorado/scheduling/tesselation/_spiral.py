@@ -37,23 +37,6 @@ def golden_angle_spiral(area):
     --------
     <https://en.wikipedia.org/wiki/Golden_angle>
 
-    Example
-    -------
-
-    .. plot::
-
-        from astropy import units as u
-        from matplotlib import pyplot as plt
-        import ligo.skymap.plot
-
-        from dorado.scheduling import tesselation
-
-        vertices = tesselation.golden_angle_spiral(100 * u.deg**2)
-
-        ax = plt.axes(projection='astro globe', center='0d 25d')
-        ax.set_title('Golden angle spiral')
-        ax.plot_coord(vertices, '.')
-        ax.grid()
     """
     n = int(np.ceil(1 / area.to_value(spat)))
     ra = GOLDEN_ANGLE * np.arange(n)
