@@ -11,9 +11,6 @@ import numpy as np
 
 GOLDEN_ANGLE = np.pi * (3 - np.sqrt(5)) * u.rad
 
-# FIXME: added in Astopy 4.2
-spat = 4 * np.pi * u.steradian
-
 
 def golden_angle_spiral(area):
     """Generate a tile grid from a spiral employing the golden angle.
@@ -38,7 +35,7 @@ def golden_angle_spiral(area):
     <https://en.wikipedia.org/wiki/Golden_angle>
 
     """
-    n = int(np.ceil(1 / area.to_value(spat)))
+    n = int(np.ceil(1 / area.to_value(u.spat)))
     ra = GOLDEN_ANGLE * np.arange(n)
     dec = np.arcsin(np.linspace(1 - 1.0 / n, 1.0 / n - 1, n)) * u.rad
     return SkyCoord(ra, dec)

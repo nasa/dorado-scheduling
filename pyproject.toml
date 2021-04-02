@@ -23,6 +23,7 @@ classifiers = [
 python = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
 antiprism-python = "*"
 astroplan = ">=0.7"
+astropy = ">=4.2.1"
 cplex = "*"
 docplex = "*"
 "ligo.skymap" = "^0.5.2"
