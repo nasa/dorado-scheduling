@@ -39,6 +39,7 @@ def main(args=None):
     from astropy.table import QTable
     from astropy import units as u
     from astropy.time import Time
+    import configparser
     import matplotlib
     import matplotlib.pyplot as plt
     from matplotlib.pyplot import cm
