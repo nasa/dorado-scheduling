@@ -50,6 +50,10 @@ dorado-scheduling = "dorado.scheduling.scripts.main:main"
 dorado-scheduling-animate = "dorado.scheduling.scripts.animate:main"
 dorado-scheduling-tile = "dorado.scheduling.scripts.tile:main"
 dorado-scheduling-survey-slicer = "dorado.scheduling.scripts.survey_slicer:main"
+dorado-scheduling-survey = "dorado.scheduling.scripts.survey:main"
+dorado-scheduling-sim-survey = "dorado.scheduling.scripts.simsurvey:main"
+dorado-scheduling-animate-survey = "dorado.scheduling.scripts.animate_survey:main"
+dorado-scheduling-survey-metrics = "dorado.scheduling.scripts.metrics:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
