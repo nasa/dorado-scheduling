@@ -12,7 +12,7 @@ import logging
 import numpy as np
 import healpy as hp
 
-from ligo.skymap.tool import ArgumentParser, FileType
+from ligo.skymap.tool import ArgumentParser
 
 from astropy.time import Time
 from astropy.table import QTable, vstack
@@ -30,8 +30,7 @@ log = logging.getLogger(__name__)
 
 def parser():
     p = ArgumentParser()
-    p.add_argument('tiles', metavar='FILE.dat',
-                   type=FileType('rb'), help='baseline tiling file')
+    p.add_argument('config', help='config file')
     p.add_argument('-n', '--norb', default=10,
                    type=int, help='Number of orbit')
     p.add_argument('-s', '--start_time', type=str,
@@ -39,12 +38,12 @@ def parser():
     p.add_argument('--output', '-o',
                    type=str, default='simsurvey',
                    help='output survey')
-    p.add_argument('-c', '--config', help='config file')
 
     p.add_argument("--doAnimateInd", help="load CSV", action="store_true")
     p.add_argument("--doAnimateAll", help="load CSV", action="store_true")
     p.add_argument("--doMetrics", help="load CSV", action="store_true")
     p.add_argument("--doPlotSkymaps", help="load CSV", action="store_true")
+    p.add_argument("--doSlicer", help="load CSV", action="store_true")
 
     return p
 
@@ -149,20 +148,17 @@ def main(args=None):
     import configparser
     from ..models import TilingModel
 
-    if args.config is not None:
-        config = configparser.ConfigParser()
-        config.read(args.config)
-        satfile = config["survey"]["satfile"]
-        exposure_time = float(config["survey"]["exposure_time"]) * u.minute
-        steps_per_exposure =\
-            int(config["survey"]["time_steps_per_exposure"])
-        field_of_view = float(config["survey"]["field_of_view"]) * u.deg
-        tiling_model = TilingModel(satfile=satfile,
-                                   exposure_time=exposure_time,
-                                   time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view)
-    else:
-        tiling_model = TilingModel()
+    config = configparser.ConfigParser()
+    config.read(args.config)
+    satfile = config["survey"]["satfile"]
+    exposure_time = float(config["survey"]["exposure_time"]) * u.minute
+    steps_per_exposure =\
+        int(config["survey"]["time_steps_per_exposure"])
+    field_of_view = float(config["survey"]["field_of_view"]) * u.deg
+    tiling_model = TilingModel(satfile=satfile,
+                               exposure_time=exposure_time,
+                               time_steps_per_exposure=steps_per_exposure,
+                               field_of_view=field_of_view)
 
     npix = tiling_model.healpix.npix
     nside = tiling_model.healpix.nside
@@ -171,16 +167,17 @@ def main(args=None):
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
 
-    tess = np.loadtxt(args.tiles)
-    tess = tess[8:, :]
-    tesslen = len(tess)
+    quad = QTable.read(config["simsurvey"]["quadfile"], format='ascii.ecsv')
+    quad.add_index('field_id')
+    quadlen = len(quad)
+    quad_fov = float(config["simsurvey"]["quad_field_of_view"])
 
     start_time = Time(args.start_time, format='isot')
 
     exposure_time = tiling_model.exposure_time
-
-    surveys = ['baseline', 'galactic_plane', 'kilonova', 'GW']
-    weights = [0, 0.5, 0.2, 0.2, 0.1]
+    surveys = config["simsurvey"]["surveys"].split(",")
+    weights = [0] + [float(x) for x in
+                     config["simsurvey"]["weights"].split(",")]
     weights_cumsum = np.cumsum(weights)
 
     randvals = np.random.rand(args.norb)
@@ -204,7 +201,8 @@ def main(args=None):
             times = np.arange(tiling_model.time_steps) *\
                 tiling_model.time_step_duration + start_time
             start_time = times[-1] + exposure_time
-            tind = np.mod(tind, tesslen)
+            tind = tind + 1
+            tind = np.mod(tind, quadlen)
             continue
 
         if survey == "galactic_plane":
@@ -222,8 +220,12 @@ def main(args=None):
         elif survey == "kilonova":
             n = 0.01 * np.ones(npix)
 
-            field = tess[143, :]
-            p = getSquarePixels(field[1], field[2], 25.0, nside)
+            tindex = int(quadlen/2)
+            tquad = quad.loc[tindex]
+            p = getSquarePixels(tquad["center"].ra.deg,
+                                tquad["center"].dec.deg,
+                                quad_fov,
+                                nside)
             n[p] = 1.
             prob = n / np.sum(n)
 
@@ -238,15 +240,18 @@ def main(args=None):
         elif survey == "baseline":
             n = 0.01 * np.ones(npix)
 
-            field = tess[tind, :]
-            tind = tind + 1
-            tind = np.mod(tind, tesslen)
-
-            p = getSquarePixels(field[1], field[2], 25.0, nside)
+            tquad = quad.loc[tind]
+            p = getSquarePixels(tquad["center"].ra.deg,
+                                tquad["center"].dec.deg,
+                                quad_fov,
+                                nside)
             n[p] = 1.
             prob = n / np.sum(n)
 
             prob = get_observed(start_time, tiling_model, schedulenames, prob)
+
+            tind = tind + 1
+            tind = np.mod(tind, quadlen)
 
         write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
 
@@ -254,15 +259,17 @@ def main(args=None):
             tiling_model.time_step_duration + start_time
 
         executable = 'dorado-scheduling-survey'
-        system_command = '%s %s examples/tiles.dat -o %s -s %s' % (
-            executable, skymapname, schedulename, start_time.isot)
+        system_command = '%s %s %s -o %s -s %s -c %s' % (
+            executable, skymapname, config["survey"]["tilesfile"],
+            schedulename, start_time.isot, args.config)
         print(system_command)
         os.system(system_command)
 
         if args.doAnimateInd:
             executable = 'dorado-scheduling-animate-survey'
-            system_command = '%s %s %s %s -s %s' % (
-                executable, skymapname, schedulename, gifname, start_time.isot)
+            system_command = '%s %s %s %s -s %s -c %s' % (
+                executable, skymapname, schedulename, gifname,
+                start_time.isot, args.config)
             os.system(system_command)
 
         if args.doPlotSkymaps:
@@ -288,14 +295,24 @@ def main(args=None):
     write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
 
     if args.doMetrics:
-        system_command = 'dorado-scheduling-survey-metrics %s %s %s' % (
-            skymapname, schedulename, metricsname)
+        executable = 'dorado-scheduling-survey-metrics'
+        system_command = '%s %s %s %s -c %s' % (
+            executable, skymapname, schedulename, metricsname, args.config)
         print(system_command)
         os.system(system_command)
 
     if args.doAnimateAll:
         start_time = scheduleall[0]["time"]
-        system_command = 'dorado-scheduling-animate-survey %s %s %s -s %s' % (
-            skymapname, schedulename, gifname, start_time.isot)
+        executable = 'dorado-scheduling-animate-survey'
+        system_command = '%s %s %s %s -s %s -c %s' % (
+            executable, skymapname, schedulename, gifname, start_time.isot,
+            args.config)
+        print(system_command)
+        os.system(system_command)
+
+    if args.doSlicer:
+        executable = 'dorado-scheduling-survey-slicer'
+        system_command = '%s %s %s %s %s' % (
+            executable, skymapname, schedulename, metricsname, args.config)
         print(system_command)
         os.system(system_command)

@@ -22,7 +22,7 @@ def parser():
                    help='Schedule filename')
     p.add_argument('output', metavar='output',
                    help='Output folder')
-    p.add_argument('-c', '--config', help='config file')
+    p.add_argument('config', help='config file')
 
     return p
 
@@ -47,20 +47,17 @@ def main(args=None):
     from ..metrics.kne import KNePopMetric, generateKNPopSlicer
     from ..models import TilingModel
 
-    if args.config is not None:
-        config = configparser.ConfigParser()
-        config.read(args.config)
-        satfile = config["survey"]["satfile"]
-        exposure_time = float(config["survey"]["exposure_time"]) * u.minute
-        steps_per_exposure =\
-            int(config["survey"]["time_steps_per_exposure"])
-        field_of_view = float(config["survey"]["field_of_view"]) * u.deg
-        tiling_model = TilingModel(satfile=satfile,
-                                   exposure_time=exposure_time,
-                                   time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view)
-    else:
-        tiling_model = TilingModel()
+    config = configparser.ConfigParser()
+    config.read(args.config)
+    satfile = config["survey"]["satfile"]
+    exposure_time = float(config["survey"]["exposure_time"]) * u.minute
+    steps_per_exposure =\
+        int(config["survey"]["time_steps_per_exposure"])
+    field_of_view = float(config["survey"]["field_of_view"]) * u.deg
+    tiling_model = TilingModel(satfile=satfile,
+                               exposure_time=exposure_time,
+                               time_steps_per_exposure=steps_per_exposure,
+                               field_of_view=field_of_view)
 
     output = args.output
     if not os.path.isdir(output):
@@ -77,18 +74,19 @@ def main(args=None):
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
 
-    filtslist = ['FUV', 'NUV']
-    magslist = [24, 23.7]
+    filtslist = config["efficiency"]["filters"].split(",")
+    magslist = [float(x) for x in config["efficiency"]["limmags"].split(",")]
+    weights = [0] + [float(x) for x in
+                     config["efficiency"]["weights"].split(",")]
+    weights_cumsum = np.cumsum(weights)
 
     limmags, filts = [], []
-    weights = [0, 0.5, 0.5]
-    weights_cumsum = np.cumsum(weights)
     randvals = np.random.rand(len(schedule))
-
     for jj in range(len(schedule)):
         randval = randvals[jj]
         idx = int(np.where((weights_cumsum[1:] >= randval) &
                            (weights_cumsum[:-1] <= randval))[0][0])
+
         limmags.append(magslist[idx])
         filts.append(filtslist[idx])
     schedule.add_column(limmags, name='limmag')

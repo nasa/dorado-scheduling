@@ -36,7 +36,7 @@ def main(args=None):
     method = METHODS[args.method]
     coords = method(args.area)
     table = QTable({'field_id': np.arange(len(coords)), 'center': coords})
-    table.write(args.output, format='ascii.ecsv')
+    table.write(args.output.name, format='ascii.ecsv')
 
 
 if __name__ == '__main__':
