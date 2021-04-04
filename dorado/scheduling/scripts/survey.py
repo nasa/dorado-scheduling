@@ -84,6 +84,7 @@ def main(args=None):
 
     log.info('generating model')
     m = Model()
+    m.set_time_limit(300)
     if args.jobs is not None:
         m.context.cplex_parameters.threads = args.jobs
 
