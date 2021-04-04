@@ -49,6 +49,7 @@ pydata-sphinx-theme = "*"
 dorado-scheduling = "dorado.scheduling.scripts.main:main"
 dorado-scheduling-animate = "dorado.scheduling.scripts.animate:main"
 dorado-scheduling-tile = "dorado.scheduling.scripts.tile:main"
+dorado-scheduling-survey-slicer = "dorado.scheduling.scripts.survey_slicer:main"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
