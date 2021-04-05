@@ -63,10 +63,12 @@ def main(args=None):
         steps_per_exposure =\
             int(config["survey"]["time_steps_per_exposure"])
         field_of_view = float(config["survey"]["field_of_view"]) * u.deg
+        number_of_orbits = int(config["survey"]["number_of_orbits"])
         tiling_model = TilingModel(satfile=satfile,
                                    exposure_time=exposure_time,
                                    time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view)
+                                   field_of_view=field_of_view,
+                                   number_of_orbits=number_of_orbits)
     else:
         tiling_model = TilingModel()
 
