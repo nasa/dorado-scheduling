@@ -29,11 +29,13 @@ class SurveyModel():
                  satfile='orbits.txt',
                  exposure_time=10 * u.minute,
                  time_steps_per_exposure=10,
+                 number_of_orbits=1,
                  ):
 
         self.satfile = satfile
         self.exposure_time = exposure_time
         self.time_steps_per_exposure = time_steps_per_exposure
+        self.number_of_orbits = number_of_orbits
 
         # Load two-line element for satellite.
         # This is for Aqua, an Earth observing satellite in a low-Earth
@@ -50,7 +52,7 @@ class SurveyModel():
             (self.orbital_period /
              exposure_time).to_value(u.dimensionless_unscaled))
         self.time_steps = int(
-            (self.orbital_period /
+            (self.number_of_orbits * self.orbital_period /
              self.time_step_duration).to_value(u.dimensionless_unscaled))
 
     def get_posvel(self, time):
@@ -129,6 +131,7 @@ class TilingModel(SurveyModel):
                  satfile='orbits.txt',
                  exposure_time=10 * u.minute,
                  time_steps_per_exposure=10,
+                 number_of_orbits=1,
                  field_of_view=7.1 * u.deg,
                  centers=None
                  ):
@@ -149,7 +152,8 @@ class TilingModel(SurveyModel):
         self.field_of_view = field_of_view
         """Width of the (square) field of view."""
 
-        super().__init__(satfile, exposure_time, time_steps_per_exposure)
+        super().__init__(satfile, exposure_time, time_steps_per_exposure,
+                         number_of_orbits)
 
     def get_footprint_polygon(self, center, rotate=None):
         """Get the footprint of the field of view for a given orientation.
