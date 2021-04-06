@@ -39,6 +39,7 @@ def parser():
                    type=str, default='simsurvey',
                    help='output survey')
 
+    p.add_argument("--doDust", help="load CSV", action="store_true")
     p.add_argument("--doAnimateInd", help="load CSV", action="store_true")
     p.add_argument("--doAnimateAll", help="load CSV", action="store_true")
     p.add_argument("--doMetrics", help="load CSV", action="store_true")
@@ -147,6 +148,7 @@ def main(args=None):
 
     import configparser
     from ..models import TilingModel
+    from ..dust import Dust
 
     config = configparser.ConfigParser()
     config.read(args.config)
@@ -164,6 +166,22 @@ def main(args=None):
 
     npix = tiling_model.healpix.npix
     nside = tiling_model.healpix.nside
+
+    theta, phi = hp.pix2ang(nside, np.arange(npix))
+    ra = np.rad2deg(phi)
+    dec = np.rad2deg(0.5*np.pi - theta)
+    coords = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+
+    if args.doDust:
+        from dustmaps.planck import PlanckQuery
+        planck = PlanckQuery()
+        dust_properties = Dust()
+        Ax1 = dust_properties.Ax1
+        ebv = planck(coords)
+        # Apply dust extinction on the light curve
+        A_x = Ax1['NUV'] * ebv
+        V = 10**(0.6*(24-A_x))
+        V = V / np.max(V)
 
     outdir = args.output
     if not os.path.isdir(outdir):
@@ -208,16 +226,14 @@ def main(args=None):
             continue
 
         if survey == "galactic_plane":
-            theta, phi = hp.pix2ang(nside, np.arange(npix))
-            ra = np.rad2deg(phi)
-            dec = np.rad2deg(0.5*np.pi - theta)
-            coords = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
             idx = np.where(np.abs(coords.galactic.b.deg) <= 15.0)[0]
             n = 0.01 * np.ones(npix)
             n[idx] = 1.0
             prob = n / np.sum(n)
 
             prob = get_observed(start_time, tiling_model, schedulenames, prob)
+            if args.doDust:
+                prob = prob*V
 
         elif survey == "kilonova":
             n = 0.01 * np.ones(npix)
@@ -230,6 +246,8 @@ def main(args=None):
                                 nside)
             n[p] = 1.
             prob = n / np.sum(n)
+            if args.doDust:
+                prob = prob*V
 
         elif survey == "GW":
             idx = int(np.floor(10*np.random.rand()))
@@ -238,6 +256,8 @@ def main(args=None):
             prob = rasterize(skymap, nside_to_level(nside))['PROB']
             prob = prob[tiling_model.healpix.ring_to_nested(np.arange(
                                                             len(prob)))]
+            if args.doDust:
+                prob = prob*V
 
         elif survey == "baseline":
             n = 0.01 * np.ones(npix)
@@ -249,8 +269,9 @@ def main(args=None):
                                 nside)
             n[p] = 1.
             prob = n / np.sum(n)
-
             prob = get_observed(start_time, tiling_model, schedulenames, prob)
+            if args.doDust:
+                prob = prob*V
 
             tind = tind + 1
             tind = np.mod(tind, quadlen)
