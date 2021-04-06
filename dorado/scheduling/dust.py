@@ -37,6 +37,8 @@ class Dust():
         self.Ax1 = {}
         bandpassDict = {'FUV': [1350, 1750],
                         'NUV': [1750, 2800]}
+        zeropointDict = {'FUV': 22.0,
+                         'NUV': 23.5}
         self.sb = None
         self.phi = None
 
@@ -51,16 +53,15 @@ class Dust():
                     (self.wavelen <= wavelen_max)] = 1.0
 
             self.ref_ebv = ref_ebv
-            self.zp = 25.0
+            self.zp = zeropointDict[filtername]
             # Calculate non-dust-extincted magnitude
-            flatmag = self.calcMag(bandpassDict[filtername])
+            flatmag = self.calcMag()
             # Add dust
             a, b = self.setupCCM_ab()
             self.addDust(a, b, ebv=self.ref_ebv, R_v=R_v)
             # Calculate difference due to dust when EBV=1.0
             # (m_dust = m_nodust - Ax, Ax > 0)
-            self.Ax1[filtername] = self.calcMag(bandpassDict[filtername]) -\
-                flatmag
+            self.Ax1[filtername] = self.calcMag() - flatmag
 
     def setupCCM_ab(self, wavelen=None):
         """
@@ -249,7 +250,7 @@ class Dust():
         self.flambda = flambda
         return
 
-    def calcFlux(self, bandpass, wavelen=None, fnu=None):
+    def calcFlux(self, wavelen=None, fnu=None):
         """
         Integrate the specific flux density of the object over the normalized
         response curve of a bandpass, giving a flux in Janskys
@@ -292,7 +293,7 @@ class Dust():
 
         return -2.5*np.log10(flux) - self.zp
 
-    def calcMag(self, bandpass, wavelen=None, fnu=None):
+    def calcMag(self, wavelen=None, fnu=None):
         """
         Calculate the AB magnitude of an object using the normalized system
         response (phi from Section 4.1 of the LSST design document LSE-180).
@@ -302,7 +303,7 @@ class Dust():
         Calculating the AB mag requires the wavelen/fnu pair to be on the same
         grid as bandpass; (but only temporary values of these are used).
          """
-        flux = self.calcFlux(bandpass, wavelen=wavelen, fnu=fnu)
+        flux = self.calcFlux(wavelen=wavelen, fnu=fnu)
         if flux < 1e-300:
             raise Exception("This SED has no flux within this bandpass.")
         mag = self.magFromFlux(flux)
