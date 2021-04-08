@@ -214,11 +214,11 @@ six = "*"
 
 [[package]]
 name = "decorator"
-version = "5.0.1"
+version = "4.4.2"
 description = "Decorators for Humans"
 category = "main"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=2.6, !=3.0.*, !=3.1.*"
 
 [[package]]
 name = "docplex"
@@ -234,11 +234,29 @@ six = "*"
 
 [[package]]
 name = "docutils"
-version = "0.16"
+version = "0.17"
 description = "Docutils -- Python Documentation Utilities"
 category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
+name = "dustmaps"
+version = "1.0.7"
+description = "Uniform interface for multiple dust reddening maps."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+astropy = "*"
+h5py = "*"
+healpy = "*"
+numpy = "*"
+progressbar2 = "*"
+requests = "*"
+scipy = "*"
+six = "*"
 
 [[package]]
 name = "flake8"
@@ -294,7 +312,7 @@ six = "*"
 
 [[package]]
 name = "hypothesis"
-version = "6.8.4"
+version = "6.8.9"
 description = "A library for property-based testing"
 category = "dev"
 optional = false
@@ -459,7 +477,7 @@ numpy = "*"
 
 [[package]]
 name = "jupyter-client"
-version = "6.1.12"
+version = "6.1.13"
 description = "Jupyter protocol implementation and client libraries"
 category = "dev"
 optional = false
@@ -467,6 +485,7 @@ python-versions = ">=3.5"
 
 [package.dependencies]
 jupyter-core = ">=4.6.0"
+nest-asyncio = ">=1.5"
 python-dateutil = ">=2.1"
 pyzmq = ">=13"
 tornado = ">=4.1"
@@ -474,7 +493,7 @@ traitlets = "*"
 
 [package.extras]
 doc = ["sphinx (>=1.3.6)", "sphinx-rtd-theme", "sphinxcontrib-github-alt"]
-test = ["async-generator", "ipykernel", "ipython", "mock", "pytest-asyncio", "pytest-timeout", "pytest", "jedi (<0.18)"]
+test = ["async-generator", "ipykernel", "ipython", "mock", "pytest-asyncio", "pytest-timeout", "pytest", "mypy", "pre-commit", "jedi (<0.18)"]
 
 [[package]]
 name = "jupyter-core"
@@ -619,15 +638,23 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "nest-asyncio"
+version = "1.5.1"
+description = "Patch asyncio to allow nested event loops"
+category = "dev"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "networkx"
-version = "2.5"
+version = "2.5.1"
 description = "Python package for creating and manipulating graphs and networks"
 category = "main"
 optional = false
 python-versions = ">=3.6"
 
 [package.dependencies]
-decorator = ">=4.3.0"
+decorator = ">=4.3,<5"
 
 [package.extras]
 all = ["numpy", "scipy", "pandas", "matplotlib", "pygraphviz", "pydot", "pyyaml", "lxml", "pytest"]
@@ -742,6 +769,22 @@ importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 
 [package.extras]
 dev = ["pre-commit", "tox"]
+
+[[package]]
+name = "progressbar2"
+version = "3.53.1"
+description = "A Python Progressbar library to provide visual (yet text based) progress to long running operations."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+python-utils = ">=2.3.0"
+six = "*"
+
+[package.extras]
+docs = ["sphinx (>=1.7.4)"]
+tests = ["flake8 (>=3.7.7)", "pytest (>=4.6.9)", "pytest-cov (>=2.6.1)", "pytest-flakes (>=4.0.0)", "pytest-pep8 (>=1.0.6)", "freezegun (>=0.3.11)", "sphinx (>=1.8.5)"]
 
 [[package]]
 name = "prompt-toolkit"
@@ -866,7 +909,7 @@ python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "pytest"
-version = "6.2.2"
+version = "6.2.3"
 description = "pytest: simple powerful testing with Python"
 category = "dev"
 optional = false
@@ -915,6 +958,17 @@ six = "*"
 tqdm = "*"
 
 [[package]]
+name = "python-utils"
+version = "2.5.6"
+description = "Python Utils is a module with some convenient utilities not included with the standard Python install"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
+
+[[package]]
 name = "pytz"
 version = "2021.1"
 description = "World timezone definitions, modern and historical"
@@ -952,22 +1006,15 @@ py = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "radbelt"
-version = "0.0.0"
+version = "0.1.0"
 description = "Astropy-friendly wrapper for the AE-8/AP-8 Van Allen belt model"
 category = "main"
 optional = false
 python-versions = ">=3.7"
-develop = false
 
 [package.dependencies]
 astropy = "*"
-numpy = "*"
-
-[package.source]
-type = "git"
-url = "git@github.com:dorado-science/radbelt.git"
-reference = "master"
-resolved_reference = "3a6ffb5074809e57a3803f79385e1c275842c988"
+numpy = ">=1.20.0"
 
 [[package]]
 name = "reproject"
@@ -1062,7 +1109,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "skyfield"
-version = "1.37"
+version = "1.38"
 description = "Elegant astronomy for Python"
 category = "dev"
 optional = false
@@ -1218,7 +1265,7 @@ python-versions = ">= 3.5"
 
 [[package]]
 name = "tqdm"
-version = "4.59.0"
+version = "4.60.0"
 description = "Fast, Extensible Progress Meter"
 category = "main"
 optional = false
@@ -1287,7 +1334,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "d6410ef4addd7d762eae6e319b0fdf193d4202dc740829781ba0da8fa1547230"
+content-hash = "0ab9d6ff062b2ab2c86b683bb37709ea9995261b07afdcdeb392ced0e3bb859e"
 
 [metadata.files]
 alabaster = [
@@ -1460,15 +1507,19 @@ cycler = [
     {file = "cycler-0.10.0.tar.gz", hash = "sha256:cd7b2d1018258d7247a71425e9f26463dfb444d411c39569972f4ce586b0c9d8"},
 ]
 decorator = [
-    {file = "decorator-5.0.1-py2.py3-none-any.whl", hash = "sha256:2ec6e8cce2d71850b0af58ceceeab83f4bbaf60e1cc23d96db08c9d1425b7ac0"},
-    {file = "decorator-5.0.1.tar.gz", hash = "sha256:1e53162e016f317a61d93848f00e80e7109ca9ed06846c7f2930cf0ebede7c6c"},
+    {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
+    {file = "decorator-4.4.2.tar.gz", hash = "sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7"},
 ]
 docplex = [
     {file = "docplex-2.20.204.tar.gz", hash = "sha256:24d8c3f54b4b1ec306c13b97c9d67e2f9fa93d0d9ea1b92bdba62df6982cd6a0"},
 ]
 docutils = [
-    {file = "docutils-0.16-py2.py3-none-any.whl", hash = "sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af"},
-    {file = "docutils-0.16.tar.gz", hash = "sha256:c2de3a60e9e7d07be26b7f2b00ca0309c207e06c100f9cc2a94931fc75a478fc"},
+    {file = "docutils-0.17-py2.py3-none-any.whl", hash = "sha256:a71042bb7207c03d5647f280427f14bfbd1a65c9eb84f4b341d85fafb6bb4bdf"},
+    {file = "docutils-0.17.tar.gz", hash = "sha256:e2ffeea817964356ba4470efba7c2f42b6b0de0b04e66378507e3e2504bbff4c"},
+]
+dustmaps = [
+    {file = "dustmaps-1.0.7-py3-none-any.whl", hash = "sha256:dc14962be840f1db7d0f4e91bcfadd01d3b78a9fd393acb6ddf5ba915ed988ad"},
+    {file = "dustmaps-1.0.7.tar.gz", hash = "sha256:ef1be82256f725ecbd7b9a5b53c412384c088b0cd099fa3a69499e5bbe93c42a"},
 ]
 flake8 = [
     {file = "flake8-3.9.0-py2.py3-none-any.whl", hash = "sha256:12d05ab02614b6aee8df7c36b97d1a3b2372761222b19b58621355e82acddcff"},
@@ -1505,8 +1556,8 @@ healpy = [
     {file = "healpy-1.14.0.tar.gz", hash = "sha256:2720b5f96c314bdfdd20b6ffc0643ac8091faefcf8fd20a4083cedff85a66c5e"},
 ]
 hypothesis = [
-    {file = "hypothesis-6.8.4-py3-none-any.whl", hash = "sha256:2caa49d4daf77538ec79731b8b3baaa9cfaf83abd9c7703f05b0d046814654f1"},
-    {file = "hypothesis-6.8.4.tar.gz", hash = "sha256:665486c0c823ae217be96e611882249f6b060799ded7b2393d451fa488b62fcb"},
+    {file = "hypothesis-6.8.9-py3-none-any.whl", hash = "sha256:e8cfd57485a86f0d67511d62adc3c1040ded71f7aae235cfce8832acc002203a"},
+    {file = "hypothesis-6.8.9.tar.gz", hash = "sha256:56b8b5a907cb558a5419b431b7f3cb68acdfd2f66359ddc0f5f72b0af86481ad"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
@@ -1548,8 +1599,8 @@ jplephem = [
     {file = "jplephem-2.15.tar.gz", hash = "sha256:e0017de1a45015b247faa8d15ebf35d2014abe949135f3703a3252adb96e43b1"},
 ]
 jupyter-client = [
-    {file = "jupyter_client-6.1.12-py3-none-any.whl", hash = "sha256:e053a2c44b6fa597feebe2b3ecb5eea3e03d1d91cc94351a52931ee1426aecfc"},
-    {file = "jupyter_client-6.1.12.tar.gz", hash = "sha256:c4bca1d0846186ca8be97f4d2fa6d2bae889cce4892a167ffa1ba6bd1f73e782"},
+    {file = "jupyter_client-6.1.13-py3-none-any.whl", hash = "sha256:1df17b0525b45cc03645fc9eeab023765882d3c18fb100f82499cf6a353b3941"},
+    {file = "jupyter_client-6.1.13.tar.gz", hash = "sha256:d03558bc9b7955d8b4a6df604a8d9d257e00bcea7fb364fe41cdef81d998a966"},
 ]
 jupyter-core = [
     {file = "jupyter_core-4.7.1-py3-none-any.whl", hash = "sha256:8c6c0cac5c1b563622ad49321d5ec47017bd18b94facb381c6973a0486395f8e"},
@@ -1693,9 +1744,13 @@ mccabe = [
     {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
     {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
 ]
+nest-asyncio = [
+    {file = "nest_asyncio-1.5.1-py3-none-any.whl", hash = "sha256:76d6e972265063fe92a90b9cc4fb82616e07d586b346ed9d2c89a4187acea39c"},
+    {file = "nest_asyncio-1.5.1.tar.gz", hash = "sha256:afc5a1c515210a23c461932765691ad39e8eba6551c055ac8d5546e69250d0aa"},
+]
 networkx = [
-    {file = "networkx-2.5-py3-none-any.whl", hash = "sha256:8c5812e9f798d37c50570d15c4a69d5710a18d77bafc903ee9c5fba7454c616c"},
-    {file = "networkx-2.5.tar.gz", hash = "sha256:7978955423fbc9639c10498878be59caf99b44dc304c2286162fd24b458c1602"},
+    {file = "networkx-2.5.1-py3-none-any.whl", hash = "sha256:0635858ed7e989f4c574c2328380b452df892ae85084144c73d8cd819f0c4e06"},
+    {file = "networkx-2.5.1.tar.gz", hash = "sha256:109cd585cac41297f71103c3c42ac6ef7379f29788eb54cb751be5a663bb235a"},
 ]
 numpy = [
     {file = "numpy-1.20.2-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:e9459f40244bb02b2f14f6af0cd0732791d72232bbb0dc4bab57ef88e75f6935"},
@@ -1808,6 +1863,10 @@ pluggy = [
     {file = "pluggy-0.13.1-py2.py3-none-any.whl", hash = "sha256:966c145cd83c96502c3c3868f50408687b38434af77734af1e9ca461a4081d2d"},
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
 ]
+progressbar2 = [
+    {file = "progressbar2-3.53.1-py2.py3-none-any.whl", hash = "sha256:fe2738e7ecb7df52ad76307fe610c460c52b50f5335fd26c3ab80ff7655ba1e0"},
+    {file = "progressbar2-3.53.1.tar.gz", hash = "sha256:ef72be284e7f2b61ac0894b44165926f13f5d995b2bf3cd8a8dedc6224b255a7"},
+]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.18-py3-none-any.whl", hash = "sha256:bf00f22079f5fadc949f42ae8ff7f05702826a97059ffcc6281036ad40ac6f04"},
     {file = "prompt_toolkit-3.0.18.tar.gz", hash = "sha256:e1b4f11b9336a28fa11810bc623c357420f69dfdb6d2dac41ca2c21a55c033bc"},
@@ -1883,8 +1942,8 @@ pyparsing = [
     {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
 ]
 pytest = [
-    {file = "pytest-6.2.2-py3-none-any.whl", hash = "sha256:b574b57423e818210672e07ca1fa90aaf194a4f63f3ab909a2c67ebb22913839"},
-    {file = "pytest-6.2.2.tar.gz", hash = "sha256:9d1edf9e7d0b84d72ea3dbcdfd22b35fb543a5e8f2a60092dd578936bf63d7f9"},
+    {file = "pytest-6.2.3-py3-none-any.whl", hash = "sha256:6ad9c7bdf517a808242b998ac20063c41532a570d088d77eec1ee12b0b5574bc"},
+    {file = "pytest-6.2.3.tar.gz", hash = "sha256:671238a46e4df0f3498d1c3270e5deb9b32d25134c99b7d75370a68cfbe9b634"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
@@ -1892,6 +1951,10 @@ python-dateutil = [
 ]
 python-ligo-lw = [
     {file = "python-ligo-lw-1.7.1.tar.gz", hash = "sha256:0b9476d5edaf17ef9036ec17344645129b752097446d6001725ad41ce7d4f206"},
+]
+python-utils = [
+    {file = "python-utils-2.5.6.tar.gz", hash = "sha256:352d5b1febeebf9b3cdb9f3c87a3b26ef22d3c9e274a8ec1e7048ecd2fac4349"},
+    {file = "python_utils-2.5.6-py2.py3-none-any.whl", hash = "sha256:18fbc1a1df9a9061e3059a48ebe5c8a66b654d688b0e3ecca8b339a7f168f208"},
 ]
 pytz = [
     {file = "pytz-2021.1-py2.py3-none-any.whl", hash = "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"},
@@ -1966,7 +2029,19 @@ pyzmq = [
     {file = "pyzmq-22.0.3-pp37-pypy37_pp73-win32.whl", hash = "sha256:279cc9b51db48bec2db146f38e336049ac5a59e5f12fb3a8ad864e238c1c62e3"},
     {file = "pyzmq-22.0.3.tar.gz", hash = "sha256:f7f63ce127980d40f3e6a5fdb87abf17ce1a7c2bd8bf2c7560e1bbce8ab1f92d"},
 ]
-radbelt = []
+radbelt = [
+    {file = "radbelt-0.1.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:ec7bd3ba17b32b5b51331c63c1afd9af0c91bcb47fe04f56ae758767ba46cbc3"},
+    {file = "radbelt-0.1.0-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:956110f3d20f37292a6b9e66fa7d23b7068f846197d59af0dc45ec35cb869aba"},
+    {file = "radbelt-0.1.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:612283c838c74e019040c4a477bb5e8ca157d70e0cd3eaa9f16c1a5eae259a81"},
+    {file = "radbelt-0.1.0-cp37-cp37m-win32.whl", hash = "sha256:491afd1c0df6db660e87bfb0d9c28cd6b1d011abb7fd17d512c03867e46145dd"},
+    {file = "radbelt-0.1.0-cp37-cp37m-win_amd64.whl", hash = "sha256:d0c9b249796c0f0535ad67f546a32f80f97ca49b66e8574a9bbd4b6945e85c98"},
+    {file = "radbelt-0.1.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:b8cddd19e38b3dcf329f4efe64c1a4e3028dc4fae8c2825df6ecee474c37f2a8"},
+    {file = "radbelt-0.1.0-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:433fc770edea03d10e8e7f04305332ccc63a5061c22fca81c46c6d121e415f29"},
+    {file = "radbelt-0.1.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:46133af98e8e44b8c186c6ace1889ea09d0a8f24fcc422d434f9a978d3d1cd79"},
+    {file = "radbelt-0.1.0-cp38-cp38-win32.whl", hash = "sha256:f612d109b1b8906b522bac73fc9fd0dc5107cae2a16067f509a600b4a5c522c1"},
+    {file = "radbelt-0.1.0-cp38-cp38-win_amd64.whl", hash = "sha256:9bde938caf56cdcdd7f646b3bd69944a55e5c592fe404e9bd4f370fb2a8f1cda"},
+    {file = "radbelt-0.1.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:790ce0e57183e0574598aab06db345073df6bb1698fa5805d5094aa6338f6ef9"},
+]
 reproject = [
     {file = "reproject-0.7.1-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:def9d0b104df78e6dac24cb33250bb13c896fc8722b4b1186594094b195b4740"},
     {file = "reproject-0.7.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:8b48399c805f5886ad25bb712e57a99c69ead76b69d744c9e1937760df11f317"},
@@ -2079,7 +2154,7 @@ six = [
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
 ]
 skyfield = [
-    {file = "skyfield-1.37.tar.gz", hash = "sha256:64d2716187b94ccb587ec6db46ecb252fb14ecc3b32ef37ce6e90683bb5956cb"},
+    {file = "skyfield-1.38.tar.gz", hash = "sha256:65af2298a88cbfe4f30d997baf0c3c5371e9850603e340b8d92d476331a221e2"},
 ]
 snowballstemmer = [
     {file = "snowballstemmer-2.1.0-py2.py3-none-any.whl", hash = "sha256:b51b447bea85f9968c13b650126a888aabd4cb4463fca868ec596826325dedc2"},
@@ -2169,8 +2244,8 @@ tornado = [
     {file = "tornado-6.1.tar.gz", hash = "sha256:33c6e81d7bd55b468d2e793517c909b139960b6c790a60b7991b9b6b76fb9791"},
 ]
 tqdm = [
-    {file = "tqdm-4.59.0-py2.py3-none-any.whl", hash = "sha256:9fdf349068d047d4cfbe24862c425883af1db29bcddf4b0eeb2524f6fbdb23c7"},
-    {file = "tqdm-4.59.0.tar.gz", hash = "sha256:d666ae29164da3e517fcf125e41d4fe96e5bb375cd87ff9763f6b38b5592fe33"},
+    {file = "tqdm-4.60.0-py2.py3-none-any.whl", hash = "sha256:daec693491c52e9498632dfbe9ccfc4882a557f5fa08982db1b4d3adbe0887c3"},
+    {file = "tqdm-4.60.0.tar.gz", hash = "sha256:ebdebdb95e3477ceea267decfc0784859aa3df3e27e22d23b83e9b272bf157ae"},
 ]
 traitlets = [
     {file = "traitlets-5.0.5-py3-none-any.whl", hash = "sha256:69ff3f9d5351f31a7ad80443c2674b7099df13cc41fc5fa6e2f6d3b0330b0426"},

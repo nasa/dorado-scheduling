@@ -29,10 +29,10 @@ docplex = "*"
 dustmaps = "*"
 "ligo.skymap" = "^0.5.2"
 healpy = "*"
+radbelt = "*"
 seaborn = "*"
 sgp4 = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
-radbelt = {git = "git@github.com:dorado-science/radbelt.git"}
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
