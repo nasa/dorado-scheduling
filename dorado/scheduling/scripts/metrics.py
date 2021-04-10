@@ -22,6 +22,8 @@ def parser():
                    help='Schedule filename')
     p.add_argument('output', metavar='output',
                    help='Output folder')
+    p.add_argument('tiles', metavar='FILE.dat',
+                   type=FileType('rb'), help='tiling file')
     p.add_argument('-c', '--config', help='config file')
 
     return p
@@ -44,6 +46,8 @@ def main(args=None):
 
     from ..models import TilingModel
 
+    tiles = QTable.read(args.tiles, format='ascii.ecsv')
+
     if args.config is not None:
         config = configparser.ConfigParser()
         config.read(args.config)
@@ -55,9 +59,10 @@ def main(args=None):
         tiling_model = TilingModel(satfile=satfile,
                                    exposure_time=exposure_time,
                                    time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view)
+                                   field_of_view=field_of_view,
+                                   centers=tiles["center"])
     else:
-        tiling_model = TilingModel()
+        tiling_model = TilingModel(centers=tiles["center"])
 
     outdir = args.output
     if not os.path.isdir(outdir):
@@ -65,22 +70,9 @@ def main(args=None):
 
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
+    schedule.add_index('time')
 
-    centerstrs = []
-    centers_set = []
-    centerstrs_set = []
-    surveys = []
-    surveys_set = []
-    for row in schedule:
-        cent = row["center"]
-        centerstr = "%.5f_%.5f" % (cent.ra.deg, cent.dec.deg)
-        if centerstr not in centerstrs:
-            centers_set.append(cent)
-            centerstrs_set.append(centerstr)
-        centerstrs.append(centerstr)
-        surveys.append(row["survey"])
-    surveys_set = list(set(surveys))
-
+    idx, _, _ = schedule["center"].match_to_catalog_sky(tiling_model.centers)
     survey_set = list(set(schedule["survey"]))
     colors = seaborn.color_palette('Set2', n_colors=len(survey_set))
 
@@ -88,17 +80,22 @@ def main(args=None):
     exposures = {}
     for survey in survey_set:
         dts[survey] = []
-        exposures[survey] = np.zeros((len(centerstrs_set), 1))
-    exposures['all'] = np.zeros((len(centerstrs_set), 1))
-    for cc, centerstr in enumerate(centerstrs_set):
-        for ss, survey in enumerate(surveys_set):
-            idx = [i for i, (x, y) in enumerate(zip(centerstrs, surveys)) if
-                   (x == centerstr) and (y == survey)]
-            exposures[survey][cc] = len(idx)
-            exposures['all'][cc] = exposures['all'][cc] + len(idx)
-            for ii in range(len(idx)-1):
-                jj, kk = idx[ii], idx[ii+1]
-                dt = schedule[kk]["time"] - schedule[jj]["time"]
+        exposures[survey] = np.zeros((len(tiling_model.centers), 1))
+    exposures['all'] = np.zeros((len(tiling_model.centers), 1))
+    for cc, cent in enumerate(tiling_model.centers):
+        idy = np.where(idx == cc)[0]
+        if len(idy) == 0:
+            continue
+        exps = schedule.iloc[idy]
+        exposures['all'][cc] = len(exps)
+        for ss, survey in enumerate(survey_set):
+            idz = np.where(exps["survey"] == survey)[0]
+            if len(idz) == 0:
+                continue
+            exposures[survey][cc] = len(idz)
+            for ii in range(len(idz)-1):
+                jj, kk = idz[ii], idz[ii+1]
+                dt = exps[kk]["time"] - exps[jj]["time"]
                 if np.isclose(dt.jd, 0.0):
                     continue
                 dts[survey].append(dt.jd)
@@ -121,12 +118,12 @@ def main(args=None):
     colorbar = np.linspace(vmin, vmax, len(colors))
     norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
 
-    for survey in surveys_set + ["all"]:
+    for survey in survey_set + ["all"]:
         fig = plt.figure(figsize=(12, 6))
         ax = plt.axes([0.05, 0.05, 0.85, 0.9],
                       projection='astro hours mollweide')
         ax.grid()
-        for cc, center in enumerate(centers_set):
+        for cc, center in enumerate(tiling_model.centers):
             poly = tiling_model.get_footprint_polygon(center)
             idx = np.argmin(np.abs(colorbar - exposures[survey][cc]))
             footprint_color = colors[idx]

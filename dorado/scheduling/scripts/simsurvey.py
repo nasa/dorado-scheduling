@@ -319,8 +319,9 @@ def main(args=None):
 
     if args.doMetrics:
         executable = 'dorado-scheduling-survey-metrics'
-        system_command = '%s %s %s %s -c %s' % (
-            executable, skymapname, schedulename, metricsname, args.config)
+        system_command = '%s %s %s %s %s -c %s' % (
+            executable, skymapname, schedulename, metricsname,
+            config["survey"]["tilesfile"], args.config)
         print(system_command)
         os.system(system_command)
 

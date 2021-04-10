@@ -42,7 +42,7 @@ def main(args=None):
 
     from astropy_healpix import nside_to_level
     from astropy.time import Time
-    from astropy.table import Table
+    from astropy.table import Table, QTable
     from astropy import units as u
     import configparser
     from docplex.mp.model import Model
@@ -54,6 +54,8 @@ def main(args=None):
     from tqdm import tqdm
 
     from ..models import TilingModel
+
+    tiles = QTable.read(args.tiles, format='ascii.ecsv')
 
     if args.config is not None:
         config = configparser.ConfigParser()
@@ -68,9 +70,10 @@ def main(args=None):
                                    exposure_time=exposure_time,
                                    time_steps_per_exposure=steps_per_exposure,
                                    field_of_view=field_of_view,
-                                   number_of_orbits=number_of_orbits)
+                                   number_of_orbits=number_of_orbits,
+                                   centers=tiles["center"])
     else:
-        tiling_model = TilingModel()
+        tiling_model = TilingModel(centers=tiles["center"])
 
     log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
