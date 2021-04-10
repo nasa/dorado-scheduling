@@ -74,7 +74,8 @@ def main(args=None):
     field_of_regard = get_field_of_regard(times)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
-    # continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
+    continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
+    has_continuous_viewing_zone = np.any(continuous_viewing_zone)
 
     t = (times - times[0]).to(u.minute).value
 
@@ -110,10 +111,11 @@ def main(args=None):
     ax_prob.set_xlabel(f'Time since {start_time.iso} (minutes)')
     ax_prob.set_ylabel('Integrated prob.')
 
-    # y = continuous_viewing_zone.sum() / skygrid.healpix.npix * 100
-    # ax_time.axhline(
-    #     continuous_viewing_zone.sum() / skygrid.healpix.npix,
-    #     color=continuous_color, zorder=2.1)
+    if has_continuous_viewing_zone:
+        y = continuous_viewing_zone.sum() / skygrid.healpix.npix * 100
+        ax_time.axhline(
+            continuous_viewing_zone.sum() / skygrid.healpix.npix,
+            color=continuous_color, zorder=2.1)
 
     y = field_of_regard.sum(1) / skygrid.healpix.npix * 100
     ax_time.fill_between(
@@ -136,9 +138,10 @@ def main(args=None):
         bbox_to_anchor=[-0.05, -0.3, 1.1, 1.6], loc='upper left')
 
     ax_sky.contour_hpx(cls, levels=[0.9], colors=[skymap_color], nested=nest)
-    # ax_sky.contourf_hpx(continuous_viewing_zone.astype(float),
-    #                     levels=[0, 0.5], colors=[continuous_color],
-    #                     nested=nest, zorder=0.4)
+    if has_continuous_viewing_zone:
+        ax_sky.contourf_hpx(continuous_viewing_zone.astype(float),
+                            levels=[0, 0.5], colors=[continuous_color],
+                            nested=nest, zorder=0.4)
     ax_sky.contourf_hpx(orbit_field_of_regard.astype(float), levels=[0, 0.5],
                         colors=[orbit_color], nested=nest, zorder=0.5)
 
