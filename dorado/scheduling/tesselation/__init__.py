@@ -13,9 +13,15 @@ area. All of thee functions take one required argument, ``area``, which is the
 average area per tile. Some (like :meth:`geodesic`) take additional optional
 keyword arguments.
 
+Note that in the case of :meth:`geodesic` and :meth:`healpix`, the number of
+tiles that may be returned is constrained to certain values. For these methods,
+the number of tiles will be the smallest possible number that is greater than
+or equal to 4 pi / area.
+
 .. autosummary::
     geodesic
     golden_angle_spiral
+    healpix
     sinusoidal
 
 Example
@@ -37,6 +43,7 @@ Gallery
     areas = np.asarray([1000, 500, 100, 50]) * u.deg**2
     methods = [tesselation.geodesic,
                tesselation.golden_angle_spiral,
+               tesselation.healpix,
                tesselation.sinusoidal]
 
     fig = plt.figure(figsize=(8, 6))
@@ -77,6 +84,7 @@ Gallery
 """
 from ._geodesic import geodesic
 from ._spiral import golden_angle_spiral
+from ._healpix import healpix
 from ._sinusoidal import sinusoidal
 
-__all__ = ('geodesic', 'golden_angle_spiral', 'sinusoidal')
+__all__ = ('geodesic', 'golden_angle_spiral', 'healpix', 'sinusoidal')
