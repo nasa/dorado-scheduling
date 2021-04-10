@@ -79,8 +79,10 @@ def main(args=None):
 
     t = (times - times[0]).to(u.minute).value
 
-    instantaneous_color, orbit_color, _, skymap_color, _, footprint_color = \
-        seaborn.color_palette('Paired', n_colors=6)
+    (
+        instantaneous_color, orbit_color, continuous_color, skymap_color,
+        _, footprint_color
+    ) = seaborn.color_palette('Paired', n_colors=6)
 
     fig = plt.figure(figsize=(8, 8))
     gs_sky, gs_time, gs_prob = plt.GridSpec(
