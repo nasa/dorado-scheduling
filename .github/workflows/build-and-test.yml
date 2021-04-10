@@ -31,7 +31,7 @@ jobs:
         pip install .
     - name: Test with pytest
       run: |
-        pip install pytest pytest-cov hypothesis
+        pip install pytest pytest-cov hypothesis skyfield
         pytest --cov=. --cov-report=xml
         coverage report
     - name: Upload coverage to Codecov
