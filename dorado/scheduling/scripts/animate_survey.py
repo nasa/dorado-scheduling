@@ -27,8 +27,8 @@ def parser():
     p.add_argument('-j', '--jobs', type=int, default=1, const=None, nargs='?',
                    help='Number of threads')
     p.add_argument('-c', '--config', help='config file')
-    p.add_argument('-n', '--nslice', default=1,
-                   type=int, help='Number of slices for movie')
+    p.add_argument('-n', '--nframes', default=100,
+                   type=int, help='Number of frames for movie')
 
     return p
 
@@ -58,6 +58,8 @@ def main(args=None):
     if args.config is not None:
         config = configparser.ConfigParser()
         config.read(args.config)
+
+        tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
         satfile = config["survey"]["satfile"]
         exposure_time = float(config["survey"]["exposure_time"]) * u.minute
         steps_per_exposure =\
@@ -66,7 +68,8 @@ def main(args=None):
         tiling_model = TilingModel(satfile=satfile,
                                    exposure_time=exposure_time,
                                    time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view)
+                                   field_of_view=field_of_view,
+                                   centers=tiles["center"])
     else:
         tiling_model = TilingModel()
 
@@ -199,8 +202,10 @@ def main(args=None):
 
     old_artists = []
 
+    nslice = int(len(field_of_regard)/float(args.nframes))
+
     log.info('rendering animation frames')
-    with tqdm(total=len(field_of_regard)/float(args.nslice)) as progress:
+    with tqdm(total=len(field_of_regard)/float(nslice)) as progress:
 
         def animate(i):
             for artist in old_artists:
@@ -237,7 +242,7 @@ def main(args=None):
             progress.update()
 
         frames = [ii for ii in range(len(field_of_regard))]
-        frames = frames[::args.nslice]
+        frames = frames[::nslice]
 
         ani = FuncAnimation(fig, animate, frames=frames)
         # ani.save(args.output.name, writer=PillowWriter())
