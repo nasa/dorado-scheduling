@@ -110,7 +110,8 @@ def get_observed(latest_time, tiling_model, schedulenames, prob):
 
     probscale = np.ones(prob.shape)
     for ra, dec, tt in zip(ras, decs, tts):
-        ipix = getSquarePixels(ra, dec, 3.3, tiling_model.healpix.nside)
+        ipix = getSquarePixels(ra, dec, tiling_model.field_of_view.value,
+                               tiling_model.healpix.nside)
         dt = latest_time - tt
         tau = 60.0
         scale = 1 - np.exp(-dt.jd/tau)
@@ -152,6 +153,9 @@ def main(args=None):
 
     config = configparser.ConfigParser()
     config.read(args.config)
+
+    tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
+
     satfile = config["survey"]["satfile"]
     exposure_time = float(config["survey"]["exposure_time"]) * u.minute
     steps_per_exposure =\
@@ -162,7 +166,8 @@ def main(args=None):
                                exposure_time=exposure_time,
                                time_steps_per_exposure=steps_per_exposure,
                                field_of_view=field_of_view,
-                               number_of_orbits=number_of_orbits)
+                               number_of_orbits=number_of_orbits,
+                               centers=tiles["center"])
 
     npix = tiling_model.healpix.npix
     nside = tiling_model.healpix.nside
