@@ -11,7 +11,6 @@ from ligo.skymap.util import progress_map
 import numpy as np
 
 from .constraints import visibility_constraints
-from . import orbit
 from . import skygrid
 
 __all__ = ('get_field_of_regard',)
@@ -26,7 +25,6 @@ def _observable(time, location):
     ).ravel()
 
 
-def get_field_of_regard(times, jobs=None):
+def get_field_of_regard(times, posvels, jobs=None):
     return np.asarray(list(progress_map(
-        _observable, times, orbit.get_posvel(times).earth_location,
-        jobs=jobs)))
+        _observable, times, posvels.earth_location, jobs=jobs)))

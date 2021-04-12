@@ -6,15 +6,24 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Plot an observing plan."""
+from importlib import resources
 import logging
 
+from astropy import units as u
 from ligo.skymap.tool import ArgumentParser, FileType
+
+from .. import data
 
 log = logging.getLogger(__name__)
 
 
 def parser():
     p = ArgumentParser()
+    with resources.path(data, 'orbits.txt') as path:
+        p.add_argument('--orbit', metavar='FILE.tle', type=FileType('r'),
+                       default=path, help='Orbital elements as a TLE file')
+    p.add_argument('--time-step', type=u.Quantity, default='1 min',
+                   help='Model time step')
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
@@ -33,7 +42,6 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import QTable
-    from astropy import units as u
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
     from ligo.skymap import plot
@@ -45,9 +53,11 @@ def main(args=None):
     import seaborn
     from tqdm import tqdm
 
-    from .. import orbit
+    from .. import Orbit
     from .. import skygrid
     from ..regard import get_field_of_regard
+
+    orbit = Orbit(args.orbit)
 
     log.info('reading sky map')
 
@@ -65,13 +75,15 @@ def main(args=None):
 
     cls = find_greedy_credible_levels(skymap_hires)
 
-    times = np.arange(orbit.time_steps) * orbit.time_step_duration + start_time
+    times = start_time + np.arange(
+        0, orbit.period.to_value(u.s), args.time_step.to_value(u.s)) * u.s
 
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
 
     log.info('calculating field of regard')
-    field_of_regard = get_field_of_regard(times)
+    posvels = orbit(times)
+    field_of_regard = get_field_of_regard(times, posvels)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
     continuous_viewing_zone = np.logical_and.reduce(field_of_regard)

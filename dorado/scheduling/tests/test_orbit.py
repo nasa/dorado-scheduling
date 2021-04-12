@@ -5,6 +5,8 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
+from importlib import resources
+
 from astropy.coordinates import ITRS
 from astropy.time import Time
 from astropy import units as u
@@ -13,7 +15,8 @@ from skyfield import api as sf
 from skyfield.framelib import itrs as sf_itrs
 import pytest
 
-from .. import orbit
+from .. import data
+from .. import Orbit
 
 # Three test cases for time argument: scalar, vector, 2D array
 TIME0 = Time('2020-03-01')
@@ -26,14 +29,17 @@ TIME2 = TIME0 + dt1 + dt2
 @pytest.mark.parametrize('time', [TIME0, TIME1, TIME2])
 def test_get_posvel_skyfield(time):
     """Test SGP4 orbit propagation against high-level Skyfield interface."""
-    coord = orbit.get_posvel(time)
+    with resources.path(data, 'orbits.txt') as path:
+        orbit = Orbit(path)
+        sf_satellite, = sf.load.tle_file(str(path))
+
+    coord = orbit(time)
 
     assert coord.shape == time.shape
     assert isinstance(coord.frame, ITRS)
     assert np.all(coord.frame.obstime == time)
 
     sf_timescale = sf.load.timescale()
-    sf_satellite = sf.EarthSatellite.from_satrec(orbit.satellite, sf_timescale)
     sf_time = sf_timescale.from_astropy(time.ravel())
     sf_pos, sf_vel = sf_satellite.at(sf_time).frame_xyz_and_velocity(sf_itrs)
 
