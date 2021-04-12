@@ -1,3 +1,3 @@
-Orbit (`dorado.scheduling.orbit`)
+Orbit (`dorado.scheduling.Orbit`)
 =================================
-.. automodule:: dorado.scheduling.orbit
+.. autoclass:: dorado.scheduling.Orbit

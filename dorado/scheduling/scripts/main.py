@@ -6,9 +6,13 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Command line interface."""
+from importlib import resources
 import logging
 
+from astropy import units as u
 from ligo.skymap.tool import ArgumentParser, FileType
+
+from .. import data
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +22,13 @@ def parser():
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
     p.add_argument('-n', '--nexp', type=int, help='Number of exposures')
+    with resources.path(data, 'orbits.txt') as path:
+        p.add_argument('--orbit', metavar='FILE.tle', type=FileType('r'),
+                       default=path, help='Orbital elements as a TLE file')
+    p.add_argument('--exptime', type=u.Quantity, default='10 min',
+                   help='Exposure time')
+    p.add_argument('--time-step', type=u.Quantity, default='1 min',
+                   help='Model time step')
     p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
                    type=FileType('w'), default='-',
                    help='output filename')
@@ -46,9 +57,11 @@ def main(args=None):
     from scipy.signal import convolve
     from tqdm import tqdm
 
-    from .. import orbit
+    from .. import Orbit
     from ..regard import get_field_of_regard
     from .. import skygrid
+
+    orbit = Orbit(args.orbit)
 
     log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
@@ -58,7 +71,17 @@ def main(args=None):
     if skygrid.healpix.order == 'ring':
         prob = prob[skygrid.healpix.ring_to_nested(np.arange(len(prob)))]
 
-    times = np.arange(orbit.time_steps) * orbit.time_step_duration + start_time
+    time_steps_per_exposure = int(np.round(
+        (args.exptime / args.time_step).to_value(u.dimensionless_unscaled)))
+    times = start_time + np.arange(
+        0, orbit.period.to_value(u.s), args.time_step.to_value(u.s)) * u.s
+
+    log.info('evaluating field of regard')
+    posvels = orbit(times)
+    not_regard = convolve(
+        ~get_field_of_regard(times, posvels, jobs=args.jobs),
+        np.ones(time_steps_per_exposure)[:, np.newaxis],
+        mode='valid', method='direct')
 
     log.info('generating model')
     m = Model()
@@ -66,8 +89,7 @@ def main(args=None):
         m.context.cplex_parameters.threads = args.jobs
 
     log.info('adding variable: observing schedule')
-    shape = (len(skygrid.centers), len(skygrid.rolls),
-             orbit.time_steps - orbit.time_steps_per_exposure + 1)
+    shape = (len(skygrid.centers), len(skygrid.rolls), not_regard.shape[0])
     schedule = np.reshape(m.binary_var_list(np.prod(shape)), shape)
 
     log.info('adding variable: whether a given pixel is observed')
@@ -92,7 +114,7 @@ def main(args=None):
         [m.sum(schedule[..., i].ravel()) >= 1 for i in tqdm(range(shape[2]))]
     )
     m.add_constraints_(
-        m.sum(time_used[i:i+orbit.time_steps_per_exposure]) <= 1
+        m.sum(time_used[i:i+time_steps_per_exposure]) <= 1
         for i in tqdm(range(schedule.shape[-1]))
     )
 
@@ -117,11 +139,7 @@ def main(args=None):
     )
 
     log.info('adding constraint: field of regard')
-    i, j = np.nonzero(
-        convolve(
-            ~get_field_of_regard(times, jobs=args.jobs),
-            np.ones(orbit.time_steps_per_exposure)[:, np.newaxis],
-            mode='valid', method='direct'))
+    i, j = np.nonzero(not_regard)
     m.add_constraint_(m.sum(schedule[j, :, i].ravel()) <= 0)
 
     log.info('adding objective')
@@ -149,8 +167,8 @@ def main(args=None):
     result = Table(
         data={
             'time': times[itime],
-            'exptime': np.repeat(orbit.exposure_time, len(times[itime])),
-            'location': orbit.get_posvel(times).earth_location[itime],
+            'exptime': np.repeat(args.exptime, len(times[itime])),
+            'location': posvels.earth_location[itime],
             'center': skygrid.centers[ipix],
             'roll': skygrid.rolls[iroll]
         },
