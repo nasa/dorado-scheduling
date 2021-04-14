@@ -45,6 +45,7 @@ def parser():
     p.add_argument("--doMetrics", help="load CSV", action="store_true")
     p.add_argument("--doPlotSkymaps", help="load CSV", action="store_true")
     p.add_argument("--doSlicer", help="load CSV", action="store_true")
+    p.add_argument("--doOverlap", help="load CSV", action="store_true")
 
     return p
 
@@ -123,6 +124,29 @@ def get_observed(latest_time, tiling_model, schedulenames, prob):
     return prob
 
 
+def compute_overlap(tiling_model):
+
+    res = hp.nside2resol(tiling_model.healpix.nside, arcmin=True)
+    ipix = {}
+    for ii, cent1 in enumerate(tiling_model.centers):
+        ra, dec = cent1.ra.deg, cent1.dec.deg
+        ipix[ii] = getSquarePixels(ra, dec,
+                                   tiling_model.field_of_view.value,
+                                   tiling_model.healpix.nside)
+    overlaps = []
+    for ii, cent1 in enumerate(tiling_model.centers):
+        if ii >= 100:
+            continue
+        overlap = 0.0
+        for jj, cent2 in enumerate(tiling_model.centers):
+            if ii <= jj:
+                continue
+            over = np.intersect1d(ipix[ii], ipix[jj])
+            overlap = np.max([overlap, len(over)*res])
+        overlaps.append(overlap)
+    print('max overlap: %.1f arcmin' % (np.max(overlaps)))
+
+
 def merge_tables(schedulenames):
 
     for ii, schedulename in enumerate(schedulenames):
@@ -176,6 +200,9 @@ def main(args=None):
     ra = np.rad2deg(phi)
     dec = np.rad2deg(0.5*np.pi - theta)
     coords = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+
+    if args.doOverlap:
+        compute_overlap(tiling_model)
 
     if args.doDust:
         from dustmaps.planck import PlanckQuery
