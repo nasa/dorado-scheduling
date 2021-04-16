@@ -146,5 +146,5 @@ def geodesic(area, base='icosahedron', class_='I'):
     assert len(points) == n
     coords = SkyCoord(*zip(*(point.v for point in points)),
                       representation_type='cartesian')
-    coords.representation_type = 'unitspherical'
+    coords = SkyCoord(coords, representation_type='unitspherical')
     return coords

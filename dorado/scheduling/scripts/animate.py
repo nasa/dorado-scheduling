@@ -22,8 +22,12 @@ def parser():
     with resources.path(data, 'orbits.txt') as path:
         p.add_argument('--orbit', metavar='FILE.tle', type=FileType('r'),
                        default=path, help='Orbital elements as a TLE file')
+    p.add_argument('--fov', type=u.Quantity, default='7.1 deg',
+                   help='Width of square field of view (any angle units)')
     p.add_argument('--time-step', type=u.Quantity, default='1 min',
                    help='Model time step')
+    p.add_argument('--nside', type=int, default=32,
+                   help='HEALPix sampling resolution')
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
@@ -38,7 +42,8 @@ def main(args=None):
     args = parser().parse_args(args)
 
     # Late imports
-    from astropy_healpix import HEALPix, nside_to_level, npix_to_nside
+    from astropy.coordinates import ICRS
+    from astropy_healpix import HEALPix
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import QTable
@@ -53,11 +58,12 @@ def main(args=None):
     import seaborn
     from tqdm import tqdm
 
-    from .. import Orbit
-    from .. import skygrid
-    from ..regard import get_field_of_regard
+    from .. import FOV, Orbit
+    from ..constraints import get_field_of_regard
 
+    fov = FOV.from_rectangle(args.fov)
     orbit = Orbit(args.orbit)
+    healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
     log.info('reading sky map')
 
@@ -65,13 +71,7 @@ def main(args=None):
     start_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
     skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
     skymap_hires = rasterize(skymap)['PROB']
-    healpix_hires = HEALPix(npix_to_nside(len(skymap_hires)))
-    skymap = rasterize(skymap, nside_to_level(skygrid.healpix.nside))['PROB']
-    nest = skygrid.healpix.order == 'nested'
-    if not nest:
-        skymap = skymap[skygrid.healpix.ring_to_nested(np.arange(len(skymap)))]
-        skymap_hires = skymap[healpix_hires.ring_to_nested(np.arange(
-            len(skymap_hires)))]
+    skymap = rasterize(skymap, healpix.level)['PROB']
 
     cls = find_greedy_credible_levels(skymap_hires)
 
@@ -82,8 +82,8 @@ def main(args=None):
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
 
     log.info('calculating field of regard')
-    posvels = orbit(times)
-    field_of_regard = get_field_of_regard(times, posvels)
+    field_of_regard = get_field_of_regard(
+        orbit, healpix.healpix_to_skycoord(np.arange(healpix.npix)), times)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
     continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
@@ -113,7 +113,8 @@ def main(args=None):
     indices = np.asarray([], dtype=np.intp)
     prob = []
     for row in schedule:
-        new_indices = skygrid.get_footprint_healpix(row['center'], row['roll'])
+        new_indices = fov.footprint_healpix(
+            healpix, row['center'], row['roll'])
         indices = np.unique(np.concatenate((indices, new_indices)))
         prob.append(100 * skymap[indices].sum())
 
@@ -126,16 +127,16 @@ def main(args=None):
     ax_prob.set_ylabel('Integrated prob.')
 
     if has_continuous_viewing_zone:
-        y = continuous_viewing_zone.sum() / skygrid.healpix.npix * 100
+        y = continuous_viewing_zone.sum() / healpix.npix * 100
         ax_time.axhline(
-            continuous_viewing_zone.sum() / skygrid.healpix.npix,
+            continuous_viewing_zone.sum() / healpix.npix,
             color=continuous_color, zorder=2.1)
 
-    y = field_of_regard.sum(1) / skygrid.healpix.npix * 100
+    y = field_of_regard.sum(1) / healpix.npix * 100
     ax_time.fill_between(
         t, y, np.repeat(100, len(y)), color=instantaneous_color, zorder=2.2)
 
-    y = orbit_field_of_regard.sum() / skygrid.healpix.npix * 100
+    y = orbit_field_of_regard.sum() / healpix.npix * 100
     ax_time.axhspan(y, 100, color=orbit_color, zorder=2.3)
 
     ax_sky = fig.add_subplot(gs_sky, projection='astro hours mollweide')
@@ -151,13 +152,13 @@ def main(args=None):
         ['Localization', 'Observations'],
         bbox_to_anchor=[-0.05, -0.3, 1.1, 1.6], loc='upper left')
 
-    ax_sky.contour_hpx(cls, levels=[0.9], colors=[skymap_color], nested=nest)
+    ax_sky.contour_hpx(cls, levels=[0.9], colors=[skymap_color], nested=True)
     if has_continuous_viewing_zone:
         ax_sky.contourf_hpx(continuous_viewing_zone.astype(float),
                             levels=[0, 0.5], colors=[continuous_color],
-                            nested=nest, zorder=0.4)
+                            nested=True, zorder=0.4)
     ax_sky.contourf_hpx(orbit_field_of_regard.astype(float), levels=[0, 0.5],
-                        colors=[orbit_color], nested=nest, zorder=0.5)
+                        colors=[orbit_color], nested=True, zorder=0.5)
 
     old_artists = []
 
@@ -170,8 +171,7 @@ def main(args=None):
             del old_artists[:]
             for row in schedule:
                 if times[i] >= row['time']:
-                    poly = skygrid.get_footprint_polygon(
-                        row['center'], row['roll'])
+                    poly = fov.footprint(row['center'], row['roll']).icrs
                     vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
                     for cut_vertices in plot.cut_prime_meridian(vertices):
                         patch = plt.Polygon(
@@ -181,7 +181,7 @@ def main(args=None):
                         old_artists.append(ax_sky.add_patch(patch))
             old_artists.extend(ax_sky.contourf_hpx(
                 field_of_regard[i].astype(float), levels=[0, 0.5],
-                colors=[instantaneous_color], nested=nest,
+                colors=[instantaneous_color], nested=True,
                 zorder=0.2).collections)
             old_artists.append(ax_prob.axvline(t[i], color='gray', zorder=10))
             old_artists.append(ax_time.axvline(t[i], color='gray', zorder=10))

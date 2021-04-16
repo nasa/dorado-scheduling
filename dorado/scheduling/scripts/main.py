@@ -13,6 +13,7 @@ from astropy import units as u
 from ligo.skymap.tool import ArgumentParser, FileType
 
 from .. import data
+from .. import tesselation
 
 log = logging.getLogger(__name__)
 
@@ -25,10 +26,20 @@ def parser():
     with resources.path(data, 'orbits.txt') as path:
         p.add_argument('--orbit', metavar='FILE.tle', type=FileType('r'),
                        default=path, help='Orbital elements as a TLE file')
+    p.add_argument('--fov', type=u.Quantity, default='7.1 deg',
+                   help='Width of square field of view (any angle units)')
     p.add_argument('--exptime', type=u.Quantity, default='10 min',
-                   help='Exposure time')
+                   help='Exposure time (any time units)')
     p.add_argument('--time-step', type=u.Quantity, default='1 min',
-                   help='Model time step')
+                   help='Model time step (any time units)')
+    p.add_argument('--roll-step', type=u.Quantity, default='10 deg',
+                   help='Roll angle step (any angle units)')
+    p.add_argument('--skygrid-step', type=u.Quantity, default='0.0011 sr',
+                   help='Sky grid resolution (any solid angle units')
+    p.add_argument('--skygrid-method', default='healpix',
+                   choices=tesselation.__all__, help='Sky grid method')
+    p.add_argument('--nside', type=int, default=32,
+                   help='HEALPix sampling resolution')
     p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
                    type=FileType('w'), default='-',
                    help='output filename')
@@ -45,7 +56,8 @@ def main(args=None):
     # import shlex
     import sys
 
-    from astropy_healpix import nside_to_level
+    from astropy_healpix import HEALPix
+    from astropy.coordinates import ICRS
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
@@ -57,29 +69,30 @@ def main(args=None):
     from scipy.signal import convolve
     from tqdm import tqdm
 
-    from .. import Orbit
-    from ..regard import get_field_of_regard
-    from .. import skygrid
+    from .. import FOV, Orbit
+    from ..constraints import get_field_of_regard
 
+    fov = FOV.from_rectangle(args.fov)
     orbit = Orbit(args.orbit)
+    healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
     log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
     start_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
     skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
-    prob = rasterize(skymap, nside_to_level(skygrid.healpix.nside))['PROB']
-    if skygrid.healpix.order == 'ring':
-        prob = prob[skygrid.healpix.ring_to_nested(np.arange(len(prob)))]
+    prob = rasterize(skymap, healpix.level)['PROB']
 
+    # Set up grids
     time_steps_per_exposure = int(np.round(
         (args.exptime / args.time_step).to_value(u.dimensionless_unscaled)))
     times = start_time + np.arange(
         0, orbit.period.to_value(u.s), args.time_step.to_value(u.s)) * u.s
+    rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
+    centers = getattr(tesselation, args.skygrid_method)(args.skygrid_step)
 
     log.info('evaluating field of regard')
-    posvels = orbit(times)
     not_regard = convolve(
-        ~get_field_of_regard(times, posvels, jobs=args.jobs),
+        ~get_field_of_regard(orbit, centers, times, jobs=args.jobs),
         np.ones(time_steps_per_exposure)[:, np.newaxis],
         mode='valid', method='direct')
 
@@ -89,11 +102,11 @@ def main(args=None):
         m.context.cplex_parameters.threads = args.jobs
 
     log.info('adding variable: observing schedule')
-    shape = (len(skygrid.centers), len(skygrid.rolls), not_regard.shape[0])
+    shape = (len(centers), len(rolls), not_regard.shape[0])
     schedule = np.reshape(m.binary_var_list(np.prod(shape)), shape)
 
     log.info('adding variable: whether a given pixel is observed')
-    pixel_observed = np.asarray(m.binary_var_list(skygrid.healpix.npix))
+    pixel_observed = np.asarray(m.binary_var_list(healpix.npix))
 
     log.info('adding variable: whether a given field is used')
     field_used = np.reshape(m.binary_var_list(np.prod(shape[:2])), shape[:2])
@@ -126,9 +139,10 @@ def main(args=None):
             field_used.ravel()
         )
     )
-    indices = [[] for _ in range(skygrid.healpix.npix)]
-    with tqdm(total=len(skygrid.centers) * len(skygrid.rolls)) as progress:
-        for i, grid_i in enumerate(skygrid.get_footprint_grid()):
+    indices = [[] for _ in range(healpix.npix)]
+    with tqdm(total=len(centers) * len(rolls)) as progress:
+        for i, grid_i in enumerate(
+                fov.footprint_healpix_grid(healpix, centers, rolls)):
             for j, grid_ij in enumerate(grid_i):
                 for k in grid_ij:
                     indices[k].append((i, j))
@@ -168,9 +182,9 @@ def main(args=None):
         data={
             'time': times[itime],
             'exptime': np.repeat(args.exptime, len(times[itime])),
-            'location': posvels.earth_location[itime],
-            'center': skygrid.centers[ipix],
-            'roll': skygrid.rolls[iroll]
+            'location': orbit(times).earth_location[itime],
+            'center': centers[ipix],
+            'roll': rolls[iroll]
         },
         descriptions={
             'time': 'Start time of observation',

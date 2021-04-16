@@ -6,14 +6,19 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Astroplan visibility constraints."""
+from functools import partial
+
 import astroplan
 from astropy import units as u
+from ligo.skymap.util import progress_map
+import numpy as np
 
 from .earth_limb import EarthLimbConstraint
 from .orbit_night import OrbitNightConstraint
 from .radiation import TrappedParticleFluxConstraint
 
-__all__ = ('visibility_constraints',
+__all__ = ('get_field_of_regard',
+           'visibility_constraints',
            'EarthLimbConstraint',
            'OrbitNightConstraint',
            'OutsideSouthAtlanticAnomalyConstraint',
@@ -40,3 +45,37 @@ See also
 `Swift Technical Handbook
 <https://swift.gsfc.nasa.gov/proposals/tech_appd/swiftta_v14/node24.html>`_
 """
+
+
+def _observable(targets, time, location):
+    return astroplan.is_event_observable(
+        visibility_constraints,
+        astroplan.Observer(location),
+        targets,
+        time
+    ).ravel()
+
+
+def get_field_of_regard(orbit, targets, times, jobs=None):
+    """Calculate the observability of a grid of targets at a grid of times.
+
+    Parameters
+    ----------
+    orbit : :class:`dorado.scheduling.Orbit`
+        The orbit of the satellite.
+    targets : :class:`astropy.coordinates.SkyCoord`
+        An array of coordinates of size N.
+    times : :class:`astropy.coordinates.SkyCoord`
+        An array of times of size M.
+    jobs : int
+        The number of threads to use, or None to use all available cores.
+
+    Returns
+    -------
+    regard : :class:`np.ndarray`
+        A boolean array of size M×N, which is true if a given target is
+        observable at a given time.
+    """
+    return np.asarray(list(progress_map(
+        partial(_observable, targets),
+        times, orbit(times).earth_location, jobs=jobs)))
