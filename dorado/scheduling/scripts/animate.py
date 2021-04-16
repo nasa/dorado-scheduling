@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 def parser():
     p = ArgumentParser()
-    with resources.path(data, 'orbits.txt') as path:
+    with resources.path(data, 'dorado-625km-sunsync.tle') as path:
         p.add_argument('--orbit', metavar='FILE.tle', type=FileType('r'),
                        default=path, help='Orbital elements as a TLE file')
     p.add_argument('--fov', type=u.Quantity, default='7.1 deg',
