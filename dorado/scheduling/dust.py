@@ -11,6 +11,11 @@ https://github.com/lsst/sims_photUtils/tree/master/python/lsst/sims/photUtil
 """
 
 import numpy as np
+import astropy.units as u
+
+from dustmaps.planck import PlanckQuery
+from dust_extinction.parameter_averages import CCM89
+planck = PlanckQuery()
 
 # speed of light
 lightspeed = 299792458.0
@@ -35,16 +40,16 @@ class Dust():
     def __init__(self, R_v=3.1, ref_ebv=1.):
         # Calculate dust extinction values
         self.Ax1 = {}
-        bandpassDict = {'FUV': [1350, 1750],
-                        'NUV': [1750, 2800]}
-        zeropointDict = {'FUV': 22.0,
-                         'NUV': 23.5}
+        self.bandpassDict = {'FUV': [1350, 1750],
+                             'NUV': [1750, 2800]}
+        self.zeropointDict = {'FUV': 22.0,
+                              'NUV': 23.5}
         self.sb = None
         self.phi = None
 
-        for filtername in bandpassDict:
-            wavelen_min = bandpassDict[filtername][0]
-            wavelen_max = bandpassDict[filtername][1]
+        for filtername in self.bandpassDict:
+            wavelen_min = self.bandpassDict[filtername][0]
+            wavelen_max = self.bandpassDict[filtername][1]
             self.setFlatSED(wavelen_min=wavelen_min,
                             wavelen_max=wavelen_max,
                             wavelen_step=1.0)
@@ -53,157 +58,22 @@ class Dust():
                     (self.wavelen <= wavelen_max)] = 1.0
 
             self.ref_ebv = ref_ebv
-            self.zp = zeropointDict[filtername]
+            self.zp = self.zeropointDict[filtername]
             # Calculate non-dust-extincted magnitude
             flatmag = self.calcMag()
             # Add dust
-            a, b = self.setupCCM_ab()
-            self.addDust(a, b, ebv=self.ref_ebv, R_v=R_v)
+            self.addDust(ebv=self.ref_ebv, R_v=R_v)
+
             # Calculate difference due to dust when EBV=1.0
             # (m_dust = m_nodust - Ax, Ax > 0)
             self.Ax1[filtername] = self.calcMag() - flatmag
 
-    def setupCCM_ab(self, wavelen=None):
-        """
-        Calculate a(x) and b(x) for CCM dust model. (x=1/wavelen).
-
-        If wavelen not specified, calculates a and b on the own object's
-        wavelength grid.
-        Returns a(x) and b(x) can be common to many seds, wavelen is the same.
-
-        This method sets up extinction due to the model of
-        Cardelli, Clayton and Mathis 1989 (ApJ 345, 245)
-        """
-        # This extinction law taken from Cardelli, Clayton and Mathis ApJ 1989.
-        # The general form is A_l / A(V) = a(x) + b(x)/R_V
-        # (where x=1/lambda in microns), then different values for a(x) and
-        # b(x) depending on wavelength regime.
-        # Also, the extinction is parametrized as R_v = A_v / E(B-V).
-        # Magnitudes of extinction (A_l) translates to flux by
-        # a_l = -2.5log(f_red / f_nonred).
-        if wavelen is None:
-            wavelen = np.copy(self.wavelen)
-        a_x = np.zeros(len(wavelen), dtype='float')
-        b_x = np.zeros(len(wavelen), dtype='float')
-        # Convert wavelength to x (in inverse microns).
-        x = np.empty(len(wavelen), dtype=float)
-        nm_to_micron = 1/1000.0
-        x = 1.0 / (wavelen * nm_to_micron)
-        # Dust in infrared 0.3 /mu < x < 1.1 /mu (inverse microns).
-        condition = (x >= 0.3) & (x <= 1.1)
-        if len(a_x[condition]) > 0:
-            y = x[condition]
-            a_x[condition] = 0.574 * y**1.61
-            b_x[condition] = -0.527 * y**1.61
-        # Dust in optical/NIR 1.1 /mu < x < 3.3 /mu region.
-        condition = (x >= 1.1) & (x <= 3.3)
-        if len(a_x[condition]) > 0:
-            y = x[condition] - 1.82
-            a_x[condition] = 1 + 0.17699*y - 0.50447*y**2 - 0.02427*y**3 +\
-                0.72085*y**4
-            a_x[condition] = a_x[condition] + 0.01979*y**5 - 0.77530*y**6 +\
-                0.32999*y**7
-            b_x[condition] = 1.41338*y + 2.28305*y**2 + 1.07233*y**3 -\
-                5.38434*y**4
-            b_x[condition] = b_x[condition] - 0.62251*y**5 + 5.30260*y**6 -\
-                2.09002*y**7
-        # Dust in ultraviolet and UV (if needed for high-z) 3.3 /mu< x< 8 /mu.
-        condition = (x >= 3.3) & (x < 5.9)
-        if len(a_x[condition]) > 0:
-            y = x[condition]
-            a_x[condition] = 1.752 - 0.316*y - 0.104/((y-4.67)**2 + 0.341)
-            b_x[condition] = -3.090 + 1.825*y + 1.206/((y-4.62)**2 + 0.263)
-        condition = (x > 5.9) & (x < 8)
-        if len(a_x[condition]) > 0:
-            y = x[condition]
-            Fa_x = np.empty(len(a_x[condition]), dtype=float)
-            Fb_x = np.empty(len(a_x[condition]), dtype=float)
-            Fa_x = -0.04473*(y-5.9)**2 - 0.009779*(y-5.9)**3
-            Fb_x = 0.2130*(y-5.9)**2 + 0.1207*(y-5.9)**3
-            a_x[condition] = 1.752 - 0.316*y - 0.104/((y-4.67)**2 + 0.341) +\
-                Fa_x
-            b_x[condition] = -3.090 + 1.825*y + 1.206/((y-4.62)**2 + 0.263) +\
-                Fb_x
-        # Dust in far UV (if needed for high-z) 8 /mu < x < 10 /mu region.
-        condition = (x >= 8) & (x <= 11.)
-        if len(a_x[condition]) > 0:
-            y = x[condition]-8.0
-            a_x[condition] = -1.073 - 0.628*(y) + 0.137*(y)**2 - 0.070*(y)**3
-            b_x[condition] = 13.670 + 4.257*(y) - 0.420*(y)**2 + 0.374*(y)**3
-        return a_x, b_x
-
-    def setupODonnell_ab(self, wavelen=None):
-        """
-        Calculate a(x) and b(x) for O'Donnell dust model. (x=1/wavelen).
-
-        If wavelen not specified, calculates a and b on the own object's
-        wavelength grid. Returns a(x) and b(x) can be common to many seds,
-        wavelen is the same.
-
-        This method sets up the extinction parameters from the model of
-        O'Donnel 1994 (ApJ 422, 158)
-        """
-        # The general form is A_l / A(V) = a(x) + b(x)/R_V
-        # (where x=1/lambda in microns), then different values for a(x) and
-        # b(x) depending on wavelength regime.
-        # Also, the extinction is parametrized as R_v = A_v / E(B-V).
-        # Magnitudes of extinction (A_l) translates to flux by
-        # a_l = -2.5log(f_red / f_nonred).
-        if wavelen is None:
-            wavelen = np.copy(self.wavelen)
-        a_x = np.zeros(len(wavelen), dtype='float')
-        b_x = np.zeros(len(wavelen), dtype='float')
-        # Convert wavelength to x (in inverse microns).
-        x = np.empty(len(wavelen), dtype=float)
-        nm_to_micron = 1/1000.0
-        x = 1.0 / (wavelen * nm_to_micron)
-        # Dust in infrared 0.3 /mu < x < 1.1 /mu (inverse microns).
-        condition = (x >= 0.3) & (x <= 1.1)
-        if len(a_x[condition]) > 0:
-            y = x[condition]
-            a_x[condition] = 0.574 * y**1.61
-            b_x[condition] = -0.527 * y**1.61
-        # Dust in optical/NIR 1.1 /mu < x < 3.3 /mu region.
-        condition = (x >= 1.1) & (x <= 3.3)
-        if len(a_x[condition]) > 0:
-            y = x[condition] - 1.82
-            a_x[condition] = 1 + 0.104*y - 0.609*y**2 + 0.701*y**3 + 1.137*y**4
-            a_x[condition] = a_x[condition] - 1.718*y**5 - 0.827*y**6 +\
-                1.647*y**7 - 0.505*y**8
-            b_x[condition] = 1.952*y + 2.908*y**2 - 3.989*y**3 - 7.985*y**4
-            b_x[condition] = b_x[condition] + 11.102*y**5 + 5.491*y**6 -\
-                10.805*y**7 + 3.347*y**8
-        # Dust in ultraviolet and UV (if needed for high-z) 3.3 /mu< x< 8 /mu.
-        condition = (x >= 3.3) & (x < 5.9)
-        if len(a_x[condition]) > 0:
-            y = x[condition]
-            a_x[condition] = 1.752 - 0.316*y - 0.104/((y-4.67)**2 + 0.341)
-            b_x[condition] = -3.090 + 1.825*y + 1.206/((y-4.62)**2 + 0.263)
-        condition = (x > 5.9) & (x < 8)
-        if len(a_x[condition]) > 0:
-            y = x[condition]
-            Fa_x = np.empty(len(a_x[condition]), dtype=float)
-            Fb_x = np.empty(len(a_x[condition]), dtype=float)
-            Fa_x = -0.04473*(y-5.9)**2 - 0.009779*(y-5.9)**3
-            Fb_x = 0.2130*(y-5.9)**2 + 0.1207*(y-5.9)**3
-            a_x[condition] = 1.752 - 0.316*y - 0.104/((y-4.67)**2 + 0.341) +\
-                Fa_x
-            b_x[condition] = -3.090 + 1.825*y + 1.206/((y-4.62)**2 + 0.263) +\
-                Fb_x
-        # Dust in far UV (if needed for high-z) 8 /mu < x < 10 /mu region.
-        condition = (x >= 8) & (x <= 11.)
-        if len(a_x[condition]) > 0:
-            y = x[condition]-8.0
-            a_x[condition] = -1.073 - 0.628*(y) + 0.137*(y)**2 - 0.070*(y)**3
-            b_x[condition] = 13.670 + 4.257*(y) - 0.420*(y)**2 + 0.374*(y)**3
-        return a_x, b_x
-
-    def addDust(self, a_x, b_x, A_v=None, ebv=None, R_v=3.1,
+    def addDust(self, A_v=None, ebv=None, R_v=3.1,
                 wavelen=None, flambda=None):
         """
         Add dust model extinction to the SED, modifying flambda and fnu.
 
-        Get a_x and b_x either from setupCCMab or setupODonnell_ab
+        Get A_lambda from extinction package.
 
         Specify any two of A_V, E(B-V) or R_V (=3.1 default).
         """
@@ -240,8 +110,9 @@ class Dust():
             elif A_v is None:
                 A_v = R_v * ebv
         # R_v and A_v values are specified or calculated.
+        ext = CCM89(Rv=R_v)
+        A_lambda = ext.evaluate(self.wavelen*u.AA, R_v) * A_v
 
-        A_lambda = (a_x + b_x / R_v) * A_v
         # dmag_red(dust) = -2.5 log10 (f_red / f_nored) : (f_red / f_nored) =
         # 10**-0.4*dmag_red
         dust = np.exp(-A_lambda*self._ln10_04)
