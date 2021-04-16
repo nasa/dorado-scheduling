@@ -9,7 +9,6 @@ packages = [
     {include = "dorado"}]
 include = [
     "dorado/scheduling/data/*.tle",
-    "dorado/scheduling/data/*.txt",
     "dorado/scheduling/data/*.md"]
 classifiers = [
     "Development Status :: 3 - Alpha",
