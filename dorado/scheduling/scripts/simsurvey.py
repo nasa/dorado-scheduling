@@ -173,7 +173,6 @@ def main(args=None):
 
     import configparser
     from ..models import TilingModel
-    from ..dust import Dust
 
     config = configparser.ConfigParser()
     config.read(args.config)
@@ -204,20 +203,32 @@ def main(args=None):
     if args.doOverlap:
         compute_overlap(tiling_model)
 
-    if args.doDust:
-        from dustmaps.planck import PlanckQuery
-        planck = PlanckQuery()
-        dust_properties = Dust()
-        Ax1 = dust_properties.Ax1
-        ebv = planck(coords)
-        # Apply dust extinction on the light curve
-        A_x = Ax1['NUV'] * ebv
-        V = 10**(0.6*(24-A_x))
-        V = V / np.max(V)
-
     outdir = args.output
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
+
+    if args.doDust:
+        from dustmaps.planck import PlanckQuery
+        from ..dust import Dust
+
+        planck = PlanckQuery()
+        dust_properties = Dust()
+
+        Ax1 = dust_properties.Ax1
+        zeropointDict = dust_properties.zeropointDict
+        ebv = planck(coords)
+        # Apply dust extinction on the light curve
+        A_x = Ax1['NUV'] * ebv
+
+        dustname = '%s/dust.fits' % outdir
+        write_sky_map(dustname, A_x, moc=True)
+
+        system_command = 'ligo-skymap-plot %s -o %s --colorbar' % (
+            dustname, dustname.replace("fits", "png"))
+        os.system(system_command)
+
+        V = 10**(0.6*(zeropointDict['NUV']-A_x))
+        V = V / np.max(V)
 
     quad = QTable.read(config["simsurvey"]["quadfile"], format='ascii.ecsv')
     quad.add_index('field_id')
