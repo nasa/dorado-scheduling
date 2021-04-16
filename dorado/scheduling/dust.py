@@ -12,19 +12,12 @@ https://github.com/lsst/sims_photUtils/tree/master/python/lsst/sims/photUtil
 
 import numpy as np
 import astropy.units as u
+from astropy import constants as const
 
-from dustmaps.planck import PlanckQuery
 from dust_extinction.parameter_averages import CCM89
-planck = PlanckQuery()
 
-# speed of light
-lightspeed = 299792458.0
-# planck's constant
-planck = 6.626068e-27
-# nanometers to meters conversion = 1e-9 m/nm
-nm2m = 1.00e-9
 # erg/cm2/s/Hz to Jansky units (fnu)
-ergsetc2jansky = 1.00e23
+ergsetc2jansky = 1/u.Jy.to(u.erg/(u.cm**2)/u.s/u.Hz)
 
 
 class Dust():
@@ -208,7 +201,7 @@ class Dust():
         fnu = self.fnu
         # On with the calculation.
         # Calculate flambda.
-        flambda = fnu / wavelen / wavelen * lightspeed / nm2m
+        flambda = fnu / wavelen / wavelen * const.c / (u.AA / u.m)
         flambda = flambda / ergsetc2jansky
         # If updating self, then *all of wavelen/fnu/flambda will be updated.
         # This is so wavelen/fnu AND wavelen/flambda can be kept in sync.
@@ -252,7 +245,7 @@ class Dust():
         self.fnu = None
         # Now on with the calculation.
         # Calculate fnu.
-        fnu = flambda * wavelen * wavelen * nm2m / lightspeed
+        fnu = flambda * wavelen * wavelen * (u.AA / u.m) / const.c
         fnu = fnu * ergsetc2jansky
         # If are using/updating self, then *all* wavelen/flambda/fnu
         # will be gridded.
