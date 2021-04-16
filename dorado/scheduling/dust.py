@@ -11,9 +11,10 @@ https://github.com/lsst/sims_photUtils/tree/master/python/lsst/sims/photUtil
 """
 
 import numpy as np
+import astropy.units as u
 
 from dustmaps.planck import PlanckQuery
-import extinction
+from dust_extinction.parameter_averages import CCM89
 planck = PlanckQuery()
 
 # speed of light
@@ -109,7 +110,9 @@ class Dust():
             elif A_v is None:
                 A_v = R_v * ebv
         # R_v and A_v values are specified or calculated.
-        A_lambda = extinction.ccm89(self.wavelen, A_v, R_v)
+        ext = CCM89(Rv=R_v)
+        A_lambda = ext.evaluate(self.wavelen*u.AA, R_v) * A_v
+
         # dmag_red(dust) = -2.5 log10 (f_red / f_nored) : (f_red / f_nored) =
         # 10**-0.4*dmag_red
         dust = np.exp(-A_lambda*self._ln10_04)
