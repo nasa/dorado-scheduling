@@ -19,11 +19,10 @@ from astropy_healpix import HEALPix
 import numpy as np
 import healpy as hp
 
-from . import data
 from .constraints import OrbitNightConstraint
 from .constraints.earth_limb import EarthLimbConstraint
 from .constraints.radiation import TrappedParticleFluxConstraint
-from .. import Orbit
+from .orbit import Orbit
 
 visibility_constraints = [
     # SAA constraint, modeled after Fermi:
@@ -58,8 +57,8 @@ class SurveyModel():
         # This is for Aqua, an Earth observing satellite in a low-Earth
         # sun-synchronous orbit that happens to be similar to what might
         # be appropriate for Dorado.
-        with resources.open_text(data, satfile) as f:
-            self.orbit = Orbit(f)
+        with resources.path('dorado.scheduling.data', satfile) as path:
+            self.orbit = Orbit(path)
 
         self.time_step_duration = exposure_time / time_steps_per_exposure
 
