@@ -36,17 +36,23 @@ seaborn = "*"
 sgp4 = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
 
+# For docs
+packaging = {version="*", optional=true}
+pep517 = {version="*", optional=true}
+pydata-sphinx-theme = {version="*", optional=true}
+
+# For tests
+hypothesis = {version="*", optional=true}
+pytest = {version="*", optional=true}
+skyfield =  {version="*", optional=true}
+
+[tool.poetry.extras]
+doc = ["packaging", "pep517", "pydata-sphinx-theme"]
+test = ["hypothesis", "pytest", "skyfield"]
+
 [tool.poetry.dev-dependencies]
 flake8 = "*"
-hypothesis = "*"
 ipykernel = "*"
-pytest = "*"
-skyfield = "*"
-
-# For docs
-packaging = "*"
-pep517 = "*"
-pydata-sphinx-theme = "*"
 
 [tool.poetry.scripts]
 dorado-scheduling = "dorado.scheduling.scripts.main:main"
