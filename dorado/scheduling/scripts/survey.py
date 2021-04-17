@@ -137,7 +137,8 @@ def main(args=None):
     indices = [[] for _ in range(tiling_model.healpix.npix)]
     with tqdm(total=len(tiling_model.centers)) as progress:
         for i, center in enumerate(tiling_model.centers):
-            grid_ij = tiling_model.get_footprint_healpix(center)
+            grid_ij = tiling_model.fov.footprint_healpix(
+                tiling_model.healpix, center)
             for k in grid_ij:
                 indices[k].append(i)
             progress.update()

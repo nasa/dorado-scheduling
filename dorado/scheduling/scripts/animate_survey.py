@@ -159,7 +159,8 @@ def main(args=None):
     indices = np.asarray([], dtype=np.intp)
     prob = []
     for row in schedule:
-        new_indices = tiling_model.get_footprint_healpix(row['center'])
+        new_indices = tiling_model.fov.footprint_healpix(
+            tiling_model.healpix, row['center'])
         indices = np.unique(np.concatenate((indices, new_indices)))
         prob.append(100 * skymap[indices].sum())
 
@@ -213,8 +214,7 @@ def main(args=None):
             del old_artists[:]
             for row in schedule:
                 if times[i] >= row['time']:
-                    poly = tiling_model.get_footprint_polygon(
-                        row['center'])
+                    poly = tiling_model.fov.footprint(row['center'])
                     idx = survey_set.index(row['survey'])
                     footprint_color = colors[idx]
                     vertices = np.column_stack((poly.ra.rad, poly.dec.rad))

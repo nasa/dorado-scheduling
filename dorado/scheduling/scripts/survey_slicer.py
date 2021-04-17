@@ -188,7 +188,7 @@ def main(args=None):
                       projection='astro hours mollweide')
         ax.grid()
         for cc, center in enumerate(centers_set):
-            poly = tiling_model.get_footprint_polygon(center)
+            poly = tiling_model.fov.footprint(center)
             idx = np.argmin(np.abs(colorbar - efficiency[m][cc]))
             footprint_color = colors[idx]
             vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
