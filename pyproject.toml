@@ -44,11 +44,12 @@ pydata-sphinx-theme = {version="*", optional=true}
 # For tests
 hypothesis = {version="*", optional=true}
 pytest = {version="*", optional=true}
+pytest-doctestplus = {version="*", optional=true}
 skyfield =  {version="*", optional=true}
 
 [tool.poetry.extras]
 doc = ["packaging", "pep517", "pydata-sphinx-theme"]
-test = ["hypothesis", "pytest", "skyfield"]
+test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
 
 [tool.poetry.dev-dependencies]
 flake8 = "*"
@@ -63,6 +64,11 @@ dorado-scheduling-survey = "dorado.scheduling.scripts.survey:main"
 dorado-scheduling-sim-survey = "dorado.scheduling.scripts.simsurvey:main"
 dorado-scheduling-animate-survey = "dorado.scheduling.scripts.animate_survey:main"
 dorado-scheduling-survey-metrics = "dorado.scheduling.scripts.metrics:main"
+
+[tool.pytest.ini_options]
+doctest_optionflags = ["FLOAT_CMP"]
+doctest_plus = true
+doctest_rst = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
