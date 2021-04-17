@@ -20,7 +20,7 @@ from dust_extinction.parameter_averages import CCM89
 ergsetc2jansky = 1/u.Jy.to(u.erg/(u.cm**2)/u.s/u.Hz)
 
 
-class Dust():
+class Dust:
     """Calculate extinction values
 
     Parameters
