@@ -85,10 +85,16 @@ class FOV:
 
         Get the footprint for a spcific pointing:
 
-        >>> fov.footprint(SkyCoord(0*u.deg, 20*u.deg, roll=15*u.deg)).icrs
+        >>> fov.footprint(SkyCoord(0*u.deg, 20*u.deg), 15*u.deg).icrs
         <SkyCoord (ICRS): (ra, dec) in deg
-            [( 31.40720463, 42.69257989), ( 22.68313548, -6.6727307 ),
-             (337.31686452, -6.6727307 ), (328.59279537, 42.69257989)]>
+            [( 35.73851095,  34.84634609), ( 15.41057822, -11.29269295),
+             (331.35544934,  -0.54495686), (336.46564791,  49.26075815)]>
+
+        Get a footprint as HEALPix coordinates.
+
+        >>> hpx = HEALPix(nside=4, frame=ICRS())
+        >>> fov.footprint_healpix(hpx, SkyCoord(0*u.deg, 20*u.deg), 15*u.deg)
+        array([ 24,  39,  40,  41,  55,  56,  71,  72,  73,  87,  88, 103])
 
         Get the footprint for a grid of pointings:
 
@@ -100,11 +106,7 @@ class FOV:
         >>> footprints.shape
         (8, 5, 6, 4)
 
-        Get the footprints as HEALPix coordinates.
-
-        >>> hpx = HEALPix(nside=32, frame=ICRS())
-        >>> fov.footprint_healpix(hpx, center[..., np.newaxis], roll)
-        """
+        """  # noqa: E501
         frame = center.skyoffset_frame(roll)[..., np.newaxis]
         representation = self._representation
 
