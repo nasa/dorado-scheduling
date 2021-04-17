@@ -37,7 +37,8 @@ def parser():
     p.add_argument('--skygrid-step', type=u.Quantity, default='0.0011 sr',
                    help='Sky grid resolution (any solid angle units')
     p.add_argument('--skygrid-method', default='healpix',
-                   choices=skygrid.__all__, help='Sky grid method')
+                   choices=[key.replace('_', '-') for key in skygrid.__all__],
+                   help='Sky grid method')
     p.add_argument('--nside', type=int, default=32,
                    help='HEALPix sampling resolution')
     p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
@@ -88,7 +89,8 @@ def main(args=None):
     times = start_time + np.arange(
         0, orbit.period.to_value(u.s), args.time_step.to_value(u.s)) * u.s
     rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
-    centers = getattr(skygrid, args.skygrid_method)(args.skygrid_step)
+    centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
+        args.skygrid_step)
 
     log.info('evaluating field of regard')
     not_regard = convolve(

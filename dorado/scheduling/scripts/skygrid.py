@@ -14,17 +14,13 @@ from ligo.skymap.tool import ArgumentParser, FileType
 
 from .. import skygrid
 
-METHODS = {'geodesic': skygrid.geodesic,
-           'golden-angle-spiral': skygrid.golden_angle_spiral,
-           'sinusoidal': skygrid.sinusoidal}
-
 
 def parser():
     p = ArgumentParser()
     p.add_argument('--area', default='50 deg2', type=u.Quantity,
                    help='Average area per tile')
-    p.add_argument('--method', default='geodesic', help='Tiling algorithm',
-                   choices=tuple(METHODS.keys()))
+    p.add_argument('--method', default='healpix', help='Tiling algorithm',
+                   choices=[key.replace('_', '-') for key in skygrid.__all__])
     p.add_argument('-o', '--output', metavar='OUTPUT.ecsv',
                    type=FileType('wb'), help='Output filename')
     return p
@@ -33,7 +29,7 @@ def parser():
 def main(args=None):
     args = parser().parse_args(args)
 
-    method = METHODS[args.method]
+    method = getattr(skygrid, args.method.replace('-', '_'))
     coords = method(args.area)
     table = QTable({'field_id': np.arange(len(coords)), 'center': coords})
     table.write(args.output.name, format='ascii.ecsv')

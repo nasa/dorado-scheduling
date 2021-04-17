@@ -51,7 +51,7 @@ pydata-sphinx-theme = "*"
 [tool.poetry.scripts]
 dorado-scheduling = "dorado.scheduling.scripts.main:main"
 dorado-scheduling-animate = "dorado.scheduling.scripts.animate:main"
-dorado-scheduling-tile = "dorado.scheduling.scripts.tile:main"
+dorado-scheduling-skygrid = "dorado.scheduling.scripts.skygrid:main"
 dorado-scheduling-survey-slicer = "dorado.scheduling.scripts.survey_slicer:main"
 dorado-scheduling-survey = "dorado.scheduling.scripts.survey:main"
 dorado-scheduling-sim-survey = "dorado.scheduling.scripts.simsurvey:main"
