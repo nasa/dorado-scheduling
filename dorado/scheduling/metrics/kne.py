@@ -3,6 +3,7 @@ from scipy.interpolate import interpolate as interp
 
 from gwemlightcurves.KNModels.io.Me2017 import calc_lc_UV
 
+
 def uniformSphere(npoints, seed=42):
     """
     Just make RA, dec points on a sphere
