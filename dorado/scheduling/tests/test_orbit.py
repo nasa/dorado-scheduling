@@ -29,7 +29,7 @@ TIME2 = TIME0 + dt1 + dt2
 @pytest.mark.parametrize('time', [TIME0, TIME1, TIME2])
 def test_get_posvel_skyfield(time):
     """Test SGP4 orbit propagation against high-level Skyfield interface."""
-    with resources.path(data, 'orbits.txt') as path:
+    with resources.path(data, 'dorado-625km-sunsync.tle') as path:
         orbit = Orbit(path)
         sf_satellite, = sf.load.tle_file(str(path))
 
