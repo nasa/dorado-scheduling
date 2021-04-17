@@ -21,8 +21,8 @@ def parser():
                    help='Average area per tile')
     p.add_argument('--method', default='healpix', help='Tiling algorithm',
                    choices=[key.replace('_', '-') for key in skygrid.__all__])
-    p.add_argument('-o', '--output', metavar='OUTPUT.ecsv',
-                   type=FileType('wb'), help='Output filename')
+    p.add_argument('-o', '--output', metavar='OUTPUT.ecsv', default='-',
+                   type=FileType('w'), help='Output filename')
     return p
 
 
@@ -32,7 +32,7 @@ def main(args=None):
     method = getattr(skygrid, args.method.replace('-', '_'))
     coords = method(args.area)
     table = QTable({'field_id': np.arange(len(coords)), 'center': coords})
-    table.write(args.output.name, format='ascii.ecsv')
+    table.write(args.output, format='ascii.ecsv')
 
 
 if __name__ == '__main__':
