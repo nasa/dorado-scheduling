@@ -33,36 +33,29 @@ class Orbit:
     >>> from astropy import units as u
     >>> from dorado.scheduling import Orbit
     >>> from astropy.utils.data import get_pkg_data_filename
-    >>> with resources.path('dorado.scheduling.data', 'orbits.txt') as path:
+    >>> with resources.path('dorado.scheduling.data',
+    ...                     'dorado-625km-sunsync.tle') as path:
     ...     orbit = Orbit(path)
 
     Get the orbital period:
 
     >>> orbit.period
-    <Quantity 98.82566607 min>
+    <Quantity 97.20725153 min>
 
     Evaluate the position and velocity of the satellite at one specific time:
 
     >>> time = Time('2021-04-16 15:27')
     >>> orbit(time)
     <SkyCoord (ITRS: obstime=2021-04-16 15:27:00.000): (x, y, z) in km
-        (4976.75920356, -3275.77173105, 3822.71352292)
+        (3902.59776726, -5209.69991116, 2582.69921222)
      (v_x, v_y, v_z) in km / s
-        (-4.28131812, 0.77514995, 6.2200722)>
+        (-2.9282713, 1.25697383, 6.93396922)>
 
     Or evaluate at an array of times:
 
-    >>> times = time + np.linspace(0 * u.min, 2 * u.min, 3)
-    >>> orbit(times)
-    <SkyCoord (ITRS: obstime=['2021-04-16 15:27:00.000' '2021-04-16 15:28:00.000'
-     '2021-04-16 15:29:00.000']): (x, y, z) in km
-        [(4976.75920356, -3275.77173105, 3822.71352292),
-         (4710.26989911, -3221.55488875, 4187.9218208 ),
-         (4425.37931006, -3151.96969293, 4536.16324051)]
-     (v_x, v_y, v_z) in km / s
-        [(-4.28131812, 0.77514995, 6.2200722 ),
-         (-4.59829403, 1.0319373 , 5.94941852),
-         (-4.89448943, 1.28722498, 5.65470357)]>
+    >>> times = time + np.linspace(0 * u.min, 2 * u.min, 50)
+    >>> orbit(times).shape
+    (50,)
 
     """  # noqa: E501
 

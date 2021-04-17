@@ -161,31 +161,33 @@ The following example illustrates how to use HEALPix to determine if a given
 sky position is contained in any of the fields in an observing plan:
 
 ```pycon
->>> from astropy.coordinates import SkyCoord
+>>> from astropy.coordinates import ICRS, SkyCoord
 >>> from astropy.table import QTable
+>>> from astropy_healpix import HEALPix
 >>> from astropy import units as u
->>> from dorado.scheduling import skygrid
+>>> from dorado.scheduling import FOV
+>>> healpix = HEALPix(nside=32, frame=ICRS())
 >>> target = SkyCoord(66.91436579*u.deg, -61.98378895*u.deg)
->>> target_pixel = skygrid.healpix.skycoord_to_healpix(target)
+>>> target_pixel = healpix.skycoord_to_healpix(target)
 >>> schedule = QTable.read('examples/6.ecsv')
->>> footprints = [skygrid.get_footprint_healpix(row['center'], row['roll'])
+>>> fov = FOV.from_rectangle(7.1 * u.deg)
+>>> footprints = [fov.footprint_healpix(healpix, row['center'], row['roll'])
 ...               for row in schedule]
 >>> schedule['found'] = [target_pixel in footprint for footprint in footprints]
 >>> schedule
-<QTable length=9>
-          time                          center                  roll  found
-                                       deg,deg                  deg
-         object                         object                float64  bool
------------------------ ------------------------------------- ------- -----
-2012-05-02T18:28:32.699             65.25,-60.434438844952275     0.0  True
-2012-05-02T18:40:32.699 51.74999999999999,-60.434438844952275     0.0 False
-2012-05-02T18:51:32.699  79.28571428571429,-58.91977535280316    80.0 False
-2012-05-02T19:01:32.699  91.95652173913044,-55.87335043525197    60.0 False
-2012-05-02T19:11:32.699 106.07142857142857,-69.42254649458224    20.0 False
-2012-05-02T19:22:32.699             146.25,-13.24801490567695    20.0 False
-2012-05-02T19:33:32.699             146.25,-5.979156796301311    20.0 False
-2012-05-02T19:44:32.699  115.31249999999999,18.20995686428301    20.0 False
-2012-05-02T19:56:32.699           133.59375,7.180755781458282    20.0 False
+<QTable length=8>
+            time          exptime ...   roll  found
+                            min   ...   deg        
+            object         float64 ... float64  bool
+----------------------- ------- ... ------- -----
+2012-05-02T18:28:32.699    10.0 ...    60.0 False
+2012-05-02T18:38:32.699    10.0 ...    40.0 False
+2012-05-02T18:48:32.699    10.0 ...    80.0 False
+2012-05-02T18:58:32.699    10.0 ...    50.0  True
+2012-05-02T19:23:32.699    10.0 ...    80.0 False
+2012-05-02T19:33:32.699    10.0 ...    20.0 False
+2012-05-02T19:43:32.699    10.0 ...    20.0 False
+2012-05-02T19:57:32.699    10.0 ...     0.0 False
 ```
 
 [Pip]: https://pip.pypa.io
