@@ -337,7 +337,7 @@ scipy = "*"
 [[package]]
 name = "gwemlightcurves"
 version = "0.0.4"
-description = ""
+description = "A python package for kilonova lightcurves"
 category = "main"
 optional = false
 python-versions = "*"
@@ -356,9 +356,6 @@ requests = "*"
 scikit-learn = ">=0.18"
 scipy = "*"
 sncosmo = "*"
-
-[package.extras]
-doc = ["sphinx", "numpydoc", "sphinx-rtd-theme", "sphinxcontrib-programoutput", "sphinxcontrib-epydoc"]
 
 [[package]]
 name = "h5py"
@@ -1426,6 +1423,24 @@ lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
 
 [[package]]
+name = "synphot"
+version = "1.0.1"
+description = "Synthetic photometry"
+category = "main"
+optional = true
+python-versions = ">=3.6"
+
+[package.dependencies]
+astropy = ">=3"
+numpy = ">=1.16"
+scipy = ">=0.14"
+
+[package.extras]
+all = ["specutils (>=0.7)", "dust-extinction"]
+docs = ["matplotlib", "sphinx-astropy"]
+test = ["pytest-astropy"]
+
+[[package]]
 name = "threadpoolctl"
 version = "2.1.0"
 description = "threadpoolctl"
@@ -1524,7 +1539,7 @@ test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "bb0cf9b87a4317f9f9a173afa422285bc9b0ea23f2653ccb6c88adfdbefad2de"
+content-hash = "422574dbc2f5a57934599d351d36eddf5de2f3b2ce32d79c1d14310441a825b6"
 
 [metadata.files]
 afterglowpy = [
@@ -1744,7 +1759,7 @@ george = [
     {file = "george-0.4.0.tar.gz", hash = "sha256:3c88304b4a816c41b01198c084e3107ba7b0ab43881c60d249829eb2321245b1"},
 ]
 gwemlightcurves = [
-    {file = "gwemlightcurves-0.0.2.tar.gz", hash = "sha256:218e14aaa9e4f36da36530243e288bef94090228128179ea6b1de58cecb5654a"},
+    {file = "gwemlightcurves-0.0.4.tar.gz", hash = "sha256:5b916358d1ea6c97a8f2c37a92f50b311b0717a8434bf98cf68a3c67dd937d46"},
 ]
 h5py = [
     {file = "h5py-3.2.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:6766104ed13ff40b3b7bfd49f13fced5274103ee9af53667e7a97c5236b14741"},
@@ -2550,6 +2565,9 @@ sphinxcontrib-qthelp = [
 sphinxcontrib-serializinghtml = [
     {file = "sphinxcontrib-serializinghtml-1.1.4.tar.gz", hash = "sha256:eaa0eccc86e982a9b939b2b82d12cc5d013385ba5eadcc7e4fed23f4405f77bc"},
     {file = "sphinxcontrib_serializinghtml-1.1.4-py2.py3-none-any.whl", hash = "sha256:f242a81d423f59617a8e5cf16f5d4d74e28ee9a66f9e5b637a18082991db5a9a"},
+]
+synphot = [
+    {file = "synphot-1.0.1.tar.gz", hash = "sha256:b33d25d43ae875fdaa7760729d7aeeb16293325a71ba06e8fdd27892be83daa2"},
 ]
 threadpoolctl = [
     {file = "threadpoolctl-2.1.0-py3-none-any.whl", hash = "sha256:38b74ca20ff3bb42caca8b00055111d74159ee95c4370882bbff2b93d24da725"},
