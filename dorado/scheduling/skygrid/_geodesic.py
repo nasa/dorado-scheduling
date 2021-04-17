@@ -81,10 +81,10 @@ def geodesic(area, base='icosahedron', class_='I'):
         import ligo.skymap.plot
         import numpy as np
 
-        from dorado.scheduling import tesselation
+        from dorado.scheduling import skygrid
 
         n_vertices_target = 1024
-        vertices = tesselation.geodesic(4 * np.pi * u.sr / n_vertices_target)
+        vertices = skygrid.geodesic(4 * np.pi * u.sr / n_vertices_target)
         n_vertices = len(vertices)
 
         ax = plt.axes(projection='astro globe', center='0d 25d')
@@ -96,8 +96,8 @@ def geodesic(area, base='icosahedron', class_='I'):
     .. plot::
         :context: close-figs
 
-        vertices = tesselation.geodesic(4 * np.pi * u.sr / n_vertices_target,
-                                        class_='II')
+        vertices = skygrid.geodesic(4 * np.pi * u.sr / n_vertices_target,
+                                    class_='II')
         n_vertices = len(vertices)
 
         ax = plt.axes(projection='astro globe', center='0d 25d')
@@ -109,7 +109,7 @@ def geodesic(area, base='icosahedron', class_='I'):
     .. plot::
         :context: close-figs
 
-        vertices = tesselation.geodesic(4 * np.pi * u.sr / n_vertices_target,
+        vertices = skygrid.geodesic(4 * np.pi * u.sr / n_vertices_target,
                                         class_='III')
         n_vertices = len(vertices)
 

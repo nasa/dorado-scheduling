@@ -12,11 +12,11 @@ import numpy as np
 
 from ligo.skymap.tool import ArgumentParser, FileType
 
-from .. import tesselation
+from .. import skygrid
 
-METHODS = {'geodesic': tesselation.geodesic,
-           'golden-angle-spiral': tesselation.golden_angle_spiral,
-           'sinusoidal': tesselation.sinusoidal}
+METHODS = {'geodesic': skygrid.geodesic,
+           'golden-angle-spiral': skygrid.golden_angle_spiral,
+           'sinusoidal': skygrid.sinusoidal}
 
 
 def parser():

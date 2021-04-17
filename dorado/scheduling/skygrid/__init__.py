@@ -27,8 +27,8 @@ or equal to 4 pi / area.
 Example
 -------
 >>> from astropy import units as u
->>> from dorado.scheduling import tesselation
->>> points = tesselation.sinusoidal(100 * u.deg**2)
+>>> from dorado.scheduling import skygrid
+>>> points = skygrid.sinusoidal(100 * u.deg**2)
 
 Gallery
 ~~~~~~~
@@ -36,19 +36,19 @@ Gallery
     :include-source: False
 
     from astropy import units as u
-    from dorado.scheduling import tesselation
+    from dorado.scheduling import skygrid
     from matplotlib import pyplot as plt
     import ligo.skymap.plot
 
     areas = np.asarray([1000, 500, 100, 50]) * u.deg**2
-    methods = [tesselation.geodesic,
-               tesselation.golden_angle_spiral,
-               tesselation.healpix,
-               tesselation.sinusoidal]
+    methods = [skygrid.geodesic,
+               skygrid.golden_angle_spiral,
+               skygrid.healpix,
+               skygrid.sinusoidal]
 
     fig = plt.figure(figsize=(8, 6))
     gridspecs = fig.add_gridspec(len(methods) + 1, len(areas) + 1,
-                                left=0, right=1, bottom=0, top=1,
+                                 left=0, right=1, bottom=0, top=1,
                                  height_ratios=(1, *[10] * len(methods)),
                                  width_ratios=(1, *[10] * len(areas)))
 

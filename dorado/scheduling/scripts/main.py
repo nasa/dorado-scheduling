@@ -13,7 +13,7 @@ from astropy import units as u
 from ligo.skymap.tool import ArgumentParser, FileType
 
 from .. import data
-from .. import tesselation
+from .. import skygrid
 
 log = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def parser():
     p.add_argument('--skygrid-step', type=u.Quantity, default='0.0011 sr',
                    help='Sky grid resolution (any solid angle units')
     p.add_argument('--skygrid-method', default='healpix',
-                   choices=tesselation.__all__, help='Sky grid method')
+                   choices=skygrid.__all__, help='Sky grid method')
     p.add_argument('--nside', type=int, default=32,
                    help='HEALPix sampling resolution')
     p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
@@ -88,7 +88,7 @@ def main(args=None):
     times = start_time + np.arange(
         0, orbit.period.to_value(u.s), args.time_step.to_value(u.s)) * u.s
     rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
-    centers = getattr(tesselation, args.skygrid_method)(args.skygrid_step)
+    centers = getattr(skygrid, args.skygrid_method)(args.skygrid_step)
 
     log.info('evaluating field of regard')
     not_regard = convolve(

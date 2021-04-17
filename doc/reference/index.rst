@@ -10,4 +10,4 @@ Modules
     constraints
     orbit
     fov
-    tesselation
+    skygrid
