@@ -214,7 +214,7 @@ def main(args=None):
             del old_artists[:]
             for row in schedule:
                 if times[i] >= row['time']:
-                    poly = tiling_model.fov.footprint(row['center'])
+                    poly = tiling_model.fov.footprint(row['center']).icrs
                     idx = survey_set.index(row['survey'])
                     footprint_color = colors[idx]
                     vertices = np.column_stack((poly.ra.rad, poly.dec.rad))

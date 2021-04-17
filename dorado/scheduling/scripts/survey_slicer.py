@@ -74,10 +74,10 @@ def main(args=None):
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
 
-    filtslist = config["efficiency"]["filters"].split(",")
-    magslist = [float(x) for x in config["efficiency"]["limmags"].split(",")]
+    filtslist = config["filters"]["filters"].split(",")
+    magslist = [float(x) for x in config["filters"]["limmags"].split(",")]
     weights = [0] + [float(x) for x in
-                     config["efficiency"]["weights"].split(",")]
+                     config["filters"]["weights"].split(",")]
     weights_cumsum = np.cumsum(weights)
 
     limmags, filts = [], []
@@ -188,7 +188,7 @@ def main(args=None):
                       projection='astro hours mollweide')
         ax.grid()
         for cc, center in enumerate(centers_set):
-            poly = tiling_model.fov.footprint(center)
+            poly = tiling_model.fov.footprint(center).icrs
             idx = np.argmin(np.abs(colorbar - efficiency[m][cc]))
             footprint_color = colors[idx]
             vertices = np.column_stack((poly.ra.rad, poly.dec.rad))

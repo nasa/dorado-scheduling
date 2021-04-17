@@ -50,55 +50,6 @@ def parser():
     return p
 
 
-def getSquarePixels(ra_pointing, dec_pointing, tileSide, nside):
-
-    decCorners = (dec_pointing - tileSide / 2.0, dec_pointing + tileSide / 2.0)
-
-    # security for the periodic limit conditions
-    radecs = []
-    for d in decCorners:
-        if d > 90.:
-            d = 180. - d
-        elif d < -90.:
-            d = -180 - d
-
-        raCorners = (ra_pointing - (tileSide / 2.0) / np.cos(np.deg2rad(d)),
-                     ra_pointing + (tileSide / 2.0) / np.cos(np.deg2rad(d)))
-
-        # security for the periodic limit conditions
-        for r in raCorners:
-            if r > 360.:
-                r = r - 360.
-            elif r < 0.:
-                r = 360. + r
-            radecs.append([r, d])
-
-    radecs = np.array(radecs)
-    idx1 = np.where(np.abs(radecs[:, 1]) >= 87.0)[0]
-    if len(idx1) == 4:
-        return []
-
-    idx1 = np.where((radecs[:, 1] >= 87.0) | (radecs[:, 1] <= -87.0))[0]
-    if len(idx1) > 0:
-        radecs = np.delete(radecs, idx1[0], 0)
-
-    xyz = []
-    for r, d in radecs:
-        xyz.append(hp.ang2vec(r, d, lonlat=True))
-
-    npts, junk = radecs.shape
-    if npts == 4:
-        xyz = [xyz[0], xyz[1], xyz[3], xyz[2]]
-        try:
-            ipix = hp.query_polygon(nside, np.array(xyz))
-        except Exception:
-            return []
-    else:
-        ipix = hp.query_polygon(nside, np.array(xyz))
-
-    return ipix
-
-
 def get_observed(latest_time, tiling_model, schedulenames, prob):
 
     ras, decs, tts = [], [], []
@@ -111,8 +62,9 @@ def get_observed(latest_time, tiling_model, schedulenames, prob):
 
     probscale = np.ones(prob.shape)
     for ra, dec, tt in zip(ras, decs, tts):
-        ipix = getSquarePixels(ra, dec, tiling_model.field_of_view.value,
-                               tiling_model.healpix.nside)
+        ipix = tiling_model.fov.footprint_healpix(tiling_model.healpix,
+                                                  SkyCoord(ra*u.deg,
+                                                           dec*u.deg))
         dt = latest_time - tt
         tau = 60.0
         scale = 1 - np.exp(-dt.jd/tau)
@@ -130,9 +82,9 @@ def compute_overlap(tiling_model):
     ipix = {}
     for ii, cent1 in enumerate(tiling_model.centers):
         ra, dec = cent1.ra.deg, cent1.dec.deg
-        ipix[ii] = getSquarePixels(ra, dec,
-                                   tiling_model.field_of_view.value,
-                                   tiling_model.healpix.nside)
+        ipix[ii] = tiling_model.fov.footprint_healpix(tiling_model.healpix,
+                                                      SkyCoord(ra*u.deg,
+                                                               dec*u.deg))
     overlaps = []
     for ii, cent1 in enumerate(tiling_model.centers):
         if ii >= 100:
@@ -173,6 +125,7 @@ def main(args=None):
 
     import configparser
     from ..models import TilingModel
+    from ..fov import FOV
 
     config = configparser.ConfigParser()
     config.read(args.config)
@@ -212,7 +165,7 @@ def main(args=None):
         from ..dust import Dust
 
         planck = PlanckQuery()
-        dust_properties = Dust()
+        dust_properties = Dust(config)
 
         Ax1 = dust_properties.Ax1
         zeropointDict = dust_properties.zeropointDict
@@ -234,6 +187,7 @@ def main(args=None):
     quad.add_index('field_id')
     quadlen = len(quad)
     quad_fov = float(config["simsurvey"]["quad_field_of_view"])
+    quad_fov = FOV.from_rectangle(quad_fov * u.deg)
 
     start_time = Time(args.start_time, format='isot')
 
@@ -283,10 +237,9 @@ def main(args=None):
 
             tindex = int(quadlen/2)
             tquad = quad.loc[tindex]
-            p = getSquarePixels(tquad["center"].ra.deg,
-                                tquad["center"].dec.deg,
-                                quad_fov,
-                                nside)
+            raquad, decquad = tquad["center"].ra, tquad["center"].dec
+            p = quad_fov.footprint_healpix(tiling_model.healpix,
+                                           SkyCoord(raquad, decquad))
             n[p] = 1.
             prob = n / np.sum(n)
             if args.doDust:
@@ -306,10 +259,9 @@ def main(args=None):
             n = 0.01 * np.ones(npix)
 
             tquad = quad.loc[tind]
-            p = getSquarePixels(tquad["center"].ra.deg,
-                                tquad["center"].dec.deg,
-                                quad_fov,
-                                nside)
+            raquad, decquad = tquad["center"].ra, tquad["center"].dec
+            p = quad_fov.footprint_healpix(tiling_model.healpix,
+                                           SkyCoord(raquad, decquad))
             n[p] = 1.
             prob = n / np.sum(n)
             prob = get_observed(start_time, tiling_model, schedulenames, prob)
