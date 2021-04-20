@@ -6,24 +6,20 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Plot an observing plan."""
-from importlib import resources
 import logging
 
 from astropy import units as u
 from ligo.skymap.tool import ArgumentParser, FileType
 
-from .. import data
+from .. import mission as _mission
 
 log = logging.getLogger(__name__)
 
 
 def parser():
     p = ArgumentParser()
-    with resources.path(data, 'dorado-625km-sunsync.tle') as path:
-        p.add_argument('--orbit', metavar='FILE.tle', type=FileType('r'),
-                       default=path, help='Orbital elements as a TLE file')
-    p.add_argument('--fov', type=u.Quantity, default='7.1 deg',
-                   help='Width of square field of view (any angle units)')
+    p.add_argument('--mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
     p.add_argument('--time-step', type=u.Quantity, default='1 min',
                    help='Model time step')
     p.add_argument('--nside', type=int, default=32,
@@ -58,11 +54,7 @@ def main(args=None):
     import seaborn
     from tqdm import tqdm
 
-    from .. import FOV, Orbit
-    from ..constraints import get_field_of_regard
-
-    fov = FOV.from_rectangle(args.fov)
-    orbit = Orbit(args.orbit)
+    mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
     log.info('reading sky map')
@@ -76,14 +68,15 @@ def main(args=None):
     cls = find_greedy_credible_levels(skymap_hires)
 
     times = start_time + np.arange(
-        0, orbit.period.to_value(u.s), args.time_step.to_value(u.s)) * u.s
+        0, mission.orbit.period.to_value(u.s),
+        args.time_step.to_value(u.s)) * u.s
 
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
 
     log.info('calculating field of regard')
-    field_of_regard = get_field_of_regard(
-        orbit, healpix.healpix_to_skycoord(np.arange(healpix.npix)), times)
+    field_of_regard = mission.get_field_of_regard(
+        healpix.healpix_to_skycoord(np.arange(healpix.npix)), times)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
     continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
@@ -113,7 +106,7 @@ def main(args=None):
     indices = np.asarray([], dtype=np.intp)
     prob = []
     for row in schedule:
-        new_indices = fov.footprint_healpix(
+        new_indices = mission.fov.footprint_healpix(
             healpix, row['center'], row['roll'])
         indices = np.unique(np.concatenate((indices, new_indices)))
         prob.append(100 * skymap[indices].sum())
@@ -171,7 +164,8 @@ def main(args=None):
             del old_artists[:]
             for row in schedule:
                 if times[i] >= row['time']:
-                    poly = fov.footprint(row['center'], row['roll']).icrs
+                    poly = mission.fov.footprint(
+                        row['center'], row['roll']).icrs
                     vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
                     for cut_vertices in plot.cut_prime_meridian(vertices):
                         patch = plt.Polygon(
