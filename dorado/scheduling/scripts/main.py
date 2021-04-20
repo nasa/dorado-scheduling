@@ -6,13 +6,12 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Command line interface."""
-from importlib import resources
 import logging
 
 from astropy import units as u
 from ligo.skymap.tool import ArgumentParser, FileType
 
-from .. import data
+from .. import mission as _mission
 from .. import skygrid
 
 log = logging.getLogger(__name__)
@@ -23,11 +22,8 @@ def parser():
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
     p.add_argument('-n', '--nexp', type=int, help='Number of exposures')
-    with resources.path(data, 'dorado-625km-sunsync.tle') as path:
-        p.add_argument('--orbit', metavar='FILE.tle', type=FileType('r'),
-                       default=path, help='Orbital elements as a TLE file')
-    p.add_argument('--fov', type=u.Quantity, default='7.1 deg',
-                   help='Width of square field of view (any angle units)')
+    p.add_argument('--mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
     p.add_argument('--exptime', type=u.Quantity, default='10 min',
                    help='Exposure time (any time units)')
     p.add_argument('--time-step', type=u.Quantity, default='1 min',
@@ -70,11 +66,7 @@ def main(args=None):
     from scipy.signal import convolve
     from tqdm import tqdm
 
-    from .. import FOV, Orbit
-    from ..constraints import get_field_of_regard
-
-    fov = FOV.from_rectangle(args.fov)
-    orbit = Orbit(args.orbit)
+    mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
     log.info('reading sky map')
@@ -87,14 +79,15 @@ def main(args=None):
     time_steps_per_exposure = int(np.round(
         (args.exptime / args.time_step).to_value(u.dimensionless_unscaled)))
     times = start_time + np.arange(
-        0, orbit.period.to_value(u.s), args.time_step.to_value(u.s)) * u.s
+        0, mission.orbit.period.to_value(u.s),
+        args.time_step.to_value(u.s)) * u.s
     rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
     centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
         args.skygrid_step)
 
     log.info('evaluating field of regard')
     not_regard = convolve(
-        ~get_field_of_regard(orbit, centers, times, jobs=args.jobs),
+        ~mission.get_field_of_regard(centers, times, jobs=args.jobs),
         np.ones(time_steps_per_exposure)[:, np.newaxis],
         mode='valid', method='direct')
 
@@ -144,7 +137,7 @@ def main(args=None):
     indices = [[] for _ in range(healpix.npix)]
     with tqdm(total=len(centers) * len(rolls)) as progress:
         for i, grid_i in enumerate(
-                fov.footprint_healpix_grid(healpix, centers, rolls)):
+                mission.fov.footprint_healpix_grid(healpix, centers, rolls)):
             for j, grid_ij in enumerate(grid_i):
                 for k in grid_ij:
                     indices[k].append((i, j))
@@ -184,7 +177,7 @@ def main(args=None):
         data={
             'time': times[itime],
             'exptime': np.repeat(args.exptime, len(times[itime])),
-            'location': orbit(times).earth_location[itime],
+            'location': mission.orbit(times).earth_location[itime],
             'center': centers[ipix],
             'roll': rolls[iroll]
         },
