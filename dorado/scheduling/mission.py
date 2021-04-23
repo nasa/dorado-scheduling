@@ -82,7 +82,7 @@ ultrasat = Mission(
 Notes
 -----
 * ULTRASAT is a proposed Israeli ultraviolet satellite. See the `ULTRASAT web
-  site http://www.weizmann.ac.il/ultrasat>`_ for details.
+  site <http://www.weizmann.ac.il/ultrasat>`_ for details.
 
 * The Earth, Sun, Moon, and Galactic plane constraints are assumed to be the
   same as those for Dorado.
