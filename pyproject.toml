@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Dorado observation planning and scheduling simulations"
 authors = ["Leo Singer <leo.singer@ligo.org>"]
 license = "NOSA"
+documentation = "https://dorado-scheduling.readthedocs.io/"
 readme = "README.md"
 packages = [
     {include = "dorado"}]
