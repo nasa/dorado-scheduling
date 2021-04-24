@@ -10,6 +10,8 @@ import logging
 
 from ligo.skymap.tool import ArgumentParser, FileType
 
+from .. import mission as _mission
+
 log = logging.getLogger(__name__)
 
 
@@ -17,12 +19,14 @@ def parser():
     p = ArgumentParser()
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
+    p.add_argument('config', help='config file')
+    p.add_argument('mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
                    type=FileType('rb'), default='-',
                    help='Schedule filename')
     p.add_argument('output', metavar='output',
                    help='Output folder')
-    p.add_argument('config', help='config file')
 
     return p
 
@@ -45,19 +49,24 @@ def main(args=None):
     from matplotlib.pyplot import cm
 
     from ..metrics.kne import KNePopMetric, generateKNPopSlicer
-    from ..models import TilingModel
+    from ..models import SurveyModel
 
     config = configparser.ConfigParser()
     config.read(args.config)
-    satfile = config["survey"]["satfile"]
+
+    mission = getattr(_mission, args.mission)
+    tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
+
     exposure_time = float(config["survey"]["exposure_time"]) * u.minute
     steps_per_exposure =\
         int(config["survey"]["time_steps_per_exposure"])
-    field_of_view = float(config["survey"]["field_of_view"]) * u.deg
-    tiling_model = TilingModel(satfile=satfile,
+    number_of_orbits = int(config["survey"]["number_of_orbits"])
+
+    survey_model = SurveyModel(mission=mission,
                                exposure_time=exposure_time,
                                time_steps_per_exposure=steps_per_exposure,
-                               field_of_view=field_of_view)
+                               number_of_orbits=number_of_orbits,
+                               centers=tiles["center"])
 
     output = args.output
     if not os.path.isdir(output):
@@ -67,9 +76,9 @@ def main(args=None):
     # Read multi-order sky map and rasterize to working resolution
     skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
     prob = rasterize(skymap,
-                     nside_to_level(tiling_model.healpix.nside))['PROB']
-    if tiling_model.healpix.order == 'ring':
-        prob = prob[tiling_model.healpix.ring_to_nested(np.arange(len(prob)))]
+                     nside_to_level(survey_model.healpix.nside))['PROB']
+    if survey_model.healpix.order == 'ring':
+        prob = prob[survey_model.healpix.ring_to_nested(np.arange(len(prob)))]
 
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
@@ -188,7 +197,7 @@ def main(args=None):
                       projection='astro hours mollweide')
         ax.grid()
         for cc, center in enumerate(centers_set):
-            poly = tiling_model.fov.footprint(center).icrs
+            poly = survey_model.mission.fov.footprint(center).icrs
             idx = np.argmin(np.abs(colorbar - efficiency[m][cc]))
             footprint_color = colors[idx]
             vertices = np.column_stack((poly.ra.rad, poly.dec.rad))

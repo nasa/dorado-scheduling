@@ -10,6 +10,8 @@ import logging
 
 from ligo.skymap.tool import ArgumentParser, FileType
 
+from .. import mission as _mission
+
 log = logging.getLogger(__name__)
 
 
@@ -17,14 +19,14 @@ def parser():
     p = ArgumentParser()
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
+    p.add_argument('config', help='config file')
+    p.add_argument('mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
                    type=FileType('rb'), default='-',
                    help='Schedule filename')
     p.add_argument('output', metavar='output',
                    help='Output folder')
-    p.add_argument('tiles', metavar='FILE.dat',
-                   type=FileType('rb'), help='tiling file')
-    p.add_argument('-c', '--config', help='config file')
 
     return p
 
@@ -44,25 +46,24 @@ def main(args=None):
     import numpy as np
     import seaborn
 
-    from ..models import TilingModel
+    from ..models import SurveyModel
 
-    tiles = QTable.read(args.tiles, format='ascii.ecsv')
+    config = configparser.ConfigParser()
+    config.read(args.config)
 
-    if args.config is not None:
-        config = configparser.ConfigParser()
-        config.read(args.config)
-        satfile = config["survey"]["satfile"]
-        exposure_time = float(config["survey"]["exposure_time"]) * u.minute
-        steps_per_exposure =\
-            int(config["survey"]["time_steps_per_exposure"])
-        field_of_view = float(config["survey"]["field_of_view"]) * u.deg
-        tiling_model = TilingModel(satfile=satfile,
-                                   exposure_time=exposure_time,
-                                   time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view,
-                                   centers=tiles["center"])
-    else:
-        tiling_model = TilingModel(centers=tiles["center"])
+    mission = getattr(_mission, args.mission)
+    tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
+
+    exposure_time = float(config["survey"]["exposure_time"]) * u.minute
+    steps_per_exposure =\
+        int(config["survey"]["time_steps_per_exposure"])
+    number_of_orbits = int(config["survey"]["number_of_orbits"])
+
+    survey_model = SurveyModel(mission=mission,
+                               exposure_time=exposure_time,
+                               time_steps_per_exposure=steps_per_exposure,
+                               number_of_orbits=number_of_orbits,
+                               centers=tiles["center"])
 
     outdir = args.output
     if not os.path.isdir(outdir):
@@ -72,7 +73,7 @@ def main(args=None):
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
     schedule.add_index('time')
 
-    idx, _, _ = schedule["center"].match_to_catalog_sky(tiling_model.centers)
+    idx, _, _ = schedule["center"].match_to_catalog_sky(survey_model.centers)
     survey_set = list(set(schedule["survey"]))
     colors = seaborn.color_palette('Set2', n_colors=len(survey_set))
 
@@ -80,9 +81,9 @@ def main(args=None):
     exposures = {}
     for survey in survey_set:
         dts[survey] = []
-        exposures[survey] = np.zeros((len(tiling_model.centers), 1))
-    exposures['all'] = np.zeros((len(tiling_model.centers), 1))
-    for cc, cent in enumerate(tiling_model.centers):
+        exposures[survey] = np.zeros((len(survey_model.centers), 1))
+    exposures['all'] = np.zeros((len(survey_model.centers), 1))
+    for cc, cent in enumerate(survey_model.centers):
         idy = np.where(idx == cc)[0]
         if len(idy) == 0:
             continue
@@ -123,8 +124,8 @@ def main(args=None):
         ax = plt.axes([0.05, 0.05, 0.85, 0.9],
                       projection='astro hours mollweide')
         ax.grid()
-        for cc, center in enumerate(tiling_model.centers):
-            poly = tiling_model.fov.footprint(center)
+        for cc, center in enumerate(survey_model.centers):
+            poly = survey_model.mission.fov.footprint(center).icrs
             idx = np.argmin(np.abs(colorbar - exposures[survey][cc]))
             footprint_color = colors[idx]
             vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
