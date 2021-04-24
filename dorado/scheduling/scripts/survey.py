@@ -10,6 +10,8 @@ import logging
 
 from ligo.skymap.tool import ArgumentParser, FileType
 
+from .. import mission as _mission
+
 log = logging.getLogger(__name__)
 
 
@@ -17,8 +19,9 @@ def parser():
     p = ArgumentParser()
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
-    p.add_argument('tiles', metavar='FILE.dat',
-                   type=FileType('rb'), help='tiling file')
+    p.add_argument('config', help='config file')
+    p.add_argument('mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
     p.add_argument('-n', '--nexp', type=int, help='Number of exposures')
     p.add_argument('-s', '--start_time', type=str,
                    default='2020-01-01T00:00:00')
@@ -27,7 +30,6 @@ def parser():
                    help='output filename')
     p.add_argument('-j', '--jobs', type=int, default=1, const=None, nargs='?',
                    help='Number of threads')
-    p.add_argument('-c', '--config', help='config file')
 
     return p
 
@@ -53,39 +55,36 @@ def main(args=None):
     from scipy.signal import convolve
     from tqdm import tqdm
 
-    from ..models import TilingModel
+    from ..models import SurveyModel
 
-    tiles = QTable.read(args.tiles, format='ascii.ecsv')
+    config = configparser.ConfigParser()
+    config.read(args.config)
 
-    if args.config is not None:
-        config = configparser.ConfigParser()
-        config.read(args.config)
-        satfile = config["survey"]["satfile"]
-        exposure_time = float(config["survey"]["exposure_time"]) * u.minute
-        steps_per_exposure =\
-            int(config["survey"]["time_steps_per_exposure"])
-        field_of_view = float(config["survey"]["field_of_view"]) * u.deg
-        number_of_orbits = int(config["survey"]["number_of_orbits"])
-        tiling_model = TilingModel(satfile=satfile,
-                                   exposure_time=exposure_time,
-                                   time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view,
-                                   number_of_orbits=number_of_orbits,
-                                   centers=tiles["center"])
-    else:
-        tiling_model = TilingModel(centers=tiles["center"])
+    mission = getattr(_mission, args.mission)
+    tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
+
+    exposure_time = float(config["survey"]["exposure_time"]) * u.minute
+    steps_per_exposure =\
+        int(config["survey"]["time_steps_per_exposure"])
+    number_of_orbits = int(config["survey"]["number_of_orbits"])
+
+    survey_model = SurveyModel(mission=mission,
+                               exposure_time=exposure_time,
+                               time_steps_per_exposure=steps_per_exposure,
+                               number_of_orbits=number_of_orbits,
+                               centers=tiles["center"])
 
     log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
     start_time = Time(args.start_time, format='isot')
     skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
     prob = rasterize(skymap,
-                     nside_to_level(tiling_model.healpix.nside))['PROB']
-    if tiling_model.healpix.order == 'ring':
-        prob = prob[tiling_model.healpix.ring_to_nested(np.arange(len(prob)))]
+                     nside_to_level(survey_model.healpix.nside))['PROB']
+    if survey_model.healpix.order == 'ring':
+        prob = prob[survey_model.healpix.ring_to_nested(np.arange(len(prob)))]
 
-    times = np.arange(tiling_model.time_steps) *\
-        tiling_model.time_step_duration + start_time
+    times = np.arange(survey_model.time_steps) *\
+        survey_model.time_step_duration + start_time
 
     log.info('generating model')
     m = Model()
@@ -94,13 +93,13 @@ def main(args=None):
         m.context.cplex_parameters.threads = args.jobs
 
     log.info('adding variable: observing schedule')
-    shape = (len(tiling_model.centers),
-             tiling_model.time_steps -
-             tiling_model.time_steps_per_exposure + 1)
+    shape = (len(survey_model.centers),
+             survey_model.time_steps -
+             survey_model.time_steps_per_exposure + 1)
     schedule = np.reshape(m.binary_var_list(np.prod(shape)), shape)
 
     log.info('adding variable: whether a given pixel is observed')
-    pixel_observed = np.asarray(m.binary_var_list(tiling_model.healpix.npix))
+    pixel_observed = np.asarray(m.binary_var_list(survey_model.healpix.npix))
 
     log.info('adding variable: whether a given field is used')
     field_used = np.asarray(m.binary_var_list(shape[0]))
@@ -121,7 +120,7 @@ def main(args=None):
         [m.sum(schedule[..., i].ravel()) >= 1 for i in tqdm(range(shape[1]))]
     )
     m.add_constraints_(
-        m.sum(time_used[i:i+tiling_model.time_steps_per_exposure]) <= 1
+        m.sum(time_used[i:i+survey_model.time_steps_per_exposure]) <= 1
         for i in tqdm(range(schedule.shape[-1]))
     )
 
@@ -134,11 +133,11 @@ def main(args=None):
         )
     )
 
-    indices = [[] for _ in range(tiling_model.healpix.npix)]
-    with tqdm(total=len(tiling_model.centers)) as progress:
-        for i, center in enumerate(tiling_model.centers):
-            grid_ij = tiling_model.fov.footprint_healpix(
-                tiling_model.healpix, center)
+    indices = [[] for _ in range(survey_model.healpix.npix)]
+    with tqdm(total=len(survey_model.centers)) as progress:
+        for i, center in enumerate(survey_model.centers):
+            grid_ij = survey_model.mission.fov.footprint_healpix(
+                survey_model.healpix, center)
             for k in grid_ij:
                 indices[k].append(i)
             progress.update()
@@ -150,8 +149,8 @@ def main(args=None):
     log.info('adding constraint: field of regard')
     i, j = np.nonzero(
         convolve(
-            ~tiling_model.get_field_of_regard(times, jobs=args.jobs),
-            np.ones(tiling_model.time_steps_per_exposure)[:, np.newaxis],
+            ~survey_model.get_field_of_regard(times, jobs=args.jobs),
+            np.ones(survey_model.time_steps_per_exposure)[:, np.newaxis],
             mode='valid', method='direct'))
     m.add_constraint_(m.sum(schedule[j, i].ravel()) <= 0)
 
@@ -180,7 +179,7 @@ def main(args=None):
     result = Table(
         {
             'time': times[itime],
-            'center': tiling_model.centers[ipix],
+            'center': survey_model.centers[ipix],
         }, meta={
             # FIXME: use shlex.join(sys.argv) in Python >= 3.8
             'cmdline': ' '.join(sys.argv),

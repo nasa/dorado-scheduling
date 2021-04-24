@@ -10,6 +10,8 @@ import logging
 
 from ligo.skymap.tool import ArgumentParser, FileType
 
+from .. import mission as _mission
+
 log = logging.getLogger(__name__)
 
 
@@ -17,6 +19,9 @@ def parser():
     p = ArgumentParser()
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
+    p.add_argument('config', help='config file')
+    p.add_argument('mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
                    type=FileType('rb'), default='-',
                    help='Schedule filename')
@@ -26,7 +31,6 @@ def parser():
                    default='2020-01-01T00:00:00')
     p.add_argument('-j', '--jobs', type=int, default=1, const=None, nargs='?',
                    help='Number of threads')
-    p.add_argument('-c', '--config', help='config file')
     p.add_argument('-n', '--nframes', default=100,
                    type=int, help='Number of frames for movie')
 
@@ -53,25 +57,24 @@ def main(args=None):
     import seaborn
     from tqdm import tqdm
 
-    from ..models import TilingModel
+    from ..models import SurveyModel
 
-    if args.config is not None:
-        config = configparser.ConfigParser()
-        config.read(args.config)
+    config = configparser.ConfigParser()
+    config.read(args.config)
 
-        tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
-        satfile = config["survey"]["satfile"]
-        exposure_time = float(config["survey"]["exposure_time"]) * u.minute
-        steps_per_exposure =\
-            int(config["survey"]["time_steps_per_exposure"])
-        field_of_view = float(config["survey"]["field_of_view"]) * u.deg
-        tiling_model = TilingModel(satfile=satfile,
-                                   exposure_time=exposure_time,
-                                   time_steps_per_exposure=steps_per_exposure,
-                                   field_of_view=field_of_view,
-                                   centers=tiles["center"])
-    else:
-        tiling_model = TilingModel()
+    mission = getattr(_mission, args.mission)
+    tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
+
+    exposure_time = float(config["survey"]["exposure_time"]) * u.minute
+    steps_per_exposure =\
+        int(config["survey"]["time_steps_per_exposure"])
+    number_of_orbits = int(config["survey"]["number_of_orbits"])
+
+    survey_model = SurveyModel(mission=mission,
+                               exposure_time=exposure_time,
+                               time_steps_per_exposure=steps_per_exposure,
+                               number_of_orbits=number_of_orbits,
+                               centers=tiles["center"])
 
     log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
@@ -80,10 +83,10 @@ def main(args=None):
     skymap_hires = rasterize(skymap)['PROB']
     healpix_hires = HEALPix(npix_to_nside(len(skymap_hires)))
     skymap = rasterize(skymap,
-                       nside_to_level(tiling_model.healpix.nside))['PROB']
-    nest = tiling_model.healpix.order == 'nested'
+                       nside_to_level(survey_model.healpix.nside))['PROB']
+    nest = survey_model.healpix.order == 'nested'
     if nest:
-        skymap = skymap[tiling_model.healpix.ring_to_nested(np.arange(
+        skymap = skymap[survey_model.healpix.ring_to_nested(np.arange(
             len(skymap)))]
         skymap_hires = skymap[healpix_hires.ring_to_nested(np.arange(
             len(skymap_hires)))]
@@ -119,11 +122,11 @@ def main(args=None):
             skymap_hires = rasterize(skymap)['PROB']
             healpix_hires = HEALPix(npix_to_nside(len(skymap_hires)))
             skymap = rasterize(skymap,
-                               nside_to_level(tiling_model.healpix.nside))
+                               nside_to_level(survey_model.healpix.nside))
             skymap = skymap['PROB']
-            nest = tiling_model.healpix.order == 'nested'
+            nest = survey_model.healpix.order == 'nested'
             if not nest:
-                skymap = skymap[tiling_model.healpix.ring_to_nested(np.arange(
+                skymap = skymap[survey_model.healpix.ring_to_nested(np.arange(
                     len(skymap)))]
                 skymap_hires = skymap[healpix_hires.ring_to_nested(np.arange(
                     len(skymap_hires)))]
@@ -137,7 +140,7 @@ def main(args=None):
     schedule.add_column(skymaps, name='map')
 
     log.info('calculating field of regard')
-    field_of_regard = tiling_model.get_field_of_regard(times, jobs=args.jobs)
+    field_of_regard = survey_model.get_field_of_regard(times, jobs=args.jobs)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
     # continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
@@ -159,8 +162,8 @@ def main(args=None):
     indices = np.asarray([], dtype=np.intp)
     prob = []
     for row in schedule:
-        new_indices = tiling_model.fov.footprint_healpix(
-            tiling_model.healpix, row['center'])
+        new_indices = survey_model.mission.fov.footprint_healpix(
+            survey_model.healpix, row['center'])
         indices = np.unique(np.concatenate((indices, new_indices)))
         prob.append(100 * skymap[indices].sum())
 
@@ -172,16 +175,11 @@ def main(args=None):
     ax_prob.set_xlabel(f'Time since {start_time.iso} (minutes)')
     ax_prob.set_ylabel('Integrated prob.')
 
-    # y = continuous_viewing_zone.sum() / tiling_model.healpix.npix * 100
-    # ax_time.axhline(
-    #     continuous_viewing_zone.sum() / tiling_model.healpix.npix,
-    #     color=continuous_color, zorder=2.1)
-
-    y = field_of_regard.sum(1) / tiling_model.healpix.npix * 100
+    y = field_of_regard.sum(1) / survey_model.healpix.npix * 100
     ax_time.fill_between(
         t, y, np.repeat(100, len(y)), color=instantaneous_color, zorder=2.2)
 
-    y = orbit_field_of_regard.sum() / tiling_model.healpix.npix * 100
+    y = orbit_field_of_regard.sum() / survey_model.healpix.npix * 100
     ax_time.axhspan(y, 100, color=orbit_color, zorder=2.3)
 
     ax_sky = fig.add_subplot(gs_sky, projection='astro hours mollweide')
@@ -214,7 +212,8 @@ def main(args=None):
             del old_artists[:]
             for row in schedule:
                 if times[i] >= row['time']:
-                    poly = tiling_model.fov.footprint(row['center']).icrs
+                    fov = survey_model.mission.fov
+                    poly = fov.footprint(row['center']).icrs
                     idx = survey_set.index(row['survey'])
                     footprint_color = colors[idx]
                     vertices = np.column_stack((poly.ra.rad, poly.dec.rad))

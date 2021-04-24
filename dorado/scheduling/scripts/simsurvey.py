@@ -23,6 +23,8 @@ from astropy import units as u
 from ligo.skymap.io import read_sky_map, write_sky_map
 from ligo.skymap.bayestar import rasterize
 
+from .. import mission as _mission
+
 np.random.seed(0)
 
 log = logging.getLogger(__name__)
@@ -31,6 +33,8 @@ log = logging.getLogger(__name__)
 def parser():
     p = ArgumentParser()
     p.add_argument('config', help='config file')
+    p.add_argument('mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
     p.add_argument('-n', '--norb', default=10,
                    type=int, help='Number of orbit')
     p.add_argument('-s', '--start_time', type=str,
@@ -50,7 +54,7 @@ def parser():
     return p
 
 
-def get_observed(latest_time, tiling_model, schedulenames, prob):
+def get_observed(latest_time, survey_model, schedulenames, prob):
 
     ras, decs, tts = [], [], []
     for schedulename in schedulenames:
@@ -62,9 +66,9 @@ def get_observed(latest_time, tiling_model, schedulenames, prob):
 
     probscale = np.ones(prob.shape)
     for ra, dec, tt in zip(ras, decs, tts):
-        ipix = tiling_model.fov.footprint_healpix(tiling_model.healpix,
-                                                  SkyCoord(ra*u.deg,
-                                                           dec*u.deg))
+        ipix = survey_model.mission.fov.footprint_healpix(survey_model.healpix,
+                                                          SkyCoord(ra*u.deg,
+                                                                   dec*u.deg))
         dt = latest_time - tt
         tau = 60.0
         scale = 1 - np.exp(-dt.jd/tau)
@@ -76,21 +80,21 @@ def get_observed(latest_time, tiling_model, schedulenames, prob):
     return prob
 
 
-def compute_overlap(tiling_model):
+def compute_overlap(survey_model):
 
-    res = hp.nside2resol(tiling_model.healpix.nside, arcmin=True)
+    res = hp.nside2resol(survey_model.healpix.nside, arcmin=True)
     ipix = {}
-    for ii, cent1 in enumerate(tiling_model.centers):
+    for ii, cent1 in enumerate(survey_model.centers):
         ra, dec = cent1.ra.deg, cent1.dec.deg
-        ipix[ii] = tiling_model.fov.footprint_healpix(tiling_model.healpix,
-                                                      SkyCoord(ra*u.deg,
-                                                               dec*u.deg))
+        fov = survey_model.mission.fov
+        ipix[ii] = fov.footprint_healpix(survey_model.healpix,
+                                         SkyCoord(ra*u.deg, dec*u.deg))
     overlaps = []
-    for ii, cent1 in enumerate(tiling_model.centers):
+    for ii, cent1 in enumerate(survey_model.centers):
         if ii >= 100:
             continue
         overlap = 0.0
-        for jj, cent2 in enumerate(tiling_model.centers):
+        for jj, cent2 in enumerate(survey_model.centers):
             if ii <= jj:
                 continue
             over = np.intersect1d(ipix[ii], ipix[jj])
@@ -124,29 +128,27 @@ def main(args=None):
     args = parser().parse_args(args)
 
     import configparser
-    from ..models import TilingModel
+    from ..models import SurveyModel
     from ..fov import FOV
 
     config = configparser.ConfigParser()
     config.read(args.config)
 
+    mission = getattr(_mission, args.mission)
     tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
 
-    satfile = config["survey"]["satfile"]
     exposure_time = float(config["survey"]["exposure_time"]) * u.minute
     steps_per_exposure =\
         int(config["survey"]["time_steps_per_exposure"])
-    field_of_view = float(config["survey"]["field_of_view"]) * u.deg
     number_of_orbits = int(config["survey"]["number_of_orbits"])
-    tiling_model = TilingModel(satfile=satfile,
+    survey_model = SurveyModel(mission=mission,
                                exposure_time=exposure_time,
                                time_steps_per_exposure=steps_per_exposure,
-                               field_of_view=field_of_view,
                                number_of_orbits=number_of_orbits,
                                centers=tiles["center"])
 
-    npix = tiling_model.healpix.npix
-    nside = tiling_model.healpix.nside
+    npix = survey_model.healpix.npix
+    nside = survey_model.healpix.nside
 
     theta, phi = hp.pix2ang(nside, np.arange(npix))
     ra = np.rad2deg(phi)
@@ -154,7 +156,7 @@ def main(args=None):
     coords = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
 
     if args.doOverlap:
-        compute_overlap(tiling_model)
+        compute_overlap(survey_model)
 
     outdir = args.output
     if not os.path.isdir(outdir):
@@ -191,7 +193,7 @@ def main(args=None):
 
     start_time = Time(args.start_time, format='isot')
 
-    exposure_time = tiling_model.exposure_time
+    exposure_time = survey_model.exposure_time
     surveys = config["simsurvey"]["surveys"].split(",")
     weights = [0] + [float(x) for x in
                      config["simsurvey"]["weights"].split(",")]
@@ -215,8 +217,8 @@ def main(args=None):
 
         if os.path.isfile(schedulename):
             schedulenames.append(schedulename)
-            times = np.arange(tiling_model.time_steps) *\
-                tiling_model.time_step_duration + start_time
+            times = np.arange(survey_model.time_steps) *\
+                survey_model.time_step_duration + start_time
             start_time = times[-1] + exposure_time
             tind = tind + 1
             tind = np.mod(tind, quadlen)
@@ -228,7 +230,7 @@ def main(args=None):
             n[idx] = 1.0
             prob = n / np.sum(n)
 
-            prob = get_observed(start_time, tiling_model, schedulenames, prob)
+            prob = get_observed(start_time, survey_model, schedulenames, prob)
             if args.doDust:
                 prob = prob*V
 
@@ -238,7 +240,7 @@ def main(args=None):
             tindex = int(quadlen/2)
             tquad = quad.loc[tindex]
             raquad, decquad = tquad["center"].ra, tquad["center"].dec
-            p = quad_fov.footprint_healpix(tiling_model.healpix,
+            p = quad_fov.footprint_healpix(survey_model.healpix,
                                            SkyCoord(raquad, decquad))
             n[p] = 1.
             prob = n / np.sum(n)
@@ -250,7 +252,7 @@ def main(args=None):
             gwskymap = 'GW/%d.fits' % idx
             skymap = read_sky_map(gwskymap, moc=True)['UNIQ', 'PROBDENSITY']
             prob = rasterize(skymap, nside_to_level(nside))['PROB']
-            prob = prob[tiling_model.healpix.ring_to_nested(np.arange(
+            prob = prob[survey_model.healpix.ring_to_nested(np.arange(
                                                             len(prob)))]
             if args.doDust:
                 prob = prob*V
@@ -260,11 +262,11 @@ def main(args=None):
 
             tquad = quad.loc[tind]
             raquad, decquad = tquad["center"].ra, tquad["center"].dec
-            p = quad_fov.footprint_healpix(tiling_model.healpix,
+            p = quad_fov.footprint_healpix(survey_model.healpix,
                                            SkyCoord(raquad, decquad))
             n[p] = 1.
             prob = n / np.sum(n)
-            prob = get_observed(start_time, tiling_model, schedulenames, prob)
+            prob = get_observed(start_time, survey_model, schedulenames, prob)
             if args.doDust:
                 prob = prob*V
 
@@ -273,21 +275,21 @@ def main(args=None):
 
         write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
 
-        times = np.arange(tiling_model.time_steps) *\
-            tiling_model.time_step_duration + start_time
+        times = np.arange(survey_model.time_steps) *\
+            survey_model.time_step_duration + start_time
 
         executable = 'dorado-scheduling-survey'
-        system_command = '%s %s %s -o %s -s %s -c %s' % (
-            executable, skymapname, config["survey"]["tilesfile"],
-            schedulename, start_time.isot, args.config)
+        system_command = '%s %s %s %s -o %s -s %s' % (
+            executable, skymapname, args.config, args.mission,
+            schedulename, start_time.isot)
         print(system_command)
         os.system(system_command)
 
         if args.doAnimateInd:
             executable = 'dorado-scheduling-animate-survey'
-            system_command = '%s %s %s %s -s %s -c %s' % (
-                executable, skymapname, schedulename, gifname,
-                start_time.isot, args.config)
+            system_command = '%s %s %s %s %s %s -s %s' % (
+                executable, skymapname, args.config, args.mission,
+                schedulename, gifname, start_time.isot)
             os.system(system_command)
 
         if args.doPlotSkymaps:
@@ -314,24 +316,25 @@ def main(args=None):
 
     if args.doMetrics:
         executable = 'dorado-scheduling-survey-metrics'
-        system_command = '%s %s %s %s %s -c %s' % (
-            executable, skymapname, schedulename, metricsname,
-            config["survey"]["tilesfile"], args.config)
+        system_command = '%s %s %s %s %s %s' % (
+            executable, skymapname, args.config, args.mission,
+            schedulename, metricsname)
         print(system_command)
         os.system(system_command)
 
     if args.doAnimateAll:
         start_time = scheduleall[0]["time"]
         executable = 'dorado-scheduling-animate-survey'
-        system_command = '%s %s %s %s -s %s -c %s' % (
-            executable, skymapname, schedulename, gifname, start_time.isot,
-            args.config)
+        system_command = '%s %s %s %s %s %s -s %s' % (
+            executable, skymapname, args.config, args.mission,
+            schedulename, gifname, start_time.isot)
         print(system_command)
         os.system(system_command)
 
     if args.doSlicer:
         executable = 'dorado-scheduling-survey-slicer'
-        system_command = '%s %s %s %s %s' % (
-            executable, skymapname, schedulename, metricsname, args.config)
+        system_command = '%s %s %s %s %s %s' % (
+            executable, skymapname, args.config, args.mission,
+            schedulename, metricsname)
         print(system_command)
         os.system(system_command)
