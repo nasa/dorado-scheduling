@@ -42,6 +42,7 @@ synphot = "*"
 packaging = {version="*", optional=true}
 pep517 = {version="*", optional=true}
 pydata-sphinx-theme = {version="*", optional=true}
+sphinx-gallery = {version="*", optional=true}
 
 # For tests
 hypothesis = {version="*", optional=true}
@@ -50,7 +51,7 @@ pytest-doctestplus = {version="*", optional=true}
 skyfield =  {version="*", optional=true}
 
 [tool.poetry.extras]
-doc = ["packaging", "pep517", "pydata-sphinx-theme"]
+doc = ["packaging", "pep517", "pydata-sphinx-theme", "sphinx-gallery"]
 test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
 
 [tool.poetry.dev-dependencies]

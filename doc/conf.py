@@ -40,7 +40,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx_gallery.gen_gallery'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -69,6 +70,14 @@ autosummary_generate = True
 extlinks = {
     'arxiv': ('https://arxiv.org/abs/%s', 'arXiv:'),
     'doi': ('https://doi.org/%s', 'doi:')
+}
+
+
+# -- Options for sphinx_gallery extension ------------------------------------
+
+sphinx_gallery_conf = {
+    'examples_dirs': ['../examples'],
+    'gallery_dirs': ['examples'],
 }
 
 
