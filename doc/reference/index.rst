@@ -12,3 +12,4 @@ Modules
     orbit
     fov
     skygrid
+    units
