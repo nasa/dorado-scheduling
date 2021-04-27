@@ -54,10 +54,16 @@ def parser():
     group.add_argument(
         '--skygrid-step', type=u.Quantity, default='0.0011 sr',
         help='Sky grid resolution (any solid angle units')
+
+    group = p.add_mutually_exclusive_group(required=True)
     group.add_argument(
         '--skygrid-method', default='healpix',
         choices=[key.replace('_', '-') for key in skygrid.__all__],
         help='Sky grid method')
+    group.add_argument(
+        '--skygrid-file', metavar='TILES.ecsv',
+        type=FileType('rb'),
+        help='tiles filename')
 
     p.add_argument(
         '--nside', type=int, default=32, help='HEALPix sampling resolution')
@@ -109,8 +115,12 @@ def main(args=None):
             0, args.duration.to_value(u.s),
             args.time_step.to_value(u.s)) * u.s
     rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
-    centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
-        args.skygrid_step)
+
+    if args.skygrid_file is not None:
+        centers = Table.read(args.skygrid_file, format='ascii.ecsv')['center']
+    else:
+        centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
+            args.skygrid_step)
 
     log.info('evaluating field of regard')
     not_regard = convolve(
