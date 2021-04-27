@@ -13,6 +13,7 @@ from ligo.skymap.tool import ArgumentParser, FileType
 
 from .. import mission as _mission
 from .. import skygrid
+from ..units import equivalencies
 
 log = logging.getLogger(__name__)
 
@@ -34,6 +35,12 @@ def parser():
     group.add_argument(
         '--exptime', type=u.Quantity, default='10 min',
         help='Exposure time (any time units)')
+    group.add_argument(
+        '--delay', type=u.Quantity, default='30 min',
+        help='Delay after event time to start observing (any time units)')
+    group.add_argument(
+        '--duration', type=u.Quantity, default='1 orbit',
+        help='Duration of observing plan (any time units)')
 
     group = p.add_argument_group(
         'Discretization options',
@@ -94,11 +101,13 @@ def main(args=None):
     prob = rasterize(skymap, healpix.level)['PROB']
 
     # Set up grids
-    time_steps_per_exposure = int(np.round(
-        (args.exptime / args.time_step).to_value(u.dimensionless_unscaled)))
-    times = start_time + np.arange(
-        0, mission.orbit.period.to_value(u.s),
-        args.time_step.to_value(u.s)) * u.s
+    with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
+        time_steps_per_exposure = int(np.round(
+            (args.exptime / args.time_step).to_value(
+                u.dimensionless_unscaled)))
+        times = start_time + args.delay + np.arange(
+            0, args.duration.to_value(u.s),
+            args.time_step.to_value(u.s)) * u.s
     rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
     centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
         args.skygrid_step)
