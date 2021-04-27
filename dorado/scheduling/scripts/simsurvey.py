@@ -140,6 +140,7 @@ def main(args=None):
     exposure_time = float(config["survey"]["exposure_time"]) * u.minute
     steps_per_exposure =\
         int(config["survey"]["time_steps_per_exposure"])
+    exposure_time_steps = exposure_time / steps_per_exposure
     number_of_orbits = int(config["survey"]["number_of_orbits"])
     survey_model = SurveyModel(mission=mission,
                                exposure_time=exposure_time,
@@ -278,10 +279,14 @@ def main(args=None):
         times = np.arange(survey_model.time_steps) *\
             survey_model.time_step_duration + start_time
 
-        executable = 'dorado-scheduling-survey'
-        system_command = '%s %s %s %s -o %s -s %s' % (
-            executable, skymapname, args.config, args.mission,
-            schedulename, start_time.isot)
+        executable = 'dorado-scheduling'
+        system_command = ("%s %s -o %s --mission %s --exptime '%s' "
+                          "--time-step '%s' --roll-step '90 deg' --tiles %s "
+                          "--number_of_orbits %d") % (
+            executable,
+            skymapname, schedulename, args.mission,
+            str(exposure_time), str(exposure_time_steps),
+            config["survey"]["tilesfile"], number_of_orbits)
         print(system_command)
         os.system(system_command)
 
