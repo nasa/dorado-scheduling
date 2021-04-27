@@ -12,6 +12,7 @@ from astropy import units as u
 from ligo.skymap.tool import ArgumentParser, FileType
 
 from .. import mission as _mission
+from ..units import equivalencies
 
 log = logging.getLogger(__name__)
 
@@ -25,6 +26,12 @@ def parser():
     group.add_argument(
         '--mission', choices=set(_mission.__all__) - {'Mission'},
         default='dorado', help='Mission configuration')
+    group.add_argument(
+        '--delay', type=u.Quantity, default='30 min',
+        help='Delay after event time to start observing (any time units)')
+    group.add_argument(
+        '--duration', type=u.Quantity, default='1 orbit',
+        help='Duration of observing plan (any time units)')
 
     group = p.add_argument_group(
         'Discretization options',
@@ -81,9 +88,10 @@ def main(args=None):
 
     cls = find_greedy_credible_levels(skymap_hires)
 
-    times = start_time + np.arange(
-        0, mission.orbit.period.to_value(u.s),
-        args.time_step.to_value(u.s)) * u.s
+    with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
+        times = start_time + args.delay + np.arange(
+            0, args.duration.to_value(u.s),
+            args.time_step.to_value(u.s)) * u.s
 
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
