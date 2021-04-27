@@ -74,7 +74,7 @@ doctest_optionflags = ["FLOAT_CMP"]
 doctest_plus = true
 doctest_rst = true
 testpaths = ["dorado", "doc"]
-norecursedirs = ["doc/_build"]
+norecursedirs = ["doc/_build", "doc/examples"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
