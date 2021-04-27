@@ -19,29 +19,47 @@ log = logging.getLogger(__name__)
 
 def parser():
     p = ArgumentParser()
-    p.add_argument('skymap', metavar='FILE.fits[.gz]',
-                   type=FileType('rb'), help='Input sky map')
-    p.add_argument('-n', '--nexp', type=int, help='Number of exposures')
-    p.add_argument('--mission', choices=set(_mission.__all__) - {'Mission'},
-                   default='dorado', help='Mission configuration')
-    p.add_argument('--exptime', type=u.Quantity, default='10 min',
-                   help='Exposure time (any time units)')
-    p.add_argument('--time-step', type=u.Quantity, default='1 min',
-                   help='Model time step (any time units)')
-    p.add_argument('--roll-step', type=u.Quantity, default='10 deg',
-                   help='Roll angle step (any angle units)')
-    p.add_argument('--skygrid-step', type=u.Quantity, default='0.0011 sr',
-                   help='Sky grid resolution (any solid angle units')
-    p.add_argument('--skygrid-method', default='healpix',
-                   choices=[key.replace('_', '-') for key in skygrid.__all__],
-                   help='Sky grid method')
-    p.add_argument('--nside', type=int, default=32,
-                   help='HEALPix sampling resolution')
-    p.add_argument('--output', '-o', metavar='OUTPUT.ecsv',
-                   type=FileType('w'), default='-',
-                   help='output filename')
-    p.add_argument('-j', '--jobs', type=int, default=1, const=None, nargs='?',
-                   help='Number of threads')
+
+    group = p.add_argument_group(
+        'Problem setup options',
+        'Options that control the problem setup')
+    group.add_argument(
+        'skymap', metavar='FILE.fits[.gz]',
+        type=FileType('rb'), help='Input sky map')
+    group.add_argument(
+        '-n', '--nexp', type=int, help='Number of exposures')
+    group.add_argument(
+        '--mission', choices=set(_mission.__all__) - {'Mission'},
+        default='dorado', help='Mission configuration')
+    group.add_argument(
+        '--exptime', type=u.Quantity, default='10 min',
+        help='Exposure time (any time units)')
+
+    group = p.add_argument_group(
+        'Discretization options',
+        'Options that control the discretization of decision variables')
+    group.add_argument(
+        '--time-step', type=u.Quantity, default='1 min',
+        help='Model time step (any time units)')
+    group.add_argument(
+        '--roll-step', type=u.Quantity, default='10 deg',
+        help='Roll angle step (any angle units)')
+    group.add_argument(
+        '--skygrid-step', type=u.Quantity, default='0.0011 sr',
+        help='Sky grid resolution (any solid angle units')
+    group.add_argument(
+        '--skygrid-method', default='healpix',
+        choices=[key.replace('_', '-') for key in skygrid.__all__],
+        help='Sky grid method')
+
+    p.add_argument(
+        '--nside', type=int, default=32, help='HEALPix sampling resolution')
+    p.add_argument(
+        '--output', '-o', metavar='OUTPUT.ecsv', type=FileType('w'),
+        default='-', help='output filename')
+    p.add_argument(
+        '-j', '--jobs', type=int, default=1, const=None, nargs='?',
+        help='Number of threads')
     return p
 
 
