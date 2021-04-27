@@ -5,6 +5,31 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
+"""
+This module introduces a "unit" orbit, which allows you to express time
+intervals in units of an orbital period.
+
+Examples
+--------
+
+First, some imports::
+
+>>> from astropy import units as u
+>>> from dorado.scheduling import data
+>>> from dorado.scheduling import Orbit
+>>> from importlib import resources
+
+Load an example two-line element:
+
+>>> with resources.path(data, 'dorado-625km-sunsync.tle') as p:
+...     orbit = Orbit(p)
+
+Now convert from units of the orbital period to units of seconds:
+
+>>> u.Quantity('2 orbit').to(u.s, equivalencies=equivalencies.orbital(orbit))
+<Quantity 11664.87018328 s>
+"""
+
 from .orbital import orbit
 from . import equivalencies
 
