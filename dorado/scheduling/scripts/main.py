@@ -115,7 +115,7 @@ def main(args=None):
             (args.exptime / args.time_step).to_value(
                 u.dimensionless_unscaled)))
         times = start_time + args.delay + np.arange(
-            0, args.duration.to_value(u.s),
+            0, args.number_of_orbits * args.duration.to_value(u.s),
             args.time_step.to_value(u.s)) * u.s
     rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
 
