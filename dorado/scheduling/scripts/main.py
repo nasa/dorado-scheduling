@@ -68,6 +68,8 @@ def parser():
     p.add_argument(
         '--nside', type=int, default=32, help='HEALPix sampling resolution')
     p.add_argument(
+        '--timeout', type=int, help='Impose timeout on solutions')
+    p.add_argument(
         '--output', '-o', metavar='OUTPUT.ecsv', type=FileType('w'),
         default='-', help='output filename')
     p.add_argument(
@@ -130,6 +132,8 @@ def main(args=None):
 
     log.info('generating model')
     m = Model()
+    if args.timeout is not None:
+        m.set_time_limit(args.timeout)
     if args.jobs is not None:
         m.context.cplex_parameters.threads = args.jobs
 

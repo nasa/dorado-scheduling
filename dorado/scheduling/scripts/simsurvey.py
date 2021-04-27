@@ -42,6 +42,8 @@ def parser():
     p.add_argument('--output', '-o',
                    type=str, default='simsurvey',
                    help='output survey')
+    p.add_argument('--timeout', type=int,
+                   default=300, help='Impose timeout on solutions')
 
     p.add_argument("--doDust", help="load CSV", action="store_true")
     p.add_argument("--doAnimateInd", help="load CSV", action="store_true")
@@ -282,11 +284,13 @@ def main(args=None):
         executable = 'dorado-scheduling'
         system_command = ("%s %s -o %s --mission %s --exptime '%s' "
                           "--time-step '%s' --roll-step '90 deg' "
-                          "--skygrid-file %s --duration '%d orbit'") % (
+                          "--skygrid-file %s --duration '%d orbit' "
+                          "--timeout %d") % (
             executable,
             skymapname, schedulename, args.mission,
             str(exposure_time), str(exposure_time_steps),
-            config["survey"]["tilesfile"], number_of_orbits)
+            config["survey"]["tilesfile"], number_of_orbits,
+            args.timeout)
         print(system_command)
         os.system(system_command)
 
