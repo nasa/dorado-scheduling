@@ -18,19 +18,33 @@ log = logging.getLogger(__name__)
 
 def parser():
     p = ArgumentParser()
-    p.add_argument('--mission', choices=set(_mission.__all__) - {'Mission'},
-                   default='dorado', help='Mission configuration')
-    p.add_argument('--time-step', type=u.Quantity, default='1 min',
-                   help='Model time step')
-    p.add_argument('--nside', type=int, default=32,
-                   help='HEALPix sampling resolution')
-    p.add_argument('skymap', metavar='FILE.fits[.gz]',
-                   type=FileType('rb'), help='Input sky map')
-    p.add_argument('schedule', metavar='SCHEDULE.ecsv',
-                   type=FileType('rb'), default='-',
-                   help='Schedule filename')
-    p.add_argument('output', metavar='MOVIE.gif', type=FileType('wb'),
-                   help='Output filename')
+
+    group = p.add_argument_group(
+        'Problem setup options',
+        'Options that control the problem setup')
+    group.add_argument(
+        '--mission', choices=set(_mission.__all__) - {'Mission'},
+        default='dorado', help='Mission configuration')
+
+    group = p.add_argument_group(
+        'Discretization options',
+        'Options that control the discretization of decision variables')
+    group.add_argument(
+        '--time-step', type=u.Quantity, default='1 min',
+        help='Model time step')
+
+    p.add_argument(
+        '--nside', type=int, default=32, help='HEALPix sampling resolution')
+    p.add_argument(
+        'skymap', metavar='FILE.fits[.gz]', type=FileType('rb'),
+        help='Input sky map')
+    p.add_argument(
+        'schedule', metavar='SCHEDULE.ecsv', type=FileType('rb'), default='-',
+        help='Schedule filename')
+    p.add_argument(
+        'output', metavar='MOVIE.gif', type=FileType('wb'),
+        help='Output filename')
+
     return p
 
 
