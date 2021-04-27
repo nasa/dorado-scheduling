@@ -281,8 +281,8 @@ def main(args=None):
 
         executable = 'dorado-scheduling'
         system_command = ("%s %s -o %s --mission %s --exptime '%s' "
-                          "--time-step '%s' --roll-step '90 deg' --tiles %s "
-                          "--number_of_orbits %d") % (
+                          "--time-step '%s' --roll-step '90 deg' "
+                          "--skygrid-file %s --duration '%d orbit'") % (
             executable,
             skymapname, schedulename, args.mission,
             str(exposure_time), str(exposure_time_steps),

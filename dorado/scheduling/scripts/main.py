@@ -54,9 +54,6 @@ def parser():
     group.add_argument(
         '--skygrid-step', type=u.Quantity, default='0.0011 sr',
         help='Sky grid resolution (any solid angle units')
-    group.add_argument(
-        '--number_of_orbits', type=int, default=1,
-        help='Number of orbits to simulate')
 
     group = p.add_mutually_exclusive_group(required=True)
     group.add_argument(
@@ -64,7 +61,7 @@ def parser():
         choices=[key.replace('_', '-') for key in skygrid.__all__],
         help='Sky grid method')
     group.add_argument(
-        '--tiles', metavar='TILES.ecsv',
+        '--skygrid-file', metavar='TILES.ecsv',
         type=FileType('rb'),
         help='tiles filename')
 
@@ -91,7 +88,7 @@ def main(args=None):
     from astropy.coordinates import ICRS
     from astropy.io import fits
     from astropy.time import Time
-    from astropy.table import Table, QTable
+    from astropy.table import Table
     from docplex.mp.model import Model
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
@@ -115,12 +112,12 @@ def main(args=None):
             (args.exptime / args.time_step).to_value(
                 u.dimensionless_unscaled)))
         times = start_time + args.delay + np.arange(
-            0, args.number_of_orbits * args.duration.to_value(u.s),
+            0, args.duration.to_value(u.s),
             args.time_step.to_value(u.s)) * u.s
     rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
 
-    if args.tiles is not None:
-        centers = QTable.read(args.tiles, format='ascii.ecsv')['center']
+    if args.skygrid_file is not None:
+        centers = Table.read(args.skygrid_file, format='ascii.ecsv')['center']
     else:
         centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
             args.skygrid_step)
