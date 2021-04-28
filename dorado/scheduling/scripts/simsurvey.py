@@ -243,14 +243,15 @@ def main(args=None):
             idx = int(np.floor(10*np.random.rand()))
             gwskymap = 'GW/%d.fits' % idx
             skymap = read_sky_map(gwskymap, moc=True)['UNIQ', 'PROBDENSITY']
-            prob = rasterize(skymap, nside_to_level(nside))['PROB']
+            prob = rasterize(
+                skymap, nside_to_level(survey_model.healpix.nside))['PROB']
             prob = prob[survey_model.healpix.ring_to_nested(np.arange(
                                                             len(prob)))]
             if args.doDust:
                 prob = prob*V
 
         elif survey == "baseline":
-            n = 0.01 * np.ones(npix)
+            n = 0.01 * np.ones(survey_model.healpix.npix)
 
             tquad = quad.loc[tind]
             raquad, decquad = tquad["center"].ra, tquad["center"].dec
@@ -308,7 +309,7 @@ def main(args=None):
 
     scheduleall.write(schedulename, format='ascii.ecsv')
 
-    n = np.ones((npix,))
+    n = np.ones(survey_model.healpix.npix)
     prob = n / np.sum(n)
     write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
 
