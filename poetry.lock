@@ -155,6 +155,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "cdshealpix"
+version = "0.6.0"
+description = "Python cdshealpix package wrapping code of the cdshealpix crate.\n"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+astropy = "*"
+
+[[package]]
 name = "certifi"
 version = "2020.12.5"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1550,7 +1561,7 @@ test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "c9597855e48c8c6230d4778cf7da1b7a7563daf607b897732411d1a379f38155"
+content-hash = "04b8660a02a371d053cf765fa2af4bde518582ae4a5ec5499fc0e9cc7bf63190"
 
 [metadata.files]
 afterglowpy = [
@@ -1644,6 +1655,24 @@ beautifulsoup4 = [
 cached-property = [
     {file = "cached-property-1.5.2.tar.gz", hash = "sha256:9fa5755838eecbb2d234c3aa390bd80fbd3ac6b6869109bfc1b499f7bd89a130"},
     {file = "cached_property-1.5.2-py2.py3-none-any.whl", hash = "sha256:df4f613cf7ad9a588cc381aaf4a512d26265ecebd5eb9e1ba12f1319eb85a6a0"},
+]
+cdshealpix = [
+    {file = "cdshealpix-0.6.0-cp36-cp36m-macosx_10_7_x86_64.whl", hash = "sha256:7ba3d1a3b717eaaf78bb39307fb2ebda7222af0101b949e3437ed40e40721e7b"},
+    {file = "cdshealpix-0.6.0-cp36-cp36m-manylinux2014_i686.whl", hash = "sha256:7bda465f1832c1ab36e74794405bbac3a9f7ad9623d8e01c13faece950bb3578"},
+    {file = "cdshealpix-0.6.0-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:09f408b8b05e63b9e35c1ddab1cefd8ab6ae594dd5283963bfcb714e2304d0b1"},
+    {file = "cdshealpix-0.6.0-cp36-none-win_amd64.whl", hash = "sha256:1fb42f77180af23e27c7e814425fe019fb3482d95e09141442f08e2b18a1380d"},
+    {file = "cdshealpix-0.6.0-cp37-cp37m-macosx_10_7_x86_64.whl", hash = "sha256:e30082307667f7793b721b4abbc2e37793d069eb3dd57f57b10fac16744090aa"},
+    {file = "cdshealpix-0.6.0-cp37-cp37m-manylinux2014_i686.whl", hash = "sha256:3d71d23a2b662b71ae310475f289d97ea11f29d55f094dde5620b9bd9baa5c0d"},
+    {file = "cdshealpix-0.6.0-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:bd65e89b72d97d23e3c2ac7100f3bd792a05b94901af6555672344bdc29fea29"},
+    {file = "cdshealpix-0.6.0-cp37-none-win_amd64.whl", hash = "sha256:dcd71d9c76ffafe9df4c1e6cf31434961e381d57c12ccb9e98655fade6c9313f"},
+    {file = "cdshealpix-0.6.0-cp38-cp38-macosx_10_7_x86_64.whl", hash = "sha256:9b6ef0c2f392fcd1ceb8bee98518a9ea668e69e90b07194afa97f927e85847f3"},
+    {file = "cdshealpix-0.6.0-cp38-cp38-manylinux2014_i686.whl", hash = "sha256:56c2eef76187efb1558f67000a41eda356883fde7c548a424fa2d8cdae957813"},
+    {file = "cdshealpix-0.6.0-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:7970f55a5cbab69e8994263721d4109b377edf0e5d047cb5928644dddafda554"},
+    {file = "cdshealpix-0.6.0-cp38-none-win_amd64.whl", hash = "sha256:d51c67bb7298853451d42653848489c7da38c8d1c19bcaef179fe81574f67305"},
+    {file = "cdshealpix-0.6.0-cp39-cp39-macosx_10_7_x86_64.whl", hash = "sha256:8d0ed0c78f2280013d3eff88381faaebb01e96f7140bdd478cd6ba0247d00df5"},
+    {file = "cdshealpix-0.6.0-cp39-cp39-manylinux2014_i686.whl", hash = "sha256:1fd50971ce20b43a11558f52e59a1dfa68e6ef189e3e79397475c4323a8f8f9c"},
+    {file = "cdshealpix-0.6.0-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:e4ab253a166679d881dc49f175ce84ab068d53773500794a8ea606a204d8664b"},
+    {file = "cdshealpix-0.6.0-cp39-none-win_amd64.whl", hash = "sha256:ac17de51a1c597460b9877cc99711635e3f3fc6bf9e59ef1bd0d6587c3211ad5"},
 ]
 certifi = [
     {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},

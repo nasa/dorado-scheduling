@@ -5,11 +5,9 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
-from functools import partial
-
 from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
 from astropy import units as u
-import healpy as hp
+from cdshealpix.nested import polygon_search
 import numpy as np
 
 __all__ = ('FOV',)
@@ -94,7 +92,8 @@ class FOV:
 
         >>> hpx = HEALPix(nside=4, frame=ICRS())
         >>> fov.footprint_healpix(hpx, SkyCoord(0*u.deg, 20*u.deg), 15*u.deg)
-        array([ 24,  39,  40,  41,  55,  56,  71,  72,  73,  87,  88, 103])
+        array([ 57,  41,  25,  24,  70,  55,  39,  38,  23, 120, 104, 105,  88,
+                73, 119, 103, 102,  87,  72,  56,  71,  40])
 
         Get the footprint for a grid of pointings:
 
@@ -124,6 +123,15 @@ class FOV:
 
         return SkyCoord(frame.realize_frame(representation))
 
+    @staticmethod
+    def _polygon_search_internal(healpix, vertices):
+        ipix, _, _ = polygon_search(
+            vertices.lon, vertices.lat, depth=healpix.level, flat=True)
+        ipix = ipix.astype(np.intp)
+        if healpix.order == 'ring':
+            ipix = healpix.nested_to_ring(ipix)
+        return ipix
+
     def footprint_healpix(self, healpix, *args, **kwargs):
         """Get the HEALPix footprint at a given orientation.
 
@@ -140,10 +148,9 @@ class FOV:
             An array of HEALPix indices contained within the footprint.
 
         """
-        vertices = self.footprint(*args, **kwargs)
-        xyz = vertices.transform_to(healpix.frame).cartesian.xyz.value
-        return hp.query_polygon(healpix.nside, xyz.T,
-                                nest=(healpix.order == 'nested'))
+        vertices = self.footprint(*args, **kwargs).transform_to(
+            healpix.frame).represent_as(UnitSphericalRepresentation)
+        return self._polygon_search_internal(healpix, vertices)
 
     def footprint_healpix_grid(self, healpix, center, roll):
         """Calculate the HEALPix footprints of all pointings on the grid.
@@ -155,9 +162,7 @@ class FOV:
             for each roll.
 
         """
-        vertices = self.footprint(center[:, None], roll[None, :])
-        xyz = np.moveaxis(
-            vertices.transform_to(healpix.frame).cartesian.xyz.value, 0, -1)
-        query_polygon = partial(
-            hp.query_polygon, healpix.nside, nest=(healpix.order == 'nested'))
-        return ((query_polygon(_) for _ in __) for __ in xyz)
+        vertices = self.footprint(center[:, None], roll[None, :]).transform_to(
+            healpix.frame).represent_as(UnitSphericalRepresentation)
+        return ((self._polygon_search_internal(healpix, _) for _ in __)
+                for __ in vertices)
