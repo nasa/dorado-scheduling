@@ -82,13 +82,15 @@ def get_observed(latest_time, survey_model, schedulenames, prob):
 
 
 def compute_overlap(survey_model):
-    res = survey_model.healpix.pixel_resolution.to_value(u.arcmin)
+    res = survey_model.healpix.pixel_area.to_value(u.arcmin**2)
     ipix = {}
     for ii, cent1 in enumerate(survey_model.centers):
         fov = survey_model.mission.fov
         ipix[ii] = fov.footprint_healpix(survey_model.healpix, cent1)
     overlaps = []
     for ii, cent1 in enumerate(survey_model.centers):
+        if np.mod(ii, 100) == 0:
+            print('Computing %d/%d tiles' % (ii, len(survey_model.centers)))
         overlap = 0.0
         for jj, cent2 in enumerate(survey_model.centers):
             if ii <= jj:
@@ -96,7 +98,7 @@ def compute_overlap(survey_model):
             over = np.intersect1d(ipix[ii], ipix[jj])
             overlap = np.max([overlap, len(over)*res])
         overlaps.append(overlap)
-    print('max overlap: %.1f arcmin^2' % (np.max(overlaps)))
+    print('max overlap: %.5f arcmin^2' % (np.max(overlaps)))
 
 
 def merge_tables(schedulenames):
