@@ -10,7 +10,6 @@
 import os
 import logging
 import numpy as np
-import healpy as hp
 
 from ligo.skymap.tool import ArgumentParser
 
@@ -83,14 +82,11 @@ def get_observed(latest_time, survey_model, schedulenames, prob):
 
 
 def compute_overlap(survey_model):
-
-    res = hp.nside2resol(survey_model.healpix.nside, arcmin=True)
+    res = survey_model.healpix.pixel_resolution.to_value(u.arcmin)
     ipix = {}
     for ii, cent1 in enumerate(survey_model.centers):
-        ra, dec = cent1.ra.deg, cent1.dec.deg
         fov = survey_model.mission.fov
-        ipix[ii] = fov.footprint_healpix(survey_model.healpix,
-                                         SkyCoord(ra*u.deg, dec*u.deg))
+        ipix[ii] = fov.footprint_healpix(survey_model.healpix, cent1)
     overlaps = []
     for ii, cent1 in enumerate(survey_model.centers):
         if ii >= 100:
@@ -150,13 +146,8 @@ def main(args=None):
                                number_of_orbits=number_of_orbits,
                                centers=tiles["center"])
 
-    npix = survey_model.healpix.npix
-    nside = survey_model.healpix.nside
-
-    theta, phi = hp.pix2ang(nside, np.arange(npix))
-    ra = np.rad2deg(phi)
-    dec = np.rad2deg(0.5*np.pi - theta)
-    coords = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+    coords = survey_model.healpix.healpix_to_skycoord(
+        np.arange(survey_model.healpix.npix))
 
     if args.doOverlap:
         compute_overlap(survey_model)
@@ -228,17 +219,15 @@ def main(args=None):
             continue
 
         if survey == "galactic_plane":
-            idx = np.where(np.abs(coords.galactic.b.deg) <= 15.0)[0]
-            n = 0.01 * np.ones(npix)
-            n[idx] = 1.0
-            prob = n / np.sum(n)
+            prob = (np.abs(coords.galactic.b.deg) <= 15.0)
+            prob = prob / prob.sum()
 
             prob = get_observed(start_time, survey_model, schedulenames, prob)
             if args.doDust:
                 prob = prob*V
 
         elif survey == "kilonova":
-            n = 0.01 * np.ones(npix)
+            n = 0.01 * np.ones(survey_model.healpix.npix)
 
             tindex = int(quadlen/2)
             tquad = quad.loc[tindex]
@@ -254,14 +243,15 @@ def main(args=None):
             idx = int(np.floor(10*np.random.rand()))
             gwskymap = 'GW/%d.fits' % idx
             skymap = read_sky_map(gwskymap, moc=True)['UNIQ', 'PROBDENSITY']
-            prob = rasterize(skymap, nside_to_level(nside))['PROB']
+            prob = rasterize(
+                skymap, nside_to_level(survey_model.healpix.nside))['PROB']
             prob = prob[survey_model.healpix.ring_to_nested(np.arange(
                                                             len(prob)))]
             if args.doDust:
                 prob = prob*V
 
         elif survey == "baseline":
-            n = 0.01 * np.ones(npix)
+            n = 0.01 * np.ones(survey_model.healpix.npix)
 
             tquad = quad.loc[tind]
             raquad, decquad = tquad["center"].ra, tquad["center"].dec
@@ -319,7 +309,7 @@ def main(args=None):
 
     scheduleall.write(schedulename, format='ascii.ecsv')
 
-    n = np.ones((npix,))
+    n = np.ones(survey_model.healpix.npix)
     prob = n / np.sum(n)
     write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
 
