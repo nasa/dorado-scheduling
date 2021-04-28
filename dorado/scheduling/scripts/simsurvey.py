@@ -10,7 +10,6 @@
 import os
 import logging
 import numpy as np
-import healpy as hp
 
 from ligo.skymap.tool import ArgumentParser
 
@@ -83,14 +82,11 @@ def get_observed(latest_time, survey_model, schedulenames, prob):
 
 
 def compute_overlap(survey_model):
-
-    res = hp.nside2resol(survey_model.healpix.nside, arcmin=True)
+    res = survey_model.healpix.pixel_resolution.to_value(u.arcmin)
     ipix = {}
     for ii, cent1 in enumerate(survey_model.centers):
-        ra, dec = cent1.ra.deg, cent1.dec.deg
         fov = survey_model.mission.fov
-        ipix[ii] = fov.footprint_healpix(survey_model.healpix,
-                                         SkyCoord(ra*u.deg, dec*u.deg))
+        ipix[ii] = fov.footprint_healpix(survey_model.healpix, cent1)
     overlaps = []
     for ii, cent1 in enumerate(survey_model.centers):
         if ii >= 100:
@@ -150,13 +146,8 @@ def main(args=None):
                                number_of_orbits=number_of_orbits,
                                centers=tiles["center"])
 
-    npix = survey_model.healpix.npix
-    nside = survey_model.healpix.nside
-
-    theta, phi = hp.pix2ang(nside, np.arange(npix))
-    ra = np.rad2deg(phi)
-    dec = np.rad2deg(0.5*np.pi - theta)
-    coords = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
+    coords = survey_model.healpix.healpix_to_skycoord(
+        np.arange(survey_model.healpix.npix))
 
     if args.doOverlap:
         compute_overlap(survey_model)
