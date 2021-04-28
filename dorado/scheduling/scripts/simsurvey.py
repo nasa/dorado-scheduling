@@ -219,10 +219,8 @@ def main(args=None):
             continue
 
         if survey == "galactic_plane":
-            idx = np.where(np.abs(coords.galactic.b.deg) <= 15.0)[0]
-            n = 0.01 * np.ones(npix)
-            n[idx] = 1.0
-            prob = n / np.sum(n)
+            prob = (np.abs(coords.galactic.b.deg) <= 15.0)
+            prob = prob / prob.sum()
 
             prob = get_observed(start_time, survey_model, schedulenames, prob)
             if args.doDust:
