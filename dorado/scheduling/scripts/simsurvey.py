@@ -227,7 +227,7 @@ def main(args=None):
                 prob = prob*V
 
         elif survey == "kilonova":
-            n = 0.01 * np.ones(npix)
+            n = 0.01 * np.ones(survey_model.healpix.npix)
 
             tindex = int(quadlen/2)
             tquad = quad.loc[tindex]
