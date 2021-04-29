@@ -140,7 +140,9 @@ def main(args=None):
     schedule.add_column(skymaps, name='map')
 
     log.info('calculating field of regard')
-    field_of_regard = survey_model.get_field_of_regard(times, jobs=args.jobs)
+    field_of_regard = survey_model.mission.get_field_of_regard(
+        survey_model.healpix.healpix_to_skycoord(
+            np.arange(survey_model.healpix.npix)), times, jobs=args.jobs)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
     # continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
