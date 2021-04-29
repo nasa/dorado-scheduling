@@ -7,8 +7,6 @@
 #
 """Spacecraft survey model."""
 
-from astroplan import is_event_observable, Observer
-from ligo.skymap.util import progress_map
 from astropy import units as u
 from astropy.coordinates import ICRS
 from astropy_healpix import HEALPix
@@ -46,16 +44,3 @@ class SurveyModel():
         self.time_steps = int(
             (self.number_of_orbits * self.mission.orbit.period /
              self.time_step_duration).to_value(u.dimensionless_unscaled))
-
-    def _observable(self, time, location):
-        return is_event_observable(
-            self.mission.constraints,
-            Observer(location),
-            self.centers,
-            time
-        ).ravel()
-
-    def get_field_of_regard(self, times, jobs=None):
-        return np.asarray(list(progress_map(
-            self._observable, times, self.mission.orbit(times).earth_location,
-            jobs=jobs)))
