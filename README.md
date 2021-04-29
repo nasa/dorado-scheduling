@@ -1,9 +1,9 @@
 # Dorado observation planning and scheduling simulations
 
-![Build Status](https://github.com/nasa/dorado-scheduling/actions/workflows/build-and-test.yml/badge.svg)
+[![Build Status](https://github.com/nasa/dorado-scheduling/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/nasa/dorado-scheduling/actions)
 [![Documentation Status](https://readthedocs.org/projects/dorado-scheduling/badge/?version=latest)](https://dorado-scheduling.readthedocs.io/en/latest/?badge=latest)
-![Codecov](https://img.shields.io/codecov/c/github/nasa/dorado-scheduling)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dorado-scheduling)
+[![Codecov](https://img.shields.io/codecov/c/github/nasa/dorado-scheduling)](https://app.codecov.io/gh/nasa/dorado-scheduling)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dorado-scheduling)](https://pypi.org/project/dorado-scheduling/)
 
 Dorado is a proposed space mission for ultraviolet follow-up of gravitational
 wave events. This repository contains a simple target of opportunity
