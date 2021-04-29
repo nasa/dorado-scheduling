@@ -11,6 +11,7 @@ import logging
 from ligo.skymap.tool import ArgumentParser, FileType
 
 from .. import mission as _mission
+from .. import skygrid
 
 log = logging.getLogger(__name__)
 
@@ -19,14 +20,25 @@ def parser():
     p = ArgumentParser()
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
-    p.add_argument('config', help='config file')
-    p.add_argument('mission', choices=set(_mission.__all__) - {'Mission'},
-                   default='dorado', help='Mission configuration')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
                    type=FileType('rb'), default='-',
                    help='Schedule filename')
-    p.add_argument('output', metavar='output',
-                   help='Output folder')
+
+    p.add_argument('--mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
+    p.add_argument('--output', '-o',
+                   type=str, default='simsurvey/metrics',
+                   help='output survey')
+
+    group = p.add_mutually_exclusive_group(required=True)
+    group.add_argument(
+        '--skygrid-method', default='healpix',
+        choices=[key.replace('_', '-') for key in skygrid.__all__],
+        help='Sky grid method')
+    group.add_argument(
+        '--skygrid-file', metavar='TILES.ecsv',
+        type=FileType('rb'),
+        help='tiles filename')
 
     return p
 
@@ -36,9 +48,7 @@ def main(args=None):
 
     # Late imports
     import os
-    from astropy.table import QTable
-    from astropy import units as u
-    import configparser
+    from astropy.table import Table
     from ligo.skymap import plot
     import matplotlib
     from matplotlib import pyplot as plt
@@ -46,34 +56,21 @@ def main(args=None):
     import numpy as np
     import seaborn
 
-    from ..models import SurveyModel
-
-    config = configparser.ConfigParser()
-    config.read(args.config)
-
     mission = getattr(_mission, args.mission)
-    tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
-
-    exposure_time = float(config["survey"]["exposure_time"]) * u.minute
-    steps_per_exposure =\
-        int(config["survey"]["time_steps_per_exposure"])
-    number_of_orbits = int(config["survey"]["number_of_orbits"])
-
-    survey_model = SurveyModel(mission=mission,
-                               exposure_time=exposure_time,
-                               time_steps_per_exposure=steps_per_exposure,
-                               number_of_orbits=number_of_orbits,
-                               centers=tiles["center"])
+    tiles = Table.read(args.skygrid_file, format='ascii.ecsv')
+    centers = tiles['center']
 
     outdir = args.output
     if not os.path.isdir(outdir):
         os.makedirs(outdir)
 
     log.info('reading observing schedule')
-    schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
+    schedule = Table.read(args.schedule.name, format='ascii.ecsv')
+    for col in schedule.colnames:
+        schedule[col].info.indices = []
     schedule.add_index('time')
 
-    idx, _, _ = schedule["center"].match_to_catalog_sky(survey_model.centers)
+    idx, _, _ = schedule["center"].match_to_catalog_sky(centers)
     survey_set = list(set(schedule["survey"]))
     colors = seaborn.color_palette('Set2', n_colors=len(survey_set))
 
@@ -81,9 +78,9 @@ def main(args=None):
     exposures = {}
     for survey in survey_set:
         dts[survey] = []
-        exposures[survey] = np.zeros((len(survey_model.centers), 1))
-    exposures['all'] = np.zeros((len(survey_model.centers), 1))
-    for cc, cent in enumerate(survey_model.centers):
+        exposures[survey] = np.zeros((len(centers), 1))
+    exposures['all'] = np.zeros((len(centers), 1))
+    for cc, cent in enumerate(centers):
         idy = np.where(idx == cc)[0]
         if len(idy) == 0:
             continue
@@ -124,8 +121,8 @@ def main(args=None):
         ax = plt.axes([0.05, 0.05, 0.85, 0.9],
                       projection='astro hours mollweide')
         ax.grid()
-        for cc, center in enumerate(survey_model.centers):
-            poly = survey_model.mission.fov.footprint(center).icrs
+        for cc, center in enumerate(centers):
+            poly = mission.fov.footprint(center).icrs
             idx = np.argmin(np.abs(colorbar - exposures[survey][cc]))
             footprint_color = colors[idx]
             vertices = np.column_stack((poly.ra.rad, poly.dec.rad))

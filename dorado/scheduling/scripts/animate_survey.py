@@ -19,13 +19,13 @@ def parser():
     p = ArgumentParser()
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
-    p.add_argument('config', help='config file')
-    p.add_argument('mission', choices=set(_mission.__all__) - {'Mission'},
-                   default='dorado', help='Mission configuration')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
                    type=FileType('rb'), default='-',
                    help='Schedule filename')
-    p.add_argument('output', metavar='MOVIE.gif', type=FileType('wb'),
+    p.add_argument('--mission', choices=set(_mission.__all__) - {'Mission'},
+                   default='dorado', help='Mission configuration')
+    p.add_argument('--output', '-o',
+                   metavar='MOVIE.gif', type=FileType('wb'),
                    help='Output filename')
     p.add_argument('-s', '--start_time', type=str,
                    default='2020-01-01T00:00:00')
@@ -33,6 +33,8 @@ def parser():
                    help='Number of threads')
     p.add_argument('-n', '--nframes', default=100,
                    type=int, help='Number of frames for movie')
+    p.add_argument(
+        '--nside', type=int, default=32, help='HEALPix sampling resolution')
 
     return p
 
@@ -42,10 +44,10 @@ def main(args=None):
 
     # Late imports
     from astropy_healpix import HEALPix, nside_to_level, npix_to_nside
+    from astropy.coordinates import ICRS
     from astropy.time import Time
     from astropy.table import QTable
     from astropy import units as u
-    import configparser
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
     from ligo.skymap import plot
@@ -57,24 +59,8 @@ def main(args=None):
     import seaborn
     from tqdm import tqdm
 
-    from ..models import SurveyModel
-
-    config = configparser.ConfigParser()
-    config.read(args.config)
-
     mission = getattr(_mission, args.mission)
-    tiles = QTable.read(config["survey"]["tilesfile"], format='ascii.ecsv')
-
-    exposure_time = float(config["survey"]["exposure_time"]) * u.minute
-    steps_per_exposure =\
-        int(config["survey"]["time_steps_per_exposure"])
-    number_of_orbits = int(config["survey"]["number_of_orbits"])
-
-    survey_model = SurveyModel(mission=mission,
-                               exposure_time=exposure_time,
-                               time_steps_per_exposure=steps_per_exposure,
-                               number_of_orbits=number_of_orbits,
-                               centers=tiles["center"])
+    healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
     log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
@@ -83,10 +69,10 @@ def main(args=None):
     skymap_hires = rasterize(skymap)['PROB']
     healpix_hires = HEALPix(npix_to_nside(len(skymap_hires)))
     skymap = rasterize(skymap,
-                       nside_to_level(survey_model.healpix.nside))['PROB']
-    nest = survey_model.healpix.order == 'nested'
+                       nside_to_level(healpix.nside))['PROB']
+    nest = healpix.order == 'nested'
     if nest:
-        skymap = skymap[survey_model.healpix.ring_to_nested(np.arange(
+        skymap = skymap[healpix.ring_to_nested(np.arange(
             len(skymap)))]
         skymap_hires = skymap[healpix_hires.ring_to_nested(np.arange(
             len(skymap_hires)))]
@@ -122,11 +108,11 @@ def main(args=None):
             skymap_hires = rasterize(skymap)['PROB']
             healpix_hires = HEALPix(npix_to_nside(len(skymap_hires)))
             skymap = rasterize(skymap,
-                               nside_to_level(survey_model.healpix.nside))
+                               nside_to_level(args.nside))
             skymap = skymap['PROB']
-            nest = survey_model.healpix.order == 'nested'
+            nest = healpix.order == 'nested'
             if not nest:
-                skymap = skymap[survey_model.healpix.ring_to_nested(np.arange(
+                skymap = skymap[healpix.ring_to_nested(np.arange(
                     len(skymap)))]
                 skymap_hires = skymap[healpix_hires.ring_to_nested(np.arange(
                     len(skymap_hires)))]
@@ -140,9 +126,9 @@ def main(args=None):
     schedule.add_column(skymaps, name='map')
 
     log.info('calculating field of regard')
-    field_of_regard = survey_model.mission.get_field_of_regard(
-        survey_model.healpix.healpix_to_skycoord(
-            np.arange(survey_model.healpix.npix)), times, jobs=args.jobs)
+    field_of_regard = mission.get_field_of_regard(
+        healpix.healpix_to_skycoord(
+            np.arange(healpix.npix)), times, jobs=args.jobs)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
     # continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
@@ -164,8 +150,7 @@ def main(args=None):
     indices = np.asarray([], dtype=np.intp)
     prob = []
     for row in schedule:
-        new_indices = survey_model.mission.fov.footprint_healpix(
-            survey_model.healpix, row['center'])
+        new_indices = mission.fov.footprint_healpix(healpix, row['center'])
         indices = np.unique(np.concatenate((indices, new_indices)))
         prob.append(100 * skymap[indices].sum())
 
@@ -177,11 +162,11 @@ def main(args=None):
     ax_prob.set_xlabel(f'Time since {start_time.iso} (minutes)')
     ax_prob.set_ylabel('Integrated prob.')
 
-    y = field_of_regard.sum(1) / survey_model.healpix.npix * 100
+    y = field_of_regard.sum(1) / healpix.npix * 100
     ax_time.fill_between(
         t, y, np.repeat(100, len(y)), color=instantaneous_color, zorder=2.2)
 
-    y = orbit_field_of_regard.sum() / survey_model.healpix.npix * 100
+    y = orbit_field_of_regard.sum() / healpix.npix * 100
     ax_time.axhspan(y, 100, color=orbit_color, zorder=2.3)
 
     ax_sky = fig.add_subplot(gs_sky, projection='astro hours mollweide')
@@ -214,8 +199,7 @@ def main(args=None):
             del old_artists[:]
             for row in schedule:
                 if times[i] >= row['time']:
-                    fov = survey_model.mission.fov
-                    poly = fov.footprint(row['center']).icrs
+                    poly = mission.fov.footprint(row['center']).icrs
                     idx = survey_set.index(row['survey'])
                     footprint_color = colors[idx]
                     vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
