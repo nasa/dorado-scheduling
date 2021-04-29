@@ -6,11 +6,14 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """Spacecraft orbit."""
+from astroplan import Observer
 from astropy.coordinates import SkyCoord, TEME
 from astropy import units as u
 from astropy.utils.data import get_readable_fileobj
 import numpy as np
 from sgp4.api import Satrec, SGP4_ERRORS
+
+from .constraints import OrbitNightConstraint
 
 __all__ = ('Orbit',)
 
@@ -110,3 +113,19 @@ class Orbit:
         else:
             coord = coord[0]
         return coord
+
+    def is_night(self, time):
+        """Determine if the spacecraft is in orbit night.
+
+        Parameters
+        ----------
+        time : :class:`astropy.time.Time`
+            The time of the observation.
+
+        Returns
+        -------
+        bool, :class:`np.ndarray`
+            True when the spacecraft is in orbit night, False otherwise.
+        """
+        return OrbitNightConstraint().compute_constraint(
+            time, Observer(self(time).earth_location))

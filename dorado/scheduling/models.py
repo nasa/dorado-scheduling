@@ -14,8 +14,6 @@ from astropy.coordinates import ICRS
 from astropy_healpix import HEALPix
 import numpy as np
 
-from .constraints import OrbitNightConstraint
-
 
 class SurveyModel():
     def __init__(self,
@@ -48,22 +46,6 @@ class SurveyModel():
         self.time_steps = int(
             (self.number_of_orbits * self.mission.orbit.period /
              self.time_step_duration).to_value(u.dimensionless_unscaled))
-
-    def is_night(self, time):
-        """Determine if the spacecraft is in orbit night.
-
-        Parameters
-        ----------
-        time : :class:`astropy.time.Time`
-            The time of the observation.
-
-        Returns
-        -------
-        bool, :class:`np.ndarray`
-            True when the spacecraft is in orbit night, False otherwise.
-        """
-        return OrbitNightConstraint().compute_constraint(
-            time, Observer(self.mission.orbit(time).earth_location))
 
     def _observable(self, time, location):
         return is_event_observable(
