@@ -28,7 +28,7 @@ observation planner for Dorado.
 
 *   [Astropy]
 *   [Astroplan] for calculating the field of regard
-*   [HEALPix], [Healpy], and [astropy-healpix] for observation footprints
+*   [HEALPix], [cdshealpix], and [astropy-healpix] for observation footprints
 *   [sgp4] for orbit propagation
 *   [CPLEX] (via [docplex] Python interface) for constrained optimization
 
@@ -201,7 +201,7 @@ sky position is contained in any of the fields in an observing plan:
 [Astroplan]: https://github.com/astropy/astroplan
 [HEALPix]: https://healpix.jpl.nasa.gov
 [astropy-healpix]: https://github.com/astropy/astropy-healpix
-[Healpy]: https://github.com/healpy/healpy
+[cdshealpix]: https://github.com/cds-astro/cds-healpix-python
 [sgp4]: https://pypi.org/project/sgp4/
 [install Poetry]: https://python-poetry.org/docs/#installation
 [CPLEX]: https://www.ibm.com/products/ilog-cplex-optimization-studio
