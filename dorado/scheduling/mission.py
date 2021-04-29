@@ -75,7 +75,7 @@ ultrasat = Mission(
         astroplan.MoonSeparationConstraint(23 * u.deg),
         astroplan.GalacticLatitudeConstraint(10 * u.deg)),
     fov=FOV.from_rectangle(14.1 * u.deg),
-    orbit=_read_orbit('uvex.tle')
+    orbit=_read_orbit('goes17.tle')
 )
 """Configuration for ULTRASAT.
 
@@ -91,7 +91,8 @@ Notes
   square.
 
 * ULTRASAT will be in a geosynchronous orbit. Here, we are using the orbital
-  elements of a real geosynchronous satellite that is currently on orbit.
+  elements of GOES-17, a real geosynchronous weather satellite that is
+  currently on orbit.
 """
 
 
@@ -102,7 +103,7 @@ uvex = Mission(
         astroplan.MoonSeparationConstraint(23 * u.deg)
     ),
     fov=FOV.from_rectangle(3.3 * u.deg),
-    orbit=_read_orbit('uvex.tle')
+    orbit=_read_orbit('vela1.tle')
 )
 """Configuration for UVEX.
 
@@ -116,6 +117,8 @@ Notes
 * There is no Galactic plane constraints, because the UVEX mission will survey
   the Galactic plane.
 
-* UVEX will be in a geosynchronous orbit. Here, we are using the orbital
-  elements of a real geosynchronous satellite that is currently on orbit.
+* The orbit that is currently under consideration for UVEX is highly elliptical
+  with a perigee greater than 45,000 km. As a proxy, we use the actual two-line
+  elements for VELA 1, a historically important gamma-ray satellite with a
+  similar orbit.
 """
