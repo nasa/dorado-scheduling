@@ -1,4 +1,4 @@
-Command-line Tools
+Command Line Tools
 ==================
 
 .. toctree::
