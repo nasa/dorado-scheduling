@@ -35,6 +35,7 @@ Contents
    background
    quickstart
    reference/index
+   tools/index
    examples/index
 
 .. image:: _static/6.gif

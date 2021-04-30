@@ -41,7 +41,8 @@ extensions = [
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
-    'sphinx_gallery.gen_gallery'
+    'sphinx_gallery.gen_gallery',
+    'sphinxarg.ext'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
