@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
-"""Plot an observing plan."""
+"""Render an animation of an observing plan."""
 import logging
 
 from astropy import units as u

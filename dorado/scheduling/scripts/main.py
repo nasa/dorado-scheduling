@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
-"""Command line interface."""
+"""Generate an observing plan for a HEALPix probability map."""
 import logging
 
 from astropy import units as u
