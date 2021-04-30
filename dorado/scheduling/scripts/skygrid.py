@@ -5,7 +5,7 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
-"""Create a tesselation."""
+"""Generate a grid of pointings on the sky."""
 import astropy.units as u
 from astropy.table import QTable
 import numpy as np

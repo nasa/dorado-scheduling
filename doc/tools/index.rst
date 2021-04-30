@@ -6,3 +6,4 @@ Command-line Tools
 
     dorado-scheduling
     dorado-scheduling-animate
+    dorado-scheduling-skygrid
