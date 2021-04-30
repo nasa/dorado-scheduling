@@ -34,14 +34,14 @@ def sinusoidal(area):
 
     """
     # Diameter of the field of view
-    diameter = 2 * np.sqrt(area.to_value(u.sr) / np.pi)
+    width = np.sqrt(area.to_value(u.sr))
 
     # Declinations of equal-declination strips
-    n_decs = int(np.ceil(np.pi / diameter)) + 1
+    n_decs = int(np.ceil(np.pi / width)) + 1
     decs = np.linspace(-0.5 * np.pi, 0.5 * np.pi, n_decs)
 
     # Number of RA steps in each equal-declination strip
-    n_ras = np.ceil(2 * np.pi * np.cos(decs) / diameter).astype(int)
+    n_ras = np.ceil(2 * np.pi * np.cos(decs) / width).astype(int)
     n_ras = np.maximum(1, n_ras)
 
     ras = np.concatenate([np.linspace(0, 2 * np.pi, n, endpoint=False)
