@@ -1,6 +1,6 @@
 [[package]]
 name = "afterglowpy"
-version = "0.7.0"
+version = "0.7.3"
 description = "GRB Afterglow Models"
 category = "main"
 optional = false
@@ -114,7 +114,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "babel"
-version = "2.9.0"
+version = "2.9.1"
 description = "Internationalization utilities"
 category = "main"
 optional = true
@@ -1207,7 +1207,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
 
 [[package]]
 name = "scikit-learn"
-version = "0.24.1"
+version = "0.24.2"
 description = "A set of python modules for machine learning and data mining"
 category = "main"
 optional = false
@@ -1565,8 +1565,42 @@ content-hash = "04b8660a02a371d053cf765fa2af4bde518582ae4a5ec5499fc0e9cc7bf63190
 
 [metadata.files]
 afterglowpy = [
-    {file = "afterglowpy-0.7.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:111290f136e0ead8c731f98b5ce6fab65e4df45b9ea85904d6bf59be4f66fffe"},
-    {file = "afterglowpy-0.7.0.tar.gz", hash = "sha256:2e74c44da8b522e4ca74c645a955eb85d4546eb8059825afbc84997f9637a770"},
+    {file = "afterglowpy-0.7.3-cp35-cp35m-macosx_10_9_x86_64.whl", hash = "sha256:37820728b908ea0c473b562f039c84bb6d0ac1b8720a8f74adf8e76b3e2f601b"},
+    {file = "afterglowpy-0.7.3-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:516478b81f6d1ad7ad707704cceb7415e691f3d43ebe3378dc6b87f4fce3a19b"},
+    {file = "afterglowpy-0.7.3-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:58fa1f75b1a8207434476fb2ce4bb70f22c6e5440ada9e82e6438edcd03cca0a"},
+    {file = "afterglowpy-0.7.3-cp35-cp35m-manylinux2010_i686.whl", hash = "sha256:f4948dca24be01c7c6dca3ce6ae9bb8383fb72f40958037388d3d0f614b7da38"},
+    {file = "afterglowpy-0.7.3-cp35-cp35m-manylinux2010_x86_64.whl", hash = "sha256:2466be7a387920e2b5f255dd59913235f4722c06fb189817092384ba4eb2a2b2"},
+    {file = "afterglowpy-0.7.3-cp35-cp35m-win32.whl", hash = "sha256:b005eb4023e8f4ad96169cfda5a6d6d94dbd0e9279fdc672fd6d0cddb6fa9f04"},
+    {file = "afterglowpy-0.7.3-cp35-cp35m-win_amd64.whl", hash = "sha256:c8c8d3ad3db62cc0dbc55da81c0118d9f617a9710a18561163e57e38b308e355"},
+    {file = "afterglowpy-0.7.3-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:af47a48f774c637df1bf8f96b2937463d23a01e63580dce5efabbf6ba5f6d663"},
+    {file = "afterglowpy-0.7.3-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:25d3488b1584bfd5bd080353d9e57a7b4a7537faa07a655f0d458b501ee8510f"},
+    {file = "afterglowpy-0.7.3-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:82aa83d3c08ec5d10c5b25e44cd0935f7967f00eec44922e73d025c574260a38"},
+    {file = "afterglowpy-0.7.3-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:1911c577bf9d1926903aab584355d761d7c696705002fa59d43eba869e1f3146"},
+    {file = "afterglowpy-0.7.3-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:ca50d6feda791e2b04467f69a3e029947a3df1df15c49a7cc276a2dd76692568"},
+    {file = "afterglowpy-0.7.3-cp36-cp36m-win32.whl", hash = "sha256:e030ffeb9a0c9fb6d27b79e30c2589bdae3565f3487739737a1958102d5cd73f"},
+    {file = "afterglowpy-0.7.3-cp36-cp36m-win_amd64.whl", hash = "sha256:1c3f536b363285983ea291317a59113cca1eee29889e88551ec2aa415c3b290c"},
+    {file = "afterglowpy-0.7.3-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:896bb2bbbf66be0a3d26e0a51e33701b47c44fdc8c238637f06c1cd2eeb48edb"},
+    {file = "afterglowpy-0.7.3-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:ef04fb37158514a967858816076a7c19f0804884248a5ffcd65a3158d80e4ab2"},
+    {file = "afterglowpy-0.7.3-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:bca5a2bf650d514f4d8f9964e06a6521c816cd216146479f454f492e7db96566"},
+    {file = "afterglowpy-0.7.3-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:bc5fb4c1c9a9048b38ecd784048be64a6415b5bf31c83e63534dcad1fdf2fe07"},
+    {file = "afterglowpy-0.7.3-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:0825f5f0f8fb4aa2f38a5f2c80ca383193e0bdb33a78ee023d160c14adc31faa"},
+    {file = "afterglowpy-0.7.3-cp37-cp37m-win32.whl", hash = "sha256:031bf98a91a8ad47beaafb927588eefd0fa8867707a2624739e847771d52d42d"},
+    {file = "afterglowpy-0.7.3-cp37-cp37m-win_amd64.whl", hash = "sha256:5462c0499e842f442660249b25572ff8700158ab25a4e082331f1acc4a54da5d"},
+    {file = "afterglowpy-0.7.3-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:1631a25d1e35a81908ab74d92622d69ed393a572e63ad7e6895dc51d9bc83921"},
+    {file = "afterglowpy-0.7.3-cp38-cp38-manylinux1_i686.whl", hash = "sha256:b0b64e91bf479793d049218050793df07b30e935f1a2bcb9c856ec18c5f7f8f3"},
+    {file = "afterglowpy-0.7.3-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:25f7f427f1edc4eb320d66a183b44d2644d75c16dc21760a2c0a1a24c978611f"},
+    {file = "afterglowpy-0.7.3-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:8a47ea9b94aa5f831cb83dff694010cb2491cae4aebbc2f6bf59132a7c3e9625"},
+    {file = "afterglowpy-0.7.3-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:037599cd2347e64d3ccdbd58b95a9f221e360b48a5b247b384d8c0790531e2b6"},
+    {file = "afterglowpy-0.7.3-cp38-cp38-win32.whl", hash = "sha256:9cf59466e17ec94a4e435afe47a2c22c141767f7ebdb7beb293cb8b6d8054c05"},
+    {file = "afterglowpy-0.7.3-cp38-cp38-win_amd64.whl", hash = "sha256:8b8ab45a9da1ffc8f316c3274da4de7cc340a7bae238a32b73897e27b54d692a"},
+    {file = "afterglowpy-0.7.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:59074d027c1c5b9644cf423f65fa3ae3e6094fd27db7d04de8994bfad0e9d609"},
+    {file = "afterglowpy-0.7.3-cp39-cp39-manylinux1_i686.whl", hash = "sha256:9d28d0823d289d96d7cfbe85488fcbaa73d69b09e21f1a0947013a94071896dc"},
+    {file = "afterglowpy-0.7.3-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:df3bdbba842c41a96ad0d89b667047cbcc67b0f27d1b8f076fd1b7becf8ac8f2"},
+    {file = "afterglowpy-0.7.3-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:9aab45d77bb39ad7b367c7d01ae86fce0d7987418b5bc6632d2d405aa46109d6"},
+    {file = "afterglowpy-0.7.3-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:5651b986b87b271ac93ddcddafde6f82b4598ead416d38cd967dffe301a5da8f"},
+    {file = "afterglowpy-0.7.3-cp39-cp39-win32.whl", hash = "sha256:8e4439df8c0b207d28f070df68e817d7ed22ed7f0252ded2fc0bd2f90b8eaefc"},
+    {file = "afterglowpy-0.7.3-cp39-cp39-win_amd64.whl", hash = "sha256:f0bc511dfcd93d6c9672a50ae399e85d85df8efab052b793ad73caf2f955311c"},
+    {file = "afterglowpy-0.7.3.tar.gz", hash = "sha256:149e6e010b16d7778f3e6008a176f7bd628c2629d1a4d1e57b028742f12edf03"},
 ]
 alabaster = [
     {file = "alabaster-0.7.12-py2.py3-none-any.whl", hash = "sha256:446438bdcca0e05bd45ea2de1668c1d9b032e1a9154c2c259092d77031ddd359"},
@@ -1640,8 +1674,8 @@ attrs = [
     {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
 ]
 babel = [
-    {file = "Babel-2.9.0-py2.py3-none-any.whl", hash = "sha256:9d35c22fcc79893c3ecc85ac4a56cde1ecf3f19c540bba0922308a6c06ca6fa5"},
-    {file = "Babel-2.9.0.tar.gz", hash = "sha256:da031ab54472314f210b0adcff1588ee5d1d1d0ba4dbd07b94dba82bde791e05"},
+    {file = "Babel-2.9.1-py2.py3-none-any.whl", hash = "sha256:ab49e12b91d937cd11f0b67cb259a57ab4ad2b59ac7a3b41d6c06c0ac5b0def9"},
+    {file = "Babel-2.9.1.tar.gz", hash = "sha256:bc0c176f9f6a994582230df350aa6e05ba2ebe4b3ac317eab29d9be5d2768da0"},
 ]
 backcall = [
     {file = "backcall-0.2.0-py2.py3-none-any.whl", hash = "sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255"},
@@ -2427,39 +2461,39 @@ requests = [
     {file = "requests-2.25.1.tar.gz", hash = "sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804"},
 ]
 scikit-learn = [
-    {file = "scikit-learn-0.24.1.tar.gz", hash = "sha256:a0334a1802e64d656022c3bfab56a73fbd6bf4b1298343f3688af2151810bbdf"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-macosx_10_13_x86_64.whl", hash = "sha256:9bed8a1ef133c8e2f13966a542cb8125eac7f4b67dcd234197c827ba9c7dd3e0"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:a36e159a0521e13bbe15ca8c8d038b3a1dd4c7dad18d276d76992e03b92cf643"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:c658432d8a20e95398f6bb95ff9731ce9dfa343fdf21eea7ec6a7edfacd4b4d9"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:9dfa564ef27e8e674aa1cc74378416d580ac4ede1136c13dd555a87996e13422"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:9c6097b6a9b2bafc5e0f31f659e6ab5e131383209c30c9e978c5b8abdac5ed2a"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:5580eba7345a4d3b097be2f067cc71a306c44bab19e8717a30361f279c929bea"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-win32.whl", hash = "sha256:7b04691eb2f41d2c68dbda8d1bd3cb4ef421bdc43aaa56aeb6c762224552dfb6"},
-    {file = "scikit_learn-0.24.1-cp36-cp36m-win_amd64.whl", hash = "sha256:1adf483e91007a87171d7ce58c34b058eb5dab01b5fee6052f15841778a8ecd8"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-macosx_10_13_x86_64.whl", hash = "sha256:ddb52d088889f5596bc4d1de981f2eca106b58243b6679e4782f3ba5096fd645"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:a29460499c1e62b7a830bb57ca42e615375a6ab1bcad053cd25b493588348ea8"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:0567a2d29ad08af98653300c623bd8477b448fe66ced7198bef4ed195925f082"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:99349d77f54e11f962d608d94dfda08f0c9e5720d97132233ebdf35be2858b2d"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:83b21ff053b1ff1c018a2d24db6dd3ea339b1acfbaa4d9c881731f43748d8b3b"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:abe835a851610f87201819cb315f8d554e1a3e8128912783a31e87264ba5ffb7"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-win32.whl", hash = "sha256:c3deb3b19dd9806acf00cf0d400e84562c227723013c33abefbbc3cf906596e9"},
-    {file = "scikit_learn-0.24.1-cp37-cp37m-win_amd64.whl", hash = "sha256:d54dbaadeb1425b7d6a66bf44bee2bb2b899fe3e8850b8e94cfb9c904dcb46d0"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-macosx_10_13_x86_64.whl", hash = "sha256:3c4f07f47c04e81b134424d53c3f5e16dfd7f494e44fd7584ba9ce9de2c5e6c1"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-manylinux1_i686.whl", hash = "sha256:c13ebac42236b1c46397162471ea1c46af68413000e28b9309f8c05722c65a09"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:4ddd2b6f7449a5d539ff754fa92d75da22de261fd8fdcfb3596799fadf255101"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:826b92bf45b8ad80444814e5f4ac032156dd481e48d7da33d611f8fe96d5f08b"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:259ec35201e82e2db1ae2496f229e63f46d7f1695ae68eef9350b00dc74ba52f"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:9599a3f3bf33f73fed0fe06d1dfa4e6081365a58c1c807acb07271be0dce9733"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-win32.whl", hash = "sha256:8772b99d683be8f67fcc04789032f1b949022a0e6880ee7b75a7ec97dbbb5d0b"},
-    {file = "scikit_learn-0.24.1-cp38-cp38-win_amd64.whl", hash = "sha256:ed9d65594948678827f4ff0e7ae23344e2f2b4cabbca057ccaed3118fdc392ca"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-macosx_10_13_x86_64.whl", hash = "sha256:8aa1b3ac46b80eaa552b637eeadbbce3be5931e4b5002b964698e33a1b589e1e"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-manylinux1_i686.whl", hash = "sha256:c7f4eb77504ac586d8ac1bde1b0c04b504487210f95297235311a0ab7edd7e38"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:087dfede39efb06ab30618f9ab55a0397f29c38d63cd0ab88d12b500b7d65fd7"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:895dbf2030aa7337649e36a83a007df3c9811396b4e2fa672a851160f36ce90c"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:9a24d1ccec2a34d4cd3f2a1f86409f3f5954cc23d4d2270ba0d03cf018aa4780"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:54be0a60a5a35005ad69c75902e0f5c9f699db4547ead427e97ef881c3242e6f"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-win32.whl", hash = "sha256:fab31f48282ebf54dd69f6663cd2d9800096bad1bb67bbc9c9ac84eb77b41972"},
-    {file = "scikit_learn-0.24.1-cp39-cp39-win_amd64.whl", hash = "sha256:4562dcf4793e61c5d0f89836d07bc37521c3a1889da8f651e2c326463c4bd697"},
+    {file = "scikit-learn-0.24.2.tar.gz", hash = "sha256:d14701a12417930392cd3898e9646cf5670c190b933625ebe7511b1f7d7b8736"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-macosx_10_13_x86_64.whl", hash = "sha256:d5bf9c863ba4717b3917b5227463ee06860fc43931dc9026747de416c0a10fee"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:5beaeb091071625e83f5905192d8aecde65ba2f26f8b6719845bbf586f7a04a1"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:06ffdcaaf81e2a3b1b50c3ac6842cfb13df2d8b737d61f64643ed61da7389cde"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-manylinux2010_i686.whl", hash = "sha256:fec42690a2eb646b384eafb021c425fab48991587edb412d4db77acc358b27ce"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:5ff3e4e4cf7592d36541edec434e09fb8ab9ba6b47608c4ffe30c9038d301897"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:3cbd734e1aefc7c5080e6b6973fe062f97c26a1cdf1a991037ca196ce1c8f427"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-win32.whl", hash = "sha256:f74429a07fedb36a03c159332b914e6de757176064f9fed94b5f79ebac07d913"},
+    {file = "scikit_learn-0.24.2-cp36-cp36m-win_amd64.whl", hash = "sha256:dd968a174aa82f3341a615a033fa6a8169e9320cbb46130686562db132d7f1f0"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-macosx_10_13_x86_64.whl", hash = "sha256:49ec0b1361da328da9bb7f1a162836028e72556356adeb53342f8fae6b450d47"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-manylinux1_i686.whl", hash = "sha256:f18c3ed484eeeaa43a0d45dc2efb4d00fc6542ccdcfa2c45d7b635096a2ae534"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:cdf24c1b9bbeb4936456b42ac5bd32c60bb194a344951acb6bfb0cddee5439a4"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-manylinux2010_i686.whl", hash = "sha256:d177fe1ff47cc235942d628d41ee5b1c6930d8f009f1a451c39b5411e8d0d4cf"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:f3ec00f023d84526381ad0c0f2cff982852d035c921bbf8ceb994f4886c00c64"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:ae19ac105cf7ce8c205a46166992fdec88081d6e783ab6e38ecfbe45729f3c39"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-win32.whl", hash = "sha256:f0ed4483c258fb23150e31b91ea7d25ff8495dba108aea0b0d4206a777705350"},
+    {file = "scikit_learn-0.24.2-cp37-cp37m-win_amd64.whl", hash = "sha256:39b7e3b71bcb1fe46397185d6c1a5db1c441e71c23c91a31e7ad8cc3f7305f9a"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-macosx_10_13_x86_64.whl", hash = "sha256:90a297330f608adeb4d2e9786c6fda395d3150739deb3d42a86d9a4c2d15bc1d"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-manylinux1_i686.whl", hash = "sha256:f1d2108e770907540b5248977e4cff9ffaf0f73d0d13445ee938df06ca7579c6"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:1eec963fe9ffc827442c2e9333227c4d49749a44e592f305398c1db5c1563393"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-manylinux2010_i686.whl", hash = "sha256:2db429090b98045d71218a9ba913cc9b3fe78e0ba0b6b647d8748bc6d5a44080"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:62214d2954377fcf3f31ec867dd4e436df80121e7a32947a0b3244f58f45e455"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:8fac72b9688176922f9f54fda1ba5f7ffd28cbeb9aad282760186e8ceba9139a"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-win32.whl", hash = "sha256:ae426e3a52842c6b6d77d00f906b6031c8c2cfdfabd6af7511bb4bc9a68d720e"},
+    {file = "scikit_learn-0.24.2-cp38-cp38-win_amd64.whl", hash = "sha256:038f4e9d6ef10e1f3fe82addc3a14735c299866eb10f2c77c090410904828312"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-macosx_10_13_x86_64.whl", hash = "sha256:48f273836e19901ba2beecd919f7b352f09310ce67c762f6e53bc6b81cacf1f0"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-manylinux1_i686.whl", hash = "sha256:a2a47449093dcf70babc930beba2ca0423cb7df2fa5fd76be5260703d67fa574"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:0e71ce9c7cbc20f6f8b860107ce15114da26e8675238b4b82b7e7cd37ca0c087"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-manylinux2010_i686.whl", hash = "sha256:2754c85b2287333f9719db7f23fb7e357f436deed512db3417a02bf6f2830aa5"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:7be1b88c23cfac46e06404582215a917017cd2edaa2e4d40abe6aaff5458f24b"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:4e6198675a6f9d333774671bd536668680eea78e2e81c0b19e57224f58d17f37"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-win32.whl", hash = "sha256:cbdb0b3db99dd1d5f69d31b4234367d55475add31df4d84a3bd690ef017b55e2"},
+    {file = "scikit_learn-0.24.2-cp39-cp39-win_amd64.whl", hash = "sha256:40556bea1ef26ef54bc678d00cf138a63069144a0b5f3a436eecd8f3468b903e"},
 ]
 scipy = [
     {file = "scipy-1.6.3-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:2a799714bf1f791fb2650d73222b248d18d53fd40d6af2df2c898db048189606"},
