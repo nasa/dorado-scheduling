@@ -7,6 +7,7 @@
 #
 """Simulate full survey."""
 
+import glob
 import os
 import logging
 import numpy as np
@@ -87,6 +88,10 @@ def parser():
         '--nside', type=int, default=32, help='HEALPix sampling resolution')
     p.add_argument('--timeout', type=int,
                    default=300, help='Impose timeout on solutions')
+
+    p.add_argument('--gw-folder', '-g',
+                   type=str, default='examples',
+                   help='folder with GW fits files')
 
     p.add_argument("--doDust", help="load CSV", action="store_true")
     p.add_argument("--doAnimate", help="load CSV", action="store_true")
@@ -232,6 +237,9 @@ def main(args=None):
 
     randvals = np.random.rand(niter)
 
+    gwfits = glob.glob(os.path.join(args.gw_folder, '*.fits')) +\
+        glob.glob(os.path.join(args.gw_folder, '*.fits.fz'))
+
     schedulenames = []
     tind = 0
 
@@ -289,9 +297,9 @@ def main(args=None):
                 prob = prob*V
 
         elif survey == "GW":
-            idx = int(np.floor(10*np.random.rand()))
-            gwskymap = 'GW/%d.fits' % idx
-            skymap = read_sky_map(gwskymap, moc=True)['UNIQ', 'PROBDENSITY']
+            idx = int(np.floor(len(gwfits)*np.random.rand()))
+            skymap = read_sky_map(gwfits[idx],
+                                  moc=True)['UNIQ', 'PROBDENSITY']
             prob = rasterize(
                 skymap, nside_to_level(healpix.nside))['PROB']
             prob = prob[healpix.ring_to_nested(np.arange(
