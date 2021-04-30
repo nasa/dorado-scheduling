@@ -1,6 +1,8 @@
+.coverage
 .hypothesis
 .vscode
 __pycache__
 _build
 *.egg-info
 doc/examples
+htmlcov
