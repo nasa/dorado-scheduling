@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 def parser():
-    p = ArgumentParser()
+    p = ArgumentParser(prog='dorado-scheduling-animate-survey')
     p.add_argument('skymap', metavar='FILE.fits[.gz]',
                    type=FileType('rb'), help='Input sky map')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',

@@ -16,7 +16,7 @@ from .. import skygrid
 
 
 def parser():
-    p = ArgumentParser()
+    p = ArgumentParser(prog='dorado-scheduling-skygrid')
     p.add_argument('--area', default='50 deg2', type=u.Quantity,
                    help='Average area per tile')
     p.add_argument('--method', default='healpix', help='Tiling algorithm',

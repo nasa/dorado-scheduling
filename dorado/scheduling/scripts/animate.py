@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 def parser():
-    p = ArgumentParser()
+    p = ArgumentParser(prog='dorado-scheduling-animate')
 
     group = p.add_argument_group(
         'Problem setup options',

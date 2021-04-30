@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 
 def parser():
-    p = ArgumentParser()
+    p = ArgumentParser(prog='dorado-scheduling-simsurvey')
     p.add_argument('config', help='config file')
     group = p.add_argument_group(
         'Problem setup options',
