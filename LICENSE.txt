@@ -114,7 +114,7 @@ under this Agreement except for additions covered under paragraph 3H.
 B. Each Recipient must ensure that the following copyright notice
 appears prominently in the Subject Software:
 
-Copyright © 2020 United States Government as represented by the Administrator
+Copyright © 2021 United States Government as represented by the Administrator
 of the National Aeronautics and Space Administration. No copyright is claimed
 in the United States under Title 17, U.S. Code. All Other Rights Reserved.
 
