@@ -302,8 +302,7 @@ def main(args=None):
                                   moc=True)['UNIQ', 'PROBDENSITY']
             prob = rasterize(
                 skymap, nside_to_level(healpix.nside))['PROB']
-            prob = prob[healpix.ring_to_nested(np.arange(
-                                                            len(prob)))]
+            prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
             if args.doDust:
                 prob = prob*V
 
