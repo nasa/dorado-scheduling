@@ -1,5 +1,5 @@
 Efficiency calculations for a full survey simulation (``dorado-scheduling-survey-slicer``)
 ==========================================================================================
-.. argparse::
+.. sphinx_argparse_cli::
     :module: dorado.scheduling.scripts.survey_slicer
     :func: parser

@@ -43,7 +43,7 @@ synphot = "*"
 packaging = {version="*", optional=true}
 pep517 = {version="*", optional=true}
 pydata-sphinx-theme = {version="*", optional=true}
-sphinx-argparse = {version="*", optional=true}
+sphinx-argparse-cli = {version="*", optional=true}
 sphinx-gallery = {version="*", optional=true}
 
 # For tests
@@ -53,7 +53,7 @@ pytest-doctestplus = {version="*", optional=true}
 skyfield =  {version="*", optional=true}
 
 [tool.poetry.extras]
-doc = ["packaging", "pep517", "pydata-sphinx-theme", "sphinx-argparse", "sphinx-gallery"]
+doc = ["packaging", "pep517", "pydata-sphinx-theme", "sphinx-argparse-cli", "sphinx-gallery"]
 test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
 
 [tool.poetry.dev-dependencies]

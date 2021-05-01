@@ -1,5 +1,5 @@
 Generate an observing plan (``dorado-scheduling``)
 ==================================================
-.. argparse::
+.. sphinx_argparse_cli::
     :module: dorado.scheduling.scripts.main
     :func: parser
