@@ -30,7 +30,7 @@ def parser():
                    type=str, default='simsurvey/metrics',
                    help='output survey')
 
-    group = group.add_mutually_exclusive_group(required=False)
+    group = p.add_mutually_exclusive_group(required=False)
     group.add_argument(
         '--skygrid-method', default='healpix',
         choices=[key.replace('_', '-') for key in skygrid.__all__],
