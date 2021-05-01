@@ -66,7 +66,7 @@ def parser():
         '--skygrid-step', type=u.Quantity, default='0.0011 sr',
         help='Sky grid resolution (any solid angle units')
 
-    group = p.add_mutually_exclusive_group(required=False)
+    group = group.add_mutually_exclusive_group(required=False)
     group.add_argument(
         '--skygrid-method', default='healpix',
         choices=[key.replace('_', '-') for key in skygrid.__all__],
