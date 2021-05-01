@@ -6,8 +6,8 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 """
-This module introduces a "unit" orbit, which allows you to express time
-intervals in units of an orbital period.
+This module introduces an `orbit` Astropy unit, which allows you to express
+time intervals in units of an orbital period.
 
 Examples
 --------
