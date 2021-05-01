@@ -21,7 +21,7 @@ def parser():
     p = ArgumentParser(prog='dorado-scheduling-animate')
 
     group = p.add_argument_group(
-        'Problem setup options',
+        'problem setup options',
         'Options that control the problem setup')
     group.add_argument(
         '--mission', choices=set(_mission.__all__) - {'Mission'},
@@ -34,7 +34,7 @@ def parser():
         help='Duration of observing plan (any time units)')
 
     group = p.add_argument_group(
-        'Discretization options',
+        'discretization options',
         'Options that control the discretization of decision variables')
     group.add_argument(
         '--time-step', type=u.Quantity, default='1 min',

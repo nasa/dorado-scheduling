@@ -36,7 +36,7 @@ def parser():
     p = ArgumentParser(prog='dorado-scheduling-simsurvey')
     p.add_argument('config', help='config file')
     group = p.add_argument_group(
-        'Problem setup options',
+        'problem setup options',
         'Options that control the problem setup')
     group.add_argument(
         '-n', '--nexp', type=int, help='Number of exposures')
@@ -54,7 +54,7 @@ def parser():
         help='Duration of observing plan (any time units)')
 
     group = p.add_argument_group(
-        'Discretization options',
+        'discretization options',
         'Options that control the discretization of decision variables')
     group.add_argument(
         '--time-step', type=u.Quantity, default='10 min',
