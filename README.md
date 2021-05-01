@@ -101,18 +101,23 @@ to your local home directory (and then the instructions above are the same).
 
 4.  Print out the observing plan:
 
-        $ cat examples/6.ecsv 
+        $ cat examples/6.ecsv
         # %ECSV 0.9
         # ---
         # datatype:
-        # - {name: time, datatype: string}
+        # - {name: time, datatype: string, description: Start time of observation}
+        # - {name: exptime, unit: min, datatype: float64, description: Exposure time}
+        # - {name: location.x, unit: km, datatype: float64, description: Location of the spacecraft}
+        # - {name: location.y, unit: km, datatype: float64, description: Location of the spacecraft}
+        # - {name: location.z, unit: km, datatype: float64, description: Location of the spacecraft}
         # - {name: center.ra, unit: deg, datatype: float64}
         # - {name: center.dec, unit: deg, datatype: float64}
-        # - {name: roll, unit: deg, datatype: float64}
+        # - {name: roll, unit: deg, datatype: float64, description: 'Roll angle of spacecraft, position angle of FOV'}
         # meta:
         #   __serialized_columns__:
         #     center:
         #       __class__: astropy.coordinates.sky_coordinate.SkyCoord
+        #       __info__: {description: Pointing of the center of the spacecraft's FOV}
         #       dec: !astropy.table.SerializedColumn
         #         __class__: astropy.coordinates.angles.Latitude
         #         unit: &id001 !astropy.units.Unit {unit: deg}
@@ -126,32 +131,51 @@ to your local home directory (and then the instructions above are the same).
         #           unit: *id001
         #           value: 360.0
         #       representation_type: spherical
+        #     location:
+        #       __class__: astropy.coordinates.earth.EarthLocation
+        #       __info__: {description: Location of the spacecraft}
+        #       ellipsoid: WGS84
+        #       x: !astropy.table.SerializedColumn
+        #         __class__: astropy.units.quantity.Quantity
+        #         __info__: {description: Location of the spacecraft}
+        #         unit: &id002 !astropy.units.Unit {unit: km}
+        #         value: !astropy.table.SerializedColumn {name: location.x}
+        #       y: !astropy.table.SerializedColumn
+        #         __class__: astropy.units.quantity.Quantity
+        #         __info__: {description: Location of the spacecraft}
+        #         unit: *id002
+        #         value: !astropy.table.SerializedColumn {name: location.y}
+        #       z: !astropy.table.SerializedColumn
+        #         __class__: astropy.units.quantity.Quantity
+        #         __info__: {description: Location of the spacecraft}
+        #         unit: *id002
+        #         value: !astropy.table.SerializedColumn {name: location.z}
         #     time:
         #       __class__: astropy.time.core.Time
+        #       __info__: {description: Start time of observation}
         #       format: isot
         #       in_subfmt: '*'
         #       out_subfmt: '*'
         #       precision: 3
         #       scale: utc
         #       value: !astropy.table.SerializedColumn {name: time}
-        #   cmdline: dorado-scheduling examples/6.fits
-        #     -o examples/6.ecsv
-        #   prob: 0.9328184882724184
-        #   real: 90.992567837
+        #   cmdline: dorado-scheduling examples/6.fits -o examples/6.ecsv
+        #   prob: 0.9582737898644651
+        #   real: 82.14122700599998
         #   status: OPTIMAL_SOLUTION
-        #   sys: 12.163171
-        #   user: 78.007511
+        #   sys: 11.412413
+        #   user: 68.355111
         # schema: astropy-2.0
-        time center.ra center.dec roll
-        2012-05-02T18:28:32.699 65.25 -60.434438844952275 0.0
-        2012-05-02T18:40:32.699 51.74999999999999 -60.434438844952275 0.0
-        2012-05-02T18:51:32.699 79.28571428571429 -58.91977535280316 80.0
-        2012-05-02T19:01:32.699 91.95652173913044 -55.87335043525197 60.0
-        2012-05-02T19:11:32.699 106.07142857142857 -69.42254649458224 20.0
-        2012-05-02T19:22:32.699 146.25 -13.24801490567695 20.0
-        2012-05-02T19:33:32.699 146.25 -5.979156796301311 20.0
-        2012-05-02T19:44:32.699 115.31249999999999 18.20995686428301 20.0
-        2012-05-02T19:56:32.699 133.59375 7.180755781458282 20.0
+        time exptime location.x location.y location.z center.ra center.dec roll
+        2012-05-02T18:58:32.699 10.0 -1751.6172079535218 -4316.900611397083 5223.012730741018 115.31249999999999 18.20995686428301 20.0
+        2012-05-02T19:08:32.699 10.0 -1056.8666747393759 -215.39372825801107 6912.053809231001 133.59375 12.024699180565822 80.0
+        2012-05-02T19:18:32.699 10.0 420.69277073338765 3877.5088670176733 5810.065750855414 136.40625 9.594068226860461 80.0
+        2012-05-02T19:29:32.699 10.0 2146.2957309422827 6380.153680388233 1934.1511498095422 146.25 -10.806922874860343 20.0
+        2012-05-02T19:39:32.699 10.0 2913.9219997475725 5876.6317556649665 -2468.1843646368943 106.07142857142857 -69.42254649458224 70.0
+        2012-05-02T19:49:32.699 10.0 2364.8352599804857 3005.6360601625474 -5875.114354958457 56.25 -60.434438844952275 60.0
+        2012-05-02T19:59:32.699 10.0 571.0966946043521 -964.5042611033908 -6920.301799376411 88.04347826086958 -55.87335043525199 0.0
+        2012-05-02T20:09:32.699 10.0 -1773.1726479029899 -4368.6218509397195 -5187.571325540394 104.46428571428571 -48.14120779436026 80.0
+        2012-05-02T20:19:32.699 10.0 -3621.2261835503236 -5841.333071740781 -1367.7426015403416 69.75 -60.434438844952275 0.0
 
 5.  To generate an animated visualization for this observing plan, run the
     following command:
@@ -180,19 +204,20 @@ sky position is contained in any of the fields in an observing plan:
 ...               for row in schedule]
 >>> schedule['found'] = [target_pixel in footprint for footprint in footprints]
 >>> schedule
-<QTable length=8>
+<QTable length=9>
             time          exptime ...   roll  found
                             min   ...   deg        
             object         float64 ... float64  bool
 ----------------------- ------- ... ------- -----
-2012-05-02T18:28:32.699    10.0 ...    60.0 False
-2012-05-02T18:38:32.699    10.0 ...    40.0 False
-2012-05-02T18:48:32.699    10.0 ...    80.0 False
-2012-05-02T18:58:32.699    10.0 ...    50.0  True
-2012-05-02T19:23:32.699    10.0 ...    80.0 False
-2012-05-02T19:33:32.699    10.0 ...    20.0 False
-2012-05-02T19:43:32.699    10.0 ...    20.0 False
-2012-05-02T19:57:32.699    10.0 ...     0.0 False
+2012-05-02T18:58:32.699    10.0 ...    20.0 False
+2012-05-02T19:08:32.699    10.0 ...    80.0 False
+2012-05-02T19:18:32.699    10.0 ...    80.0 False
+2012-05-02T19:29:32.699    10.0 ...    20.0 False
+2012-05-02T19:39:32.699    10.0 ...    70.0 False
+2012-05-02T19:49:32.699    10.0 ...    60.0 False
+2012-05-02T19:59:32.699    10.0 ...     0.0 False
+2012-05-02T20:09:32.699    10.0 ...    80.0 False
+2012-05-02T20:19:32.699    10.0 ...     0.0  True
 ```
 
 [Pip]: https://pip.pypa.io
