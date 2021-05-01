@@ -16,15 +16,50 @@ __all__ = ('FOV',)
 class FOV:
     """The field of view of an instrument.
 
-    Parameters
-    ----------
-    representation : :class:`astropy.coordinates.BaseRepresentation`
-        The coordinates of the vertices of the field of view in any Astropy
-        representation.
+    Examples
+    --------
+    First, some imports:
+
+    >>> from astropy.coordinates import ICRS, SkyCoord
+    >>> from astropy import units as u
+    >>> from astropy_healpix import HEALPix
+
+    Now, get the footprint for the default pointing:
+
+    >>> fov = FOV.from_rectangle(50 * u.deg)
+    >>> fov.footprint().icrs
+    <SkyCoord (ICRS): (ra, dec) in deg
+        [( 25.,  25.), ( 25., -25.), (335., -25.), (335.,  25.)]>
+
+    Get a footprint as HEALPix coordinates.
+
+    >>> hpx = HEALPix(nside=4, frame=ICRS())
+    >>> fov.footprint_healpix(hpx, SkyCoord(0*u.deg, 20*u.deg), 15*u.deg)
+    array([ 57,  41,  25,  24,  70,  55,  39,  38,  23, 120, 104, 105,  88,
+            73, 119, 103, 102,  87,  72,  56,  71,  40])
+
+    Get the footprint for a grid of pointings:
+
+    >>> ra = np.arange(0, 360, 45) * u.deg
+    >>> dec = np.arange(-90, 91, 45) * u.deg
+    >>> roll = np.arange(0, 90, 15) * u.deg
+    >>> center = SkyCoord(ra[:, np.newaxis], dec[np.newaxis, :])
+    >>> footprints = fov.footprint(center[..., np.newaxis], roll)
+    >>> footprints.shape
+    (8, 5, 6, 4)
 
     """
 
     def __init__(self, representation):
+        """Create a field of view from the vertices of a spherical polygon.
+
+        Parameters
+        ----------
+        representation : :class:`astropy.coordinates.BaseRepresentation`
+            The coordinates of the vertices of the field of view in any Astropy
+            representation.
+
+        """
         self._representation = representation
 
     @classmethod
@@ -65,45 +100,6 @@ class FOV:
         -------
         vertices : `astropy.coordinates.SkyCoord`
             The coordinates of the vertices of the field of view.
-
-        Examples
-        --------
-        First, some imports:
-
-        >>> from astropy.coordinates import ICRS, SkyCoord
-        >>> from astropy import units as u
-        >>> from astropy_healpix import HEALPix
-
-        Now, get the footprint for the default pointing:
-
-        >>> fov = FOV.from_rectangle(50 * u.deg)
-        >>> fov.footprint().icrs
-        <SkyCoord (ICRS): (ra, dec) in deg
-            [( 25.,  25.), ( 25., -25.), (335., -25.), (335.,  25.)]>
-
-        Get the footprint for a spcific pointing:
-
-        >>> fov.footprint(SkyCoord(0*u.deg, 20*u.deg), 15*u.deg).icrs
-        <SkyCoord (ICRS): (ra, dec) in deg
-            [( 35.73851095,  34.84634609), ( 15.41057822, -11.29269295),
-             (331.35544934,  -0.54495686), (336.46564791,  49.26075815)]>
-
-        Get a footprint as HEALPix coordinates.
-
-        >>> hpx = HEALPix(nside=4, frame=ICRS())
-        >>> fov.footprint_healpix(hpx, SkyCoord(0*u.deg, 20*u.deg), 15*u.deg)
-        array([ 57,  41,  25,  24,  70,  55,  39,  38,  23, 120, 104, 105,  88,
-                73, 119, 103, 102,  87,  72,  56,  71,  40])
-
-        Get the footprint for a grid of pointings:
-
-        >>> ra = np.arange(0, 360, 45) * u.deg
-        >>> dec = np.arange(-90, 91, 45) * u.deg
-        >>> roll = np.arange(0, 90, 15) * u.deg
-        >>> center = SkyCoord(ra[:, np.newaxis], dec[np.newaxis, :])
-        >>> footprints = fov.footprint(center[..., np.newaxis], roll)
-        >>> footprints.shape
-        (8, 5, 6, 4)
 
         """  # noqa: E501
         frame = center.skyoffset_frame(roll)[..., np.newaxis]
