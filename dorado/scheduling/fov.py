@@ -98,7 +98,7 @@ class FOV:
 
         Returns
         -------
-        vertices : `astropy.coordinates.SkyCoord`
+        vertices : :class:`astropy.coordinates.SkyCoord`
             The coordinates of the vertices of the field of view.
 
         """  # noqa: E501
