@@ -37,15 +37,18 @@ methods = {
     'sinusoidal': skygrid.sinusoidal
 }
 
-ax = plt.axes()
-ax.set_xlabel('Number of tiles')
-ax.set_ylabel('1 - filling factor')
-ax.set_yscale('log')
+fig_width, fig_height = plt.rcParams['figure.figsize']
+fig, (ax1, ax2) = plt.subplots(
+    1, 2, figsize=(2 * fig_width, fig_height), sharey=True)
+ax1.set_xlabel('Number of tiles')
+ax2.set_xlabel('Requested area per tile (deg$^2$)')
+ax1.set_ylabel('1 - filling factor')
+ax1.set_yscale('log')
 
-areas = np.geomspace(0.5 * fov_area, fov_area)
+areas = np.geomspace(0.5 * fov_area, fov_area).to(u.deg**2)
 for method_name, method in methods.items():
     number_of_tiles = np.empty(len(areas), dtype=int)
-    filling_factors = np.empty(len(areas), dtype=float)
+    one_minus_fill_factors = np.empty(len(areas), dtype=float)
     for i, area in enumerate(areas):
         centers = method(area)
         rolls = np.asarray([0]) * u.deg
@@ -53,8 +56,9 @@ for method_name, method in methods.items():
         for more_pixels, in fov.footprint_healpix_grid(hpx, centers, rolls):
             pixels |= set(more_pixels)
         number_of_tiles[i] = len(centers)
-        filling_factors[i] = len(pixels) / hpx.npix
+        one_minus_fill_factors[i] = 1 - len(pixels) / hpx.npix
 
-    ax.plot(number_of_tiles, 1 - filling_factors, '.-', label=method_name)
+    ax1.plot(number_of_tiles, one_minus_fill_factors, '.-', label=method_name)
+    ax2.plot(areas, one_minus_fill_factors, '.-', label=method_name)
 
-ax.legend()
+ax1.legend()
