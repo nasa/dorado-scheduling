@@ -6,11 +6,9 @@ Plot sky grid for the Dorado mission
 # %%
 # First, some imports.
 
-from functools import partial
-
 from astropy import units as u
 from dorado.scheduling import mission, skygrid
-import ligo.skymap.plot  # for custom Matplotlib projections
+import ligo.skymap.plot  # noqa: F401
 from matplotlib import pyplot as plt
 import numpy as np
 
@@ -20,7 +18,7 @@ import numpy as np
 fov = mission.dorado.fov
 centers = skygrid.sinusoidal(50 * u.deg**2)
 footprints = fov.footprint(centers).icrs
-vertices = np.moveaxis(np.stack([footprints.ra.deg, footprints.dec.deg]), 0, -1)
+verts = np.moveaxis(np.stack([footprints.ra.deg, footprints.dec.deg]), 0, -1)
 
 # %%
 # Plot all-sky overview and close-ups at celestial equator and poles.
@@ -31,5 +29,5 @@ for kw in [dict(projection='astro globe', center='0d 30d'),
     fig, ax = plt.subplots(subplot_kw=kw)
     ax.grid()
     transform = ax.get_transform('world')
-    for v in vertices:
+    for v in verts:
         ax.add_patch(plt.Polygon(v, alpha=0.3, transform=transform))
