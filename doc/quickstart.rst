@@ -8,7 +8,7 @@ To install with `Pip`_:
 
 1.  Run the following command::
 
-        $ pip install git+https://github.com/dorado-science/dorado-scheduling
+        $ pip install git+https://github.com/nasa/dorado-scheduling
 
 To set up the CPLEX optimization engine
 ---------------------------------------
