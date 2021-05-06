@@ -10,6 +10,13 @@ Dorado is a proposed space mission for ultraviolet follow-up of gravitational
 wave events. This project is a simple target of opportunity observation planner
 for Dorado.
 
+This project is free and open source, but it calls commercial software: it uses
+`IBM ILOG CPLEX Optimization Studio ("CPLEX")`_ for mathematical
+optimization. CPLEX is free for students, faculty, and staff at accredited
+educational institutions through the `IBM Academic Initiative`_.
+
+To get started with dorado-scheduling, see the :doc:`quick start instructions
+<quickstart>`.
 
 Features
 --------
@@ -42,3 +49,5 @@ Contents
    :alt: Example Dorado observing plan
 
 .. _`mixed integer programming`: https://en.wikipedia.org/wiki/Integer_programming
+.. _`IBM ILOG CPLEX Optimization Studio ("CPLEX")`: https://www.ibm.com/products/ilog-cplex-optimization-studio
+.. _`IBM Academic Initiative`: https://www.ibm.com/academic/technology/data-science

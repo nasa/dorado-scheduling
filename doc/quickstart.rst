@@ -13,23 +13,38 @@ To install with `Pip`_:
 To set up the CPLEX optimization engine
 ---------------------------------------
 
-2.  Set up the CPLEX optimization engine by following the
-    `docplex instructions`_. If you have `installed CPLEX locally`_, then all you
-    have to do is determine the path to the CPLEX Python bindings and add them
-    to your :envvar:`PYTHONPATH`. For example, on macOS, this might be::
+2.  Set up the CPLEX optimization engine.
 
-        $ export PYTHONPATH=/Applications/CPLEX_Studio1210/cplex/python/3.7/x86-64_osx
+    a)  If you are a student, researcher, or faculty member at an academic
+        institution, sign up for the `IBM Academic Initiative`_. Download
+        and install the free academic version of ILOG CPLEX Optimization
+        Studio.
+
+        After running the installer, you may need to set the
+        `CPLEX_STUDIO_DIR201`_ environment variable so that the CPLEX Python
+        interface can locate your licensed copy of CPLEX.
+
+    b)  For all other users, including US Government (e.g. NASA) employees, we
+        recommend the `Developer Subscription`_.
+
+        Developer Subscription users do *not* need to run the IBM ILOG CPLEX
+        Optimization Studio installer because the necessary components are
+        built into the CPLEX Python interface. Simply set the
+        `CPLEX_STUDIO_KEY`_ environment variable to the API key that you
+        received from IBM.
+
+    For other CPLEX installation scenarios, see the `docplex instructions`_.
 
 To generate an observing plan
 -----------------------------
 
-3.  Generate an observing plan for the included example sky map::
+1.  Generate an observing plan for the included example sky map::
 
         $ dorado-scheduling examples/6.fits -o examples/6.ecsv
 
     This will take 3 minutes and will use about 10 GB of memory at peak.
 
-4.  Print out the observing plan::
+2.  Print out the observing plan::
 
         >>> from astropy.table import QTable
         >>> QTable.read('examples/6.ecsv').pprint_all()
@@ -46,7 +61,7 @@ To generate an observing plan
         2012-05-02T20:09:32.699    10.0  (-1773.1726479, -4368.62185094, -5187.57132554) 104.46428571428571,-48.14120779436026 80.0
         2012-05-02T20:19:32.699    10.0 (-3621.22618355, -5841.33307174, -1367.74260154)             69.75,-60.434438844952275  0.0
 
-5.  To generate an animated visualization for this observing plan, run the
+3.  To generate an animated visualization for this observing plan, run the
     following command::
 
         $ dorado-scheduling-animate examples/6.fits examples/6.ecsv examples/6.gif
@@ -98,6 +113,8 @@ sky position is contained in any of the fields in an observing plan::
 .. _`Skyfield`: https://rhodesmill.org/skyfield/
 .. _`install Poetry`: https://python-poetry.org/docs/#installation
 .. _`CPLEX`: https://www.ibm.com/products/ilog-cplex-optimization-studio
-.. _`docplex`: https://ibmdecisionoptimization.github.io/docplex-doc/
 .. _`docplex instructions`: https://ibmdecisionoptimization.github.io/docplex-doc/mp/getting_started.html
-.. _`installed CPLEX locally`: https://ibmdecisionoptimization.github.io/docplex-doc/mp/getting_started.html#using-ibm-ilog-cplex-optimization-studio-on-your-computer
+.. _`IBM Academic Initiative`: https://www.ibm.com/academic/technology/data-science
+.. _`Developer Subscription`: https://www.ibm.com/products/ilog-cplex-optimization-studio/pricing
+.. _`CPLEX_STUDIO_DIR201`: https://www.ibm.com/support/pages/entering-your-api-key-and-setting-cplexstudiokey-environment-variable
+.. _`CPLEX_STUDIO_KEY`: https://www.ibm.com/support/pages/entering-your-api-key-and-setting-cplexstudiokey-environment-variable

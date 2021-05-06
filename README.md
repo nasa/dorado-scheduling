@@ -9,7 +9,13 @@ Dorado is a proposed space mission for ultraviolet follow-up of gravitational
 wave events. This repository contains a simple target of opportunity
 observation planner for Dorado.
 
-**To get started, see the [quick start instructions] in the [manual].**
+This project is free and open source, but it calls commercial software: it uses
+[IBM ILOG CPLEX Optimization Studio ("CPLEX")][CPLEX] for mathematical
+optimization. CPLEX is free for students, faculty, and staff at accredited
+educational institutions through the [IBM Academic Initiative].
+
+**To get started with dorado-scheduling, see the [quick start instructions] in
+the [manual].**
 
 ![Example Dorado observing plan](examples/6.gif)
 
@@ -44,3 +50,4 @@ observation planner for Dorado.
 [cdshealpix]: https://github.com/cds-astro/cds-healpix-python
 [sgp4]: https://pypi.org/project/sgp4/
 [CPLEX]: https://www.ibm.com/products/ilog-cplex-optimization-studio
+[IBM Academic Initiative]: https://www.ibm.com/academic/technology/data-science
