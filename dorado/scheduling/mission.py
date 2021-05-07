@@ -14,8 +14,8 @@ import astroplan
 from astropy import units as u
 
 from . import data
-from .constraints import (EarthLimbConstraint, TrappedParticleFluxConstraint,
-                          get_field_of_regard)
+from .constraints import (BrightEarthLimbConstraint, EarthLimbConstraint,
+                          TrappedParticleFluxConstraint, get_field_of_regard)
 from .fov import FOV
 from .orbit import Orbit
 
@@ -44,7 +44,8 @@ dorado = Mission(
     constraints=(
         TrappedParticleFluxConstraint(flux=1*u.cm**-2*u.s**-1, energy=20*u.MeV,
                                       particle='p', solar='max'),
-        EarthLimbConstraint(28 * u.deg),
+        BrightEarthLimbConstraint(28 * u.deg),
+        EarthLimbConstraint(6 * u.deg),
         astroplan.SunSeparationConstraint(46 * u.deg),
         astroplan.MoonSeparationConstraint(23 * u.deg),
         astroplan.GalacticLatitudeConstraint(10 * u.deg)),

@@ -12,11 +12,13 @@ import astroplan
 from ligo.skymap.util import progress_map
 import numpy as np
 
+from .bright_earth_limb import BrightEarthLimbConstraint
 from .earth_limb import EarthLimbConstraint
 from .orbit_night import OrbitNightConstraint
 from .radiation import TrappedParticleFluxConstraint
 
 __all__ = ('get_field_of_regard',
+           'BrightEarthLimbConstraint',
            'EarthLimbConstraint',
            'OrbitNightConstraint',
            'OutsideSouthAtlanticAnomalyConstraint',
