@@ -7,4 +7,5 @@
 #
 from .fov import FOV
 from .orbit import Orbit
-__all__ = ('Orbit', 'FOV')
+from ._slew import slew_time
+__all__ = ('Orbit', 'FOV', 'slew_time')
