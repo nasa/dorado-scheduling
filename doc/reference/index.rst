@@ -11,5 +11,6 @@ Modules
     constraints
     orbit
     fov
+    slew
     skygrid
     units
