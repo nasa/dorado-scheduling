@@ -143,9 +143,7 @@ def main(args=None):
 
     if has_continuous_viewing_zone:
         y = continuous_viewing_zone.sum() / healpix.npix * 100
-        ax_time.axhline(
-            continuous_viewing_zone.sum() / healpix.npix,
-            color=continuous_color, zorder=2.1)
+        ax_time.axhline(y, color=continuous_color, zorder=2.1)
 
     y = field_of_regard.sum(1) / healpix.npix * 100
     ax_time.fill_between(
@@ -156,10 +154,15 @@ def main(args=None):
 
     ax_sky = fig.add_subplot(gs_sky, projection='astro hours mollweide')
     ax_sky.grid()
+    colors = [continuous_color, orbit_color, instantaneous_color]
+    labels = ['Continuous', 'Orbit-averaged', 'Instantaneous']
+    if not has_continuous_viewing_zone:
+        colors = colors[1:]
+        labels = labels[1:]
     ax_sky.add_artist(ax_sky.legend(
         [plt.Rectangle((0, 0), 0, 0, edgecolor='none', facecolor=color)
-         for color in [orbit_color, instantaneous_color]],
-        ['Orbit-averaged', 'Instantaneous'], title='Outside field of regard',
+         for color in colors],
+        labels, title='Outside field of regard',
         bbox_to_anchor=[-0.05, -0.3, 1.1, 1.6], loc='upper right'))
     ax_sky.legend(
         [plt.Rectangle((0, 0), 0, 0, edgecolor=color, facecolor='none')
@@ -171,7 +174,7 @@ def main(args=None):
     if has_continuous_viewing_zone:
         ax_sky.contourf_hpx(continuous_viewing_zone.astype(float),
                             levels=[0, 0.5], colors=[continuous_color],
-                            nested=True, zorder=0.4)
+                            nested=True, zorder=0.3)
     ax_sky.contourf_hpx(orbit_field_of_regard.astype(float), levels=[0, 0.5],
                         colors=[orbit_color], nested=True, zorder=0.5)
 
@@ -198,7 +201,7 @@ def main(args=None):
             old_artists.extend(ax_sky.contourf_hpx(
                 field_of_regard[i].astype(float), levels=[0, 0.5],
                 colors=[instantaneous_color], nested=True,
-                zorder=0.2).collections)
+                zorder=0.4).collections)
             old_artists.append(ax_prob.axvline(t[i], color='gray', zorder=10))
             old_artists.append(ax_time.axvline(t[i], color='gray', zorder=10))
             progress.update()
