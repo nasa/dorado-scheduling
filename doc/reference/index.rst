@@ -14,3 +14,4 @@ Modules
     slew
     skygrid
     units
+    utils
