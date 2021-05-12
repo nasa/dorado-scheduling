@@ -91,13 +91,14 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
-    from docplex.mp.model import Model
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
     from ligo.skymap.util import Stopwatch
     import numpy as np
     from scipy.signal import convolve
     from tqdm import tqdm
+
+    from ..schedulers import Model
 
     mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
@@ -138,37 +139,38 @@ def main(args=None):
         m.context.cplex_parameters.threads = args.jobs
 
     log.info('adding variable: observing schedule')
-    shape = (len(centers), len(rolls), not_regard.shape[0])
-    schedule = np.reshape(m.binary_var_list(np.prod(shape)), shape)
+    schedule = m.binary_var_array(
+        (len(centers), len(rolls), not_regard.shape[0]))
 
     log.info('adding variable: whether a given pixel is observed')
-    pixel_observed = np.asarray(m.binary_var_list(healpix.npix))
+    pixel_observed = m.binary_var_array(healpix.npix)
 
     log.info('adding variable: whether a given field is used')
-    field_used = np.reshape(m.binary_var_list(np.prod(shape[:2])), shape[:2])
+    field_used = m.binary_var_array(schedule.shape[:2])
 
     log.info('adding variable: whether a given time step is used')
-    time_used = np.asarray(m.binary_var_list(shape[2]))
+    time_used = m.binary_var_array(schedule.shape[2])
 
     if args.nexp is not None:
         log.info('adding constraint: number of exposures')
-        m.add_constraint_(m.sum(time_used) <= args.nexp)
+        m.add_(m.sum(time_used) <= args.nexp)
 
     log.info('adding constraint: only observe one field at a time')
-    m.add_constraints_(
-        m.sum(schedule[..., i].ravel()) <= 1 for i in tqdm(range(shape[2]))
-    )
+    m.add_(
+        m.sum(schedule[..., i].ravel()) <= 1
+        for i in tqdm(range(schedule.shape[2])))
     m.add_equivalences(
         time_used,
-        [m.sum(schedule[..., i].ravel()) >= 1 for i in tqdm(range(shape[2]))]
+        [m.sum(schedule[..., i].ravel()) >= 1
+         for i in tqdm(range(schedule.shape[2]))]
     )
-    m.add_constraints_(
+    m.add_(
         m.sum(time_used[i:i+time_steps_per_exposure]) <= 1
-        for i in tqdm(range(schedule.shape[-1]))
+        for i in tqdm(range(schedule.shape[2]))
     )
 
     log.info('adding constraint: a pixel is observed if it is in any field')
-    m.add_constraints_(
+    m.add_(
         m.sum(lhs) >= rhs
         for lhs, rhs in zip(
             tqdm(schedule.reshape(field_used.size, -1)),
@@ -183,14 +185,14 @@ def main(args=None):
                 for k in grid_ij:
                     indices[k].append((i, j))
                 progress.update()
-    m.add_constraints_(
+    m.add_(
         m.sum(field_used[lhs_index] for lhs_index in lhs_indices) >= rhs
         for lhs_indices, rhs in zip(tqdm(indices), pixel_observed)
     )
 
     log.info('adding constraint: field of regard')
     i, j = np.nonzero(not_regard)
-    m.add_constraint_(m.sum(schedule[j, :, i].ravel()) <= 0)
+    m.add_(m.sum(schedule[j, :, i].ravel()) <= 0)
 
     log.info('adding objective')
     m.maximize(m.scal_prod(pixel_observed, prob))
