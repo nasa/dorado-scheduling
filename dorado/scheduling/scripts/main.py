@@ -82,6 +82,8 @@ def main(args=None):
     args = parser().parse_args(args)
 
     # Late imports
+    from itertools import groupby
+    from operator import itemgetter
     import os
     import sys
     import warnings
@@ -160,9 +162,6 @@ def main(args=None):
     log.info('variable: whether a given field is used')
     field_used = m.binary_var_array((len(centers), len(rolls)))
 
-    log.info('variable: whether a given pixel is observed')
-    pix_used = m.binary_var_array(healpix.npix)
-
     log.info('constraint: at most one field is used for each observation')
     m.add_(m.sum(obs_field[i].ravel()) <= obs_used[i] for i in range(nexp))
 
@@ -175,17 +174,27 @@ def main(args=None):
         for j in tqdm(range(len(centers))) for k in range(len(rolls)))
 
     log.info('constraint: a pixel is used if it is in any used fields')
-    indices = [[] for _ in range(healpix.npix)]
+    # First, make a table of the fields that contain each pixel.
+    field_indices_by_pix = [[] for _ in range(healpix.npix)]
     with tqdm(total=len(centers) * len(rolls)) as progress:
         for i, grid_i in enumerate(
                 mission.fov.footprint_healpix_grid(healpix, centers, rolls)):
             for j, grid_ij in enumerate(grid_i):
                 for k in grid_ij:
-                    indices[k].append((i, j))
+                    field_indices_by_pix[k].append((i, j))
                 progress.update()
-    m.add_(
-        m.sum(field_used[lhs_index] for lhs_index in lhs_indices) >= rhs
-        for lhs_indices, rhs in zip(tqdm(indices), pix_used))
+    # Next, make the Venn diagram of the footprints of all of the fields.
+    key = itemgetter(1)
+    coefficients, lhss = zip(*(
+        (
+            prob[np.asarray(next(zip(*group)))].sum(),
+            m.sum(field_used[field_index] for field_index in field_indices)
+        ) for field_indices, group
+        in groupby(sorted(enumerate(field_indices_by_pix), key=key), key)))
+    # Finally, create variables and constraints.
+    pix_used = m.binary_var_array(len(coefficients))
+    m.add_(lhs >= rhs for lhs, rhs in zip(lhss, pix_used))
+    m.maximize(m.scal_prod(pix_used, coefficients))
 
     log.info('constraint: observations do not overlap')
     m.add_indicator_constraints_(
@@ -275,9 +284,6 @@ def main(args=None):
     cb.register_watched_vars(obs_field.ravel())
     cb.register_watched_vars(obs_start_time)
     m.cplex.set_callback(cb, cplex.callbacks.Context.id.candidate)
-
-    log.info('adding objective')
-    m.maximize(m.scal_prod(pix_used, prob))
 
     log.info('solving')
     stopwatch = Stopwatch()
