@@ -91,7 +91,7 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
-    from cplex.callbacks import LazyConstraintCallback
+    import cplex
     from docplex.mp.callbacks.cb_mixin import ConstraintCallbackMixin
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
@@ -234,15 +234,16 @@ def main(args=None):
                     (obs_start_time[i] <= interval_end[i1] - exptime_s)
                     for i in range(nexp) for i1 in range(len(intervals)))
 
-    class SlewConstraintCallback(ConstraintCallbackMixin,
-                                 LazyConstraintCallback):
+    class CandidateCallback:
 
-        def __init__(self, env):
-            LazyConstraintCallback.__init__(self, env)
-            ConstraintCallbackMixin.__init__(self)
+        def get_values(self, indices):
+            return self.context.get_candidate_point(indices)
 
-        def __call__(self):
+    class SlewConstraintCallback(ConstraintCallbackMixin, CandidateCallback):
+
+        def invoke(self, context):
             # Reconstruct partial solution
+            self.context = context
             sol = self.make_solution_from_watched()
 
             # Determine which fields are selected
@@ -264,12 +265,16 @@ def main(args=None):
                 in zip(lhs_array[:-1], lhs_array[1:],
                        rhs_array[:-1], rhs_array[1:], dt_array)]
 
-            for _, lhs, sense, rhs in self.get_cpx_unsatisfied_cts(cons, sol):
-                self.add(lhs, sense, rhs)
+            unsatisfied = self.get_cpx_unsatisfied_cts(cons, sol)
+            if unsatisfied:
+                _, lhs, sense, rhs = zip(*unsatisfied)
+                context.reject_candidate(lhs, sense, rhs)
 
-    cb = m.register_callback(SlewConstraintCallback)
+    cb = SlewConstraintCallback()
+    cb._model = m
     cb.register_watched_vars(obs_field.ravel())
     cb.register_watched_vars(obs_start_time)
+    m.cplex.set_callback(cb, cplex.callbacks.Context.id.candidate)
 
     log.info('adding objective')
     m.maximize(m.scal_prod(pix_used, prob))
