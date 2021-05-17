@@ -93,8 +93,6 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
-    import cplex
-    from docplex.mp.callbacks.cb_mixin import ConstraintCallbackMixin
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
     from ligo.skymap.util import Stopwatch
@@ -243,47 +241,27 @@ def main(args=None):
                     (obs_start_time[i] <= interval_end[i1] - exptime_s)
                     for i in range(nexp) for i1 in range(len(intervals)))
 
-    class CandidateCallback:
+    def callback(sol):
+        # Determine which fields are selected
+        i, j, k = np.nonzero(np.reshape(sol.get_values(obs_field.ravel()),
+                                        obs_field.shape))
 
-        def get_values(self, indices):
-            return self.context.get_candidate_point(indices)
+        # Calculate overhead + exptime between each pair of fields
+        coords = centers[j]
+        dt_array = mission.overhead(coords[1:], coords[:-1]).to_value(u.s)
+        dt_array += exptime_s
 
-    class SlewConstraintCallback(ConstraintCallbackMixin, CandidateCallback):
+        lhs_array = obs_start_time[i]
+        rhs_array = obs_field[i, j, k]
+        # This is a big-M formulation of the indicator constraint:
+        # (rhs1 & rhs0) >> lhs1 - lhs0 >= dt
+        return [
+            lhs1 - lhs0 - dt >= duration_s * (rhs1 + rhs0 - 2)
+            for lhs0, lhs1, rhs0, rhs1, dt
+            in zip(lhs_array[:-1], lhs_array[1:],
+                   rhs_array[:-1], rhs_array[1:], dt_array)]
 
-        def invoke(self, context):
-            # Reconstruct partial solution
-            self.context = context
-            sol = self.make_solution_from_watched()
-
-            # Determine which fields are selected
-            i, j, k = np.nonzero(np.reshape(sol.get_values(obs_field.ravel()),
-                                            obs_field.shape))
-
-            # Calculate overhead + exptime between each pair of fields
-            coords = centers[j]
-            dt_array = mission.overhead(coords[1:], coords[:-1]).to_value(u.s)
-            dt_array += exptime_s
-
-            lhs_array = obs_start_time[i]
-            rhs_array = obs_field[i, j, k]
-            # This is a big-M formulation of the indicator constraint:
-            # (rhs1 & rhs0) >> lhs1 - lhs0 >= dt
-            cons = [
-                lhs1 - lhs0 - dt >= duration_s * (rhs1 + rhs0 - 2)
-                for lhs0, lhs1, rhs0, rhs1, dt
-                in zip(lhs_array[:-1], lhs_array[1:],
-                       rhs_array[:-1], rhs_array[1:], dt_array)]
-
-            unsatisfied = self.get_cpx_unsatisfied_cts(cons, sol)
-            if unsatisfied:
-                _, lhs, sense, rhs = zip(*unsatisfied)
-                context.reject_candidate(lhs, sense, rhs)
-
-    cb = SlewConstraintCallback()
-    cb._model = m
-    cb.register_watched_vars(obs_field.ravel())
-    cb.register_watched_vars(obs_start_time)
-    m.cplex.set_callback(cb, cplex.callbacks.Context.id.candidate)
+    m.set_lazy_constraint_callback(callback, obs_field.ravel(), obs_start_time)
 
     log.info('solving')
     stopwatch = Stopwatch()
