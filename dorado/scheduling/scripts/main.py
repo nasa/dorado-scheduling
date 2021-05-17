@@ -169,7 +169,7 @@ def main(args=None):
     log.info('constraint: a field is used if it is chosen for an observation')
     m.add_(
         m.sum(obs_field[:, j, k]) >= field_used[j, k]
-        for j in tqdm(range(len(centers))) for k in range(len(rolls)))
+        for j in range(len(centers)) for k in range(len(rolls)))
 
     log.info('constraint: a pixel is used if it is in any used fields')
     # First, make a table of the fields that contain each pixel.
@@ -201,7 +201,7 @@ def main(args=None):
         for i in range(nexp - 1))
 
     log.info('constraint: field of regard')
-    for j in tqdm(range(len(centers))):
+    for j in range(len(centers)):
         for k in range(len(rolls)):
             # FIXME: not roll dependent yet
             intervals = nonzero_intervals(regard[:, j]) * time_step_s
