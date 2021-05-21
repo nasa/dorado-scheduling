@@ -34,7 +34,7 @@ def _observable(constraints, targets, time, location):
     ).ravel()
 
 
-def get_field_of_regard(orbit, constraints, targets, times, jobs=None):
+def get_field_of_regard(orbit, constraints, targets, times, jobs=1):
     """Calculate the observability of a grid of targets at a grid of times.
 
     Parameters
