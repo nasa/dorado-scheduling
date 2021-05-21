@@ -1,5 +1,7 @@
 .coverage
 .hypothesis
+.idea
+.pytest_cache
 .vscode
 __pycache__
 _build
