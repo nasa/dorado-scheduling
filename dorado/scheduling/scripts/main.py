@@ -66,6 +66,9 @@ def parser():
         help='tiles filename')
 
     p.add_argument(
+        '--scheduler', choices=('discrete-time', 'continuous-time-slew'),
+        default='discrete-time', help='Scheduling algorithm')
+    p.add_argument(
         '--nside', type=int, default=32, help='HEALPix sampling resolution')
     p.add_argument(
         '--timeout', type=int, help='Impose timeout on solutions')
@@ -82,234 +85,79 @@ def main(args=None):
     args = parser().parse_args(args)
 
     # Late imports
-    from itertools import groupby
-    from operator import itemgetter
     import os
     import sys
-    import warnings
 
     from astropy_healpix import HEALPix
     from astropy.coordinates import ICRS
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
+    from docplex.mp.context import Context
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
     from ligo.skymap.util import Stopwatch
     import numpy as np
-    from tqdm import tqdm
 
-    from ..schedulers import Model
-    from ..utils import nonzero_intervals, shlex_join
+    from ..utils import shlex_join
+
+    if args.scheduler == 'discrete-time':
+        from ..schedulers.discrete_time import schedule
+    elif args.scheduler == 'continuous-time-slew':
+        from ..schedulers.continuous_time_slew import schedule
+    else:
+        raise AssertionError('this code should not be reached')
 
     mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
-    log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
     event_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
     skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
     prob = rasterize(skymap, healpix.level)['PROB']
 
-    # Set up grids
+    # Set up pointing grid
+    if args.skygrid_file is not None:
+        centers = Table.read(args.skygrid_file, format='ascii.ecsv')['center']
+    else:
+        centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
+            args.skygrid_step)
+    rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
+
+    # Set up time grid
     with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
         nexp = int(((mission.min_overhead + args.duration) /
                     (mission.min_overhead + args.exptime)).to(
                         u.dimensionless_unscaled))
         if args.nexp is not None and args.nexp < nexp:
             nexp = args.nexp
-        min_delay_s = (mission.min_overhead + args.exptime).to_value(u.s)
-        exptime_s = args.exptime.to_value(u.s)
-        duration_s = args.duration.to_value(u.s)
-        time_step_s = args.time_step.to_value(u.s)
-        start_time = event_time + args.delay
-        times = start_time + np.arange(
-            0, duration_s, time_step_s) * u.s
-    rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
+        exptime = args.exptime.to(u.s)
+        times = event_time + args.delay + np.arange(
+            0, args.duration.to_value(u.s), args.time_step.to_value(u.s)) * u.s
 
-    if len(rolls) > 1:
-        warnings.warn(
-            'Slew constraints for varying roll angles are not yet implemented')
-
-    if args.skygrid_file is not None:
-        centers = Table.read(args.skygrid_file, format='ascii.ecsv')['center']
-    else:
-        centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
-            args.skygrid_step)
-
-    log.info('evaluating field of regard')
-    regard = mission.get_field_of_regard(centers, times, jobs=args.jobs)
-
-    log.info('generating model')
-    m = Model()
+    # Configure solver context
+    context = Context.make_default_context()
+    context.solver.log_output = context.solver.log_output_as_stream = True
     if args.timeout is not None:
-        m.set_time_limit(args.timeout)
-    if args.jobs is not None:
-        m.context.cplex_parameters.threads = args.jobs
+        context.cplex_parameters.timelimit = args.timeout
+        # Since we have a time limit,
+        # emphasize finding good feasible solutions over proving optimality.
+        context.cplex_parameters.emphasis.mip = 1
+    if args.jobs is None:
+        context.cplex_parameters.threads = 0
+    else:
+        context.cplex_parameters.threads = args.jobs
 
-    log.info('variable: start time for each observation')
-    obs_start_time = m.continuous_var_array(
-        nexp, lb=0, ub=duration_s - exptime_s)
-
-    log.info('variable: field selection for each observation')
-    obs_field = m.binary_var_array((nexp, len(centers), len(rolls)))
-
-    log.info('variable: whether a given observation is used')
-    obs_used = m.binary_var_array(nexp)
-
-    log.info('variable: whether a given field is used')
-    field_used = m.binary_var_array((len(centers), len(rolls)))
-
-    log.info('constraint: at most one field is used for each observation')
-    m.add_(m.sum(obs_field[i].ravel()) <= obs_used[i] for i in range(nexp))
-
-    log.info('constraint: consecutive observations are used')
-    m.add_(obs_used[i] >= obs_used[i + 1] for i in range(nexp - 1))
-
-    log.info('constraint: a field is used if it is chosen for an observation')
-    m.add_(
-        m.sum(obs_field[:, j, k]) >= field_used[j, k]
-        for j in range(len(centers)) for k in range(len(rolls)))
-
-    log.info('constraint: a pixel is used if it is in any used fields')
-    # First, make a table of the fields that contain each pixel.
-    field_indices_by_pix = [[] for _ in range(healpix.npix)]
-    with tqdm(total=len(centers) * len(rolls)) as progress:
-        for i, grid_i in enumerate(
-                mission.fov.footprint_healpix_grid(healpix, centers, rolls)):
-            for j, grid_ij in enumerate(grid_i):
-                for k in grid_ij:
-                    field_indices_by_pix[k].append((i, j))
-                progress.update()
-    # Next, make the Venn diagram of the footprints of all of the fields.
-    key = itemgetter(1)
-    coefficients, lhss = zip(*(
-        (
-            prob[np.asarray(next(zip(*group)))].sum(),
-            m.sum(field_used[field_index] for field_index in field_indices)
-        ) for field_indices, group
-        in groupby(sorted(enumerate(field_indices_by_pix), key=key), key)))
-    # Finally, create variables and constraints.
-    pix_used = m.binary_var_array(len(coefficients))
-    m.add_(lhs >= rhs for lhs, rhs in zip(lhss, pix_used))
-    m.maximize(m.scal_prod(pix_used, coefficients))
-
-    log.info('constraint: observations do not overlap')
-    m.add_indicator_constraints_(
-        obs_used[i + 1] >>
-        (obs_start_time[i + 1] - obs_start_time[i] >= min_delay_s)
-        for i in range(nexp - 1))
-
-    log.info('constraint: field of regard')
-    for j in range(len(centers)):
-        for k in range(len(rolls)):
-            # FIXME: not roll dependent yet
-            intervals = nonzero_intervals(regard[:, j]) * time_step_s
-
-            if len(intervals) == 0:
-                # The field is always outside the field of regard,
-                # so disallow it entirely.
-                m.add_(m.sum(obs_field[:, j, k]) <= 0)
-            elif len(intervals) == 1:
-                # The field is within the field of regard during a single
-                # contigous interval, so require the observaiton to be within
-                # that interval.
-                (interval_start, interval_end), = intervals
-                m.add_indicator_constraints_(
-                    obs_field[i, j, k] >>
-                    (obs_start_time[i] >= interval_start)
-                    for i in range(nexp))
-                m.add_indicator_constraints_(
-                    obs_field[i, j, k] >>
-                    (obs_start_time[i] <= interval_end - exptime_s)
-                    for i in range(nexp))
-            else:
-                # The field is within the field of regard during two or more
-                # disjoint intervals, so introduce additional decision
-                # variables to decide which interval.
-                interval_start, interval_end = intervals.T
-                interval_choice = m.binary_var_array((nexp, len(intervals)))
-                m.add_indicator_constraints_(
-                    obs_field[i, j, k] >> (m.sum(interval_choice[i]) >= 1)
-                    for i in range(nexp))
-                m.add_indicator_constraints_(
-                    interval_choice[i, i1] >>
-                    (obs_start_time[i] >= interval_start[i1])
-                    for i in range(nexp) for i1 in range(len(intervals)))
-                m.add_indicator_constraints_(
-                    interval_choice[i, i1] >>
-                    (obs_start_time[i] <= interval_end[i1] - exptime_s)
-                    for i in range(nexp) for i1 in range(len(intervals)))
-
-    def callback(sol):
-        # Determine which fields are selected
-        i, j, k = np.nonzero(np.reshape(sol.get_values(obs_field.ravel()),
-                                        obs_field.shape))
-
-        # Calculate overhead + exptime between each pair of fields
-        coords = centers[j]
-        dt_array = mission.overhead(coords[1:], coords[:-1]).to_value(u.s)
-        dt_array += exptime_s
-
-        lhs_array = obs_start_time[i]
-        rhs_array = obs_field[i, j, k]
-        # This is a big-M formulation of the indicator constraint:
-        # (rhs1 & rhs0) >> lhs1 - lhs0 >= dt
-        return [
-            lhs1 - lhs0 - dt >= duration_s * (rhs1 + rhs0 - 2)
-            for lhs0, lhs1, rhs0, rhs1, dt
-            in zip(lhs_array[:-1], lhs_array[1:],
-                   rhs_array[:-1], rhs_array[1:], dt_array)]
-
-    m.set_lazy_constraint_callback(callback, obs_field.ravel(), obs_start_time)
-
-    log.info('solving')
     stopwatch = Stopwatch()
     stopwatch.start()
-    solution = m.solve(log_output=True)
+    result = schedule(
+        mission, prob, healpix, centers, rolls, times, exptime, nexp, context)
     stopwatch.stop()
 
-    log.info('extracting results')
-    if solution is None:
-        obs_field_value = np.zeros(obs_field.shape, dtype=bool)
-        obs_start_time_value = np.zeros(obs_start_time.shape)
-        objective_value = 0.0
-    else:
-        obs_field_value = np.asarray(
-            solution.get_values(obs_field.ravel()), dtype=bool
-        ).reshape(
-            obs_field.shape
-        )
-        obs_start_time_value = np.asarray(solution.get_values(obs_start_time))
-        objective_value = m.objective_value
-    obs_start_time_value = start_time + obs_start_time_value * u.s
-
-    i, j, k = np.nonzero(obs_field_value)
-    result = Table(
-        data={
-            'time': obs_start_time_value[i],
-            'exptime': np.repeat(args.exptime, len(obs_start_time_value[i])),
-            'location': mission.orbit(obs_start_time_value).earth_location[i],
-            'center': centers[j],
-            'roll': rolls[k]
-        },
-        descriptions={
-            'time': 'Start time of observation',
-            'exptime': 'Exposure time',
-            'location': 'Location of the spacecraft',
-            'center': "Pointing of the center of the spacecraft's FOV",
-            'roll': 'Roll angle of spacecraft, position angle of FOV',
-        },
-        meta={
-            'cmdline': shlex_join(sys.argv),
-            'prob': objective_value,
-            'status': m.solve_status.name,
-            'real': stopwatch.real,
-            'user': stopwatch.user,
-            'sys': stopwatch.sys
-        }
-    )
-    result.sort('time')
+    result.meta['cmdline'] = shlex_join(sys.argv)
+    result.meta['real'] = stopwatch.real
+    result.meta['user'] = stopwatch.user
+    result.meta['sys'] = stopwatch.sys
     result.write(args.output, format='ascii.ecsv')
 
     log.info('done')
