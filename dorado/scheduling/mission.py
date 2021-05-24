@@ -19,7 +19,7 @@ from .constraints import (BrightEarthLimbConstraint, EarthLimbConstraint,
                           TrappedParticleFluxConstraint, get_field_of_regard)
 from .fov import FOV
 from .orbit import Orbit
-from ._slew import slew_time
+from ._slew import slew_separation, slew_time
 
 __all__ = ('Mission', 'dorado', 'ultrasat', 'uvex')
 
@@ -55,10 +55,9 @@ class Mission:
         return get_field_of_regard(self.orbit, self.constraints,
                                    *args, **kwargs)
 
-    def overhead(self, coord1, coord2):
-        # FIXME: doesn't handle slews between different roll angles!
+    def overhead(self, *args, **kwargs):
         return np.maximum(self.min_overhead,
-                          slew_time(coord1.separation(coord2),
+                          slew_time(slew_separation(*args, **kwargs),
                                     self.max_angular_velocity,
                                     self.max_angular_acceleration))
 

@@ -122,7 +122,7 @@ def main(args=None):
     else:
         centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
             args.skygrid_step)
-    rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
+    rolls = np.arange(0, 360, args.roll_step.to_value(u.deg)) * u.deg
 
     # Set up time grid
     with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):

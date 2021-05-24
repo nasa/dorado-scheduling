@@ -8,7 +8,6 @@
 from itertools import groupby
 from logging import getLogger
 from operator import itemgetter
-import warnings
 
 from astropy.table import Table
 from astropy import units as u
@@ -22,10 +21,6 @@ log = getLogger(__name__)
 
 def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
              context=None):
-    if len(rolls) > 1:
-        warnings.warn(
-            'Slew constraints for varying roll angles are not yet implemented')
-
     min_delay_s = (mission.min_overhead + exptime).to_value(u.s)
     exptime_s = exptime.to_value(u.s)
     duration_s = (times[-1] - times[0]).to_value(u.s)
@@ -137,8 +132,11 @@ def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
                                         obs_field.shape))
 
         # Calculate overhead + exptime between each pair of fields
-        coords = centers[j]
-        dt_array = mission.overhead(coords[1:], coords[:-1]).to_value(u.s)
+        obs_centers = centers[j]
+        obs_rolls = rolls[k]
+        dt_array = mission.overhead(
+            obs_centers[1:], obs_centers[:-1],
+            obs_rolls[1:], obs_rolls[:-1]).to_value(u.s)
         dt_array += exptime_s
 
         lhs_array = obs_start_time[i]
