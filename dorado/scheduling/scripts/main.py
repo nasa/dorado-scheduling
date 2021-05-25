@@ -244,6 +244,11 @@ def main(args=None):
     result.sort('time')
     result.write(args.output, format='ascii.ecsv')
 
+    log.info('done')
+    # Fast exit without garbage collection
+    args.output.close()
+    os._exit(os.EX_OK)
+
 
 if __name__ == '__main__':
     main()
