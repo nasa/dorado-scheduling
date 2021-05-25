@@ -9,6 +9,7 @@ from itertools import groupby
 from logging import getLogger
 from operator import itemgetter
 
+from astropy.coordinates import EarthLocation
 from astropy.table import Table
 from astropy import units as u
 import numpy as np
@@ -174,7 +175,11 @@ def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
         data={
             'time': obs_start_time_value[i],
             'exptime': np.repeat(exptime, len(obs_start_time_value[i])),
-            'location': mission.orbit(obs_start_time_value).earth_location[i],
+            'location': (
+                # FIXME: remove this workaround for empty EarthLocation once
+                # https://github.com/astropy/astropy/issues/11454 is released
+                mission.orbit(obs_start_time_value).earth_location[i]
+                if obs_start_time_value.size > 0 else EarthLocation([], [])),
             'center': centers[j],
             'roll': rolls[k]
         },
