@@ -83,7 +83,6 @@ def main(args=None):
 
     # Late imports
     import os
-    # import shlex
     import sys
 
     from astropy_healpix import HEALPix
@@ -99,6 +98,7 @@ def main(args=None):
     from tqdm import tqdm
 
     from ..schedulers import Model
+    from ..utils import shlex_join
 
     mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
@@ -232,8 +232,7 @@ def main(args=None):
             'roll': 'Roll angle of spacecraft, position angle of FOV',
         },
         meta={
-            # FIXME: use shlex.join(sys.argv) in Python >= 3.8
-            'cmdline': ' '.join(sys.argv),
+            'cmdline': shlex_join(sys.argv),
             'prob': objective_value,
             'status': m.solve_status.name,
             'real': stopwatch.real,

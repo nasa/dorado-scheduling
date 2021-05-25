@@ -7,6 +7,7 @@
 #
 """Miscellaneous utilities."""
 import numpy as np
+import shlex
 
 
 def nonzero_intervals(a):
@@ -44,3 +45,12 @@ def nonzero_intervals(a):
     a = np.pad(np.asarray(a, dtype=bool), 1)
     return np.column_stack((np.flatnonzero(a[1:-1] & ~a[:-2]),
                             np.flatnonzero(a[1:-1] & ~a[2:])))
+
+
+# FIXME: shlex.join was added in Python 3.8.
+# Remove this when we drop support for Python 3.7.
+try:
+    shlex_join = shlex.join
+except AttributeError:
+    def shlex_join(args):
+        return ' '.join(shlex.quote(arg) for arg in args)
