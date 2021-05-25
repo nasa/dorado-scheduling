@@ -82,6 +82,7 @@ def main(args=None):
     args = parser().parse_args(args)
 
     # Late imports
+    import os
     # import shlex
     import sys
 
