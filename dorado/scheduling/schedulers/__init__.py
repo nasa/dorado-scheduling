@@ -5,12 +5,12 @@ import numpy as np
 class Model(_Model):
     """Convenience class to add Numpy variable arrays to docplex.mp."""
 
-    def _var_array(self, vartype, shape=1, *args, **kwargs):
-        if shape == 1:
-            return self.var(vartype, *args, **kwargs)
-        else:
-            return np.reshape(
-                self.var_list(np.prod(shape), vartype, *args, **kwargs), shape)
+    def _var_array(self, vartype, shape=(), *args, **kwargs):
+        size = np.prod(shape, dtype=int)
+        vars = np.reshape(self.var_list(size, vartype, *args, **kwargs), shape)
+        if vars.ndim == 0:
+            vars = vars.item()
+        return vars
 
     def binary_var_array(self, *args, **kwargs):
         return self._var_array(self.binary_vartype, *args, **kwargs)
