@@ -32,7 +32,7 @@ def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
     regard = mission.get_field_of_regard(centers, times, jobs=jobs)
 
     log.info('generating model')
-    m = Model(context)
+    m = Model(context=context)
 
     log.info('variable: start time for each observation')
     obs_start_time = m.continuous_var_array(

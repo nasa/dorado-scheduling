@@ -35,7 +35,7 @@ def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
         mode='valid', method='direct')
 
     log.info('generating model')
-    m = Model(context)
+    m = Model(context=context)
 
     log.info('adding variable: observing schedule')
     schedule = m.binary_var_array(

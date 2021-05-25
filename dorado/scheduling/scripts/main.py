@@ -137,7 +137,7 @@ def main(args=None):
 
     # Configure solver context
     context = Context.make_default_context()
-    context.solver.log_output = context.solver.log_output_as_stream = True
+    context.solver.log_output = True
     if args.timeout is not None:
         context.cplex_parameters.timelimit = args.timeout
         # Since we have a time limit,
