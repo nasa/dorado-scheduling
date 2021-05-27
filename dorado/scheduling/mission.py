@@ -73,7 +73,7 @@ dorado = Mission(
         astroplan.GalacticLatitudeConstraint(10 * u.deg)),
     fov=FOV.from_rectangle(7.1 * u.deg),
     orbit=_read_orbit('dorado-625km-sunsync.tle'),
-    min_overhead=42 * u.s,
+    min_overhead=0 * u.s,
     max_angular_velocity=0.872 * u.deg / u.s,
     max_angular_acceleration=0.244 * u.deg / u.s**2
 )
@@ -95,6 +95,9 @@ Notes
 * The maximum angular acceleration and angular velocity about its three
   principal axes were given to us by the spacecraft vendor, but to be
   conservative we are using the smallest values.
+
+* There is effectively no readout overhead because the Dorado uses frame
+  transfer CCDs, so the previous image can be read out during an exposure.
 """
 
 
@@ -106,7 +109,7 @@ ultrasat = Mission(
         astroplan.GalacticLatitudeConstraint(10 * u.deg)),
     fov=FOV.from_rectangle(14.1 * u.deg),
     orbit=_read_orbit('goes17.tle'),
-    min_overhead=42 * u.s,
+    min_overhead=0 * u.s,
     max_angular_velocity=0.872 * u.deg / u.s,
     max_angular_acceleration=0.244 * u.deg / u.s**2
 )
@@ -140,7 +143,7 @@ uvex = Mission(
     ),
     fov=FOV.from_rectangle(3.3 * u.deg),
     orbit=_read_orbit('vela1.tle'),
-    min_overhead=42 * u.s,
+    min_overhead=0 * u.s,
     max_angular_velocity=0.872 * u.deg / u.s,
     max_angular_acceleration=0.244 * u.deg / u.s**2
 )
