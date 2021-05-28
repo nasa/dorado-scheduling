@@ -66,6 +66,9 @@ def parser():
         help='tiles filename')
 
     p.add_argument(
+        '--scheduler', choices=('discrete-time', 'continuous-time-slew'),
+        default='discrete-time', help='Scheduling algorithm')
+    p.add_argument(
         '--nside', type=int, default=32, help='HEALPix sampling resolution')
     p.add_argument(
         '--timeout', type=int, help='Impose timeout on solutions')
@@ -90,157 +93,71 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
+    from docplex.mp.context import Context
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
     from ligo.skymap.util import Stopwatch
     import numpy as np
-    from scipy.signal import convolve
-    from tqdm import tqdm
 
-    from ..schedulers import Model
     from ..utils import shlex_join
+
+    if args.scheduler == 'discrete-time':
+        from ..schedulers.discrete_time import schedule
+    elif args.scheduler == 'continuous-time-slew':
+        from ..schedulers.continuous_time_slew import schedule
+    else:
+        raise AssertionError('this code should not be reached')
 
     mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
-    log.info('reading sky map')
     # Read multi-order sky map and rasterize to working resolution
-    start_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
+    event_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
     skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
     prob = rasterize(skymap, healpix.level)['PROB']
 
-    # Set up grids
-    with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
-        time_steps_per_exposure = int(np.round(
-            (args.exptime / args.time_step).to_value(
-                u.dimensionless_unscaled)))
-        times = start_time + args.delay + np.arange(
-            0, args.duration.to_value(u.s),
-            args.time_step.to_value(u.s)) * u.s
-    rolls = np.arange(0, 90, args.roll_step.to_value(u.deg)) * u.deg
-
+    # Set up pointing grid
     if args.skygrid_file is not None:
         centers = Table.read(args.skygrid_file, format='ascii.ecsv')['center']
     else:
         centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
             args.skygrid_step)
+    rolls = np.arange(0, 360, args.roll_step.to_value(u.deg)) * u.deg
 
-    log.info('evaluating field of regard')
-    not_regard = convolve(
-        ~mission.get_field_of_regard(centers, times, jobs=args.jobs),
-        np.ones(time_steps_per_exposure)[:, np.newaxis],
-        mode='valid', method='direct')
+    # Set up time grid
+    with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
+        nexp = int(((mission.min_overhead + args.duration) /
+                    (mission.min_overhead + args.exptime)).to(
+                        u.dimensionless_unscaled))
+        if args.nexp is not None and args.nexp < nexp:
+            nexp = args.nexp
+        exptime = args.exptime.to(u.s)
+        times = event_time + args.delay + np.arange(
+            0, args.duration.to_value(u.s), args.time_step.to_value(u.s)) * u.s
 
-    log.info('generating model')
-    m = Model()
+    # Configure solver context
+    context = Context.make_default_context()
+    context.solver.log_output = True
     if args.timeout is not None:
-        m.set_time_limit(args.timeout)
-    if args.jobs is not None:
-        m.context.cplex_parameters.threads = args.jobs
+        context.cplex_parameters.timelimit = args.timeout
+        # Since we have a time limit,
+        # emphasize finding good feasible solutions over proving optimality.
+        context.cplex_parameters.emphasis.mip = 1
+    if args.jobs is None:
+        context.cplex_parameters.threads = 0
+    else:
+        context.cplex_parameters.threads = args.jobs
 
-    log.info('adding variable: observing schedule')
-    schedule = m.binary_var_array(
-        (len(centers), len(rolls), not_regard.shape[0]))
-
-    log.info('adding variable: whether a given pixel is observed')
-    pixel_observed = m.binary_var_array(healpix.npix)
-
-    log.info('adding variable: whether a given field is used')
-    field_used = m.binary_var_array(schedule.shape[:2])
-
-    log.info('adding variable: whether a given time step is used')
-    time_used = m.binary_var_array(schedule.shape[2])
-
-    if args.nexp is not None:
-        log.info('adding constraint: number of exposures')
-        m.add_(m.sum(time_used) <= args.nexp)
-
-    log.info('adding constraint: only observe one field at a time')
-    m.add_(
-        m.sum(schedule[..., i].ravel()) <= 1
-        for i in tqdm(range(schedule.shape[2])))
-    m.add_equivalences(
-        time_used,
-        [m.sum(schedule[..., i].ravel()) >= 1
-         for i in tqdm(range(schedule.shape[2]))]
-    )
-    m.add_(
-        m.sum(time_used[i:i+time_steps_per_exposure]) <= 1
-        for i in tqdm(range(schedule.shape[2]))
-    )
-
-    log.info('adding constraint: a pixel is observed if it is in any field')
-    m.add_(
-        m.sum(lhs) >= rhs
-        for lhs, rhs in zip(
-            tqdm(schedule.reshape(field_used.size, -1)),
-            field_used.ravel()
-        )
-    )
-    indices = [[] for _ in range(healpix.npix)]
-    with tqdm(total=len(centers) * len(rolls)) as progress:
-        for i, grid_i in enumerate(
-                mission.fov.footprint_healpix_grid(healpix, centers, rolls)):
-            for j, grid_ij in enumerate(grid_i):
-                for k in grid_ij:
-                    indices[k].append((i, j))
-                progress.update()
-    m.add_(
-        m.sum(field_used[lhs_index] for lhs_index in lhs_indices) >= rhs
-        for lhs_indices, rhs in zip(tqdm(indices), pixel_observed)
-    )
-
-    log.info('adding constraint: field of regard')
-    i, j = np.nonzero(not_regard)
-    m.add_(m.sum(schedule[j, :, i].ravel()) <= 0)
-
-    log.info('adding objective')
-    m.maximize(m.scal_prod(pixel_observed, prob))
-
-    log.info('solving')
     stopwatch = Stopwatch()
     stopwatch.start()
-    solution = m.solve(log_output=True)
+    result = schedule(
+        mission, prob, healpix, centers, rolls, times, exptime, nexp, context)
     stopwatch.stop()
 
-    log.info('extracting results')
-    if solution is None:
-        schedule_flags = np.zeros(schedule.shape, dtype=bool)
-        objective_value = 0.0
-    else:
-        schedule_flags = np.asarray(
-            solution.get_values(schedule.ravel()), dtype=bool
-        ).reshape(
-            schedule.shape
-        )
-        objective_value = m.objective_value
-
-    ipix, iroll, itime = np.nonzero(schedule_flags)
-    result = Table(
-        data={
-            'time': times[itime],
-            'exptime': np.repeat(args.exptime, len(times[itime])),
-            'location': mission.orbit(times).earth_location[itime],
-            'center': centers[ipix],
-            'roll': rolls[iroll]
-        },
-        descriptions={
-            'time': 'Start time of observation',
-            'exptime': 'Exposure time',
-            'location': 'Location of the spacecraft',
-            'center': "Pointing of the center of the spacecraft's FOV",
-            'roll': 'Roll angle of spacecraft, position angle of FOV',
-        },
-        meta={
-            'cmdline': shlex_join(sys.argv),
-            'prob': objective_value,
-            'status': m.solve_status.name,
-            'real': stopwatch.real,
-            'user': stopwatch.user,
-            'sys': stopwatch.sys
-        }
-    )
-    result.sort('time')
+    result.meta['cmdline'] = shlex_join(sys.argv)
+    result.meta['real'] = stopwatch.real
+    result.meta['user'] = stopwatch.user
+    result.meta['sys'] = stopwatch.sys
     result.write(args.output, format='ascii.ecsv')
 
     log.info('done')
