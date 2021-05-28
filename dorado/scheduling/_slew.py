@@ -81,4 +81,4 @@ def slew_separation(center1, center2, roll1=0 * u.rad, roll2=0 * u.rad):
                          rotation_matrix(-center1.lat, 'y'),
                          rotation_matrix(center1.lon - center2.lon, 'z'),
                          rotation_matrix(center2.lat, 'y'))
-    return Angle(np.arccos(0.5 * (matrix_trace(mat) - 1)), unit=u.rad)
+    return Angle(np.arccos(0.5 * (matrix_trace(mat) - 1)) * u.rad).to(u.deg)
