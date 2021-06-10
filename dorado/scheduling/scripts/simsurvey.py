@@ -11,6 +11,7 @@ import glob
 import os
 import logging
 import numpy as np
+import pandas as pd
 
 from ligo.skymap.tool import ArgumentParser, FileType
 
@@ -60,7 +61,7 @@ def parser():
         '--time-step', type=u.Quantity, default='10 min',
         help='Model time step (any time units)')
     group.add_argument(
-        '--roll-step', type=u.Quantity, default='90 deg',
+        '--roll-step', type=u.Quantity, default='360 deg',
         help='Roll angle step (any angle units)')
     group.add_argument(
         '--skygrid-step', type=u.Quantity, default='0.0011 sr',
@@ -92,6 +93,13 @@ def parser():
     p.add_argument('--gw-folder', '-g',
                    type=str, default='examples',
                    help='folder with GW fits files')
+    p.add_argument('--gw-too-file',
+                   type=str,
+                   help='simulations file with GW exposure times')
+
+    p.add_argument(
+        '-j', '--jobs', type=int, default=1, const=None, nargs='?',
+        help='Number of threads')
 
     p.add_argument("--doDust", help="load CSV", action="store_true")
     p.add_argument("--doAnimate", help="load CSV", action="store_true")
@@ -99,6 +107,8 @@ def parser():
     p.add_argument("--doPlotSkymaps", help="load CSV", action="store_true")
     p.add_argument("--doSlicer", help="load CSV", action="store_true")
     p.add_argument("--doOverlap", help="load CSV", action="store_true")
+    p.add_argument("--doLimitingMagnitudes", help="load CSV",
+                   action="store_true")
 
     return p
 
@@ -149,6 +159,7 @@ def compute_overlap(mission, centers, healpix):
 
 def merge_tables(schedulenames):
 
+    cnt = 0
     for ii, schedulename in enumerate(schedulenames):
         schedule = QTable.read(schedulename, format='ascii.ecsv')
         survey = schedulename.split("/")[-1].split("_")[1]
@@ -158,10 +169,11 @@ def merge_tables(schedulenames):
             continue
         schedule.add_column(survey, name='survey')
         schedule.add_column(fitsfile, name='skymap')
-        if ii == 0:
+        if cnt == 0:
             scheduleall = schedule
         else:
             scheduleall = vstack([scheduleall, schedule])
+        cnt = cnt + 1
 
     scheduleall.sort('time')
 
@@ -183,6 +195,7 @@ def main(args=None):
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
     tiles = QTable.read(args.skygrid_file, format='ascii.ecsv')
     centers = tiles['center']
+    orb = mission.orbit
 
     # Set up grids
     with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
@@ -235,10 +248,22 @@ def main(args=None):
                      config["simsurvey"]["weights"].split(",")]
     weights_cumsum = np.cumsum(weights)
 
+    filters = config["simsurvey"]["filters"].split(",")
+
     randvals = np.random.rand(niter)
 
-    gwfits = glob.glob(os.path.join(args.gw_folder, '*.fits')) +\
-        glob.glob(os.path.join(args.gw_folder, '*.fits.fz'))
+    if args.gw_too_file is not None:
+        df = pd.read_csv(args.gw_too_file, delimiter=',')
+        gwfits, gwexps = [], []
+        for index, row in df.iterrows():
+            filename = os.path.join(args.gw_folder,
+                                    '%d.fits' % row['coinc_event_id'])
+            gwfits.append(filename)
+            gwexps.append(float(row['t_exp (ks)'])*1000*u.s)
+    else:
+        gwfits = glob.glob(os.path.join(args.gw_folder, '*.fits')) +\
+            glob.glob(os.path.join(args.gw_folder, '*.fits.fz'))
+        gwexps = [args.extime]*len(gwfits)
 
     schedulenames = []
     tind = 0
@@ -254,21 +279,22 @@ def main(args=None):
         skymapname = '%s/skymap_%s_%05d.fits' % (outdir, survey, jj)
         gifname = '%s/skymap_%s_%05d.gif' % (outdir, survey, jj)
 
-        with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
+        with u.add_enabled_equivalencies(equivalencies.orbital(orb)):
             times = start_time + args.delay + np.arange(
-                0, args.duration.to_value(u.s),
+                0, args.duration.to_value(u.s) * len(filters),
                 args.time_step.to_value(u.s)) * u.s
+
+        if survey == "GW":
+            idx = int(np.floor(len(gwfits)*np.random.rand()))
+            gwskymap = gwfits[idx]
+            exptime = gwexps[idx]
+        else:
+            exptime = args.exptime
 
         if os.path.isfile(schedulename):
             schedulenames.append(schedulename)
 
-            orb = mission.orbit
-            with u.add_enabled_equivalencies(equivalencies.orbital(orb)):
-                times = start_time + args.delay + np.arange(
-                    0, args.duration.to_value(u.s),
-                    args.time_step.to_value(u.s)) * u.s
-
-            start_time = times[-1] + args.exptime
+            start_time = times[-1] + exptime
             if survey == "baseline":
                 tind = tind + 1
                 tind = np.mod(tind, quadlen)
@@ -297,8 +323,7 @@ def main(args=None):
                 prob = prob*V
 
         elif survey == "GW":
-            idx = int(np.floor(len(gwfits)*np.random.rand()))
-            skymap = read_sky_map(gwfits[idx],
+            skymap = read_sky_map(gwskymap,
                                   moc=True)['UNIQ', 'PROBDENSITY']
             prob = rasterize(
                 skymap, nside_to_level(healpix.nside))['PROB']
@@ -323,20 +348,59 @@ def main(args=None):
             tind = tind + 1
             tind = np.mod(tind, quadlen)
 
-        write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
-
         executable = 'dorado-scheduling'
-        system_command = ("%s %s -o %s --mission %s --exptime '%s' "
-                          "--time-step '%s' --roll-step '%s' "
-                          "--skygrid-file %s --duration '%s' "
-                          "--timeout %d") % (
-            executable,
-            skymapname, schedulename, args.mission,
-            str(args.exptime), str(args.time_step), str(args.roll_step),
-            args.skygrid_file.name, str(args.duration),
-            args.timeout)
-        print(system_command)
-        os.system(system_command)
+        schedulename_filters = []
+        for ii, filt in enumerate(filters):
+            write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
+
+            if args.doPlotSkymaps:
+                system_command = 'ligo-skymap-plot %s -o %s' % (
+                    skymapname, skymapname.replace("fits", "png"))
+                os.system(system_command)
+
+            schedulename_tmp = '%s/survey_%s_%05d_%s.csv' % (outdir,
+                                                             survey,
+                                                             jj, filt)
+            system_command = ("%s %s -o %s --mission %s --exptime '%s' "
+                              "--time-step '%s' --roll-step '%s' "
+                              "--skygrid-file %s --duration '%s' "
+                              "--timeout %d") % (
+                executable,
+                skymapname, schedulename_tmp, args.mission,
+                str(exptime), str(args.time_step), str(args.roll_step),
+                args.skygrid_file.name, str(args.duration),
+                args.timeout)
+            print(system_command)
+            os.system(system_command)
+            schedulename_filters.append(schedulename_tmp)
+
+            with u.add_enabled_equivalencies(equivalencies.orbital(orb)):
+                start_time = start_time + args.duration
+
+        cnt = 0
+        for ii, schedulename_filter in enumerate(schedulename_filters):
+            schedule = QTable.read(schedulename_filter, format='ascii.ecsv')
+            if len(schedule) == 0:
+                continue
+            schedule.add_column(filters[ii], name='filter')
+            if cnt == 0:
+                scheduleall_tmp = schedule
+            else:
+                scheduleall_tmp = vstack([scheduleall_tmp, schedule])
+            cnt = cnt + 1
+
+        if args.doLimitingMagnitudes:
+            from uvex.sensitivity import limiting_mag
+            limmags = []
+            for ii, row in enumerate(scheduleall_tmp):
+                obstime, exposure = row['time'], row['exptime']
+                coord, band = row['center'], row['filter']
+                limmag = limiting_mag(coord, obstime,
+                                      exposure=exposure, band=band)
+                limmags.append(limmag)
+            scheduleall_tmp.add_column(limmags, name='limmag')
+
+        scheduleall_tmp.write(schedulename, format='ascii.ecsv')
 
         if args.doPlotSkymaps:
             system_command = 'ligo-skymap-plot %s -o %s' % (
@@ -344,7 +408,7 @@ def main(args=None):
             os.system(system_command)
 
         schedulenames.append(schedulename)
-        start_time = times[-1] + args.exptime
+        start_time = times[-1] + exptime
 
     scheduleall = merge_tables(schedulenames)
     schedulename = '%s/metrics/survey_all.csv' % (outdir)
