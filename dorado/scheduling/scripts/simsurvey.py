@@ -10,6 +10,7 @@
 import glob
 import os
 import logging
+import healpy as hp
 import numpy as np
 import pandas as pd
 
@@ -101,13 +102,18 @@ def parser():
         '-j', '--jobs', type=int, default=1, const=None, nargs='?',
         help='Number of threads')
 
-    p.add_argument("--doDust", help="load CSV", action="store_true")
-    p.add_argument("--doAnimate", help="load CSV", action="store_true")
-    p.add_argument("--doMetrics", help="load CSV", action="store_true")
-    p.add_argument("--doPlotSkymaps", help="load CSV", action="store_true")
-    p.add_argument("--doSlicer", help="load CSV", action="store_true")
-    p.add_argument("--doOverlap", help="load CSV", action="store_true")
-    p.add_argument("--doLimitingMagnitudes", help="load CSV",
+    p.add_argument("--doDust", help="dust maps", action="store_true")
+    p.add_argument("--doAnimate", help="movie of survey", action="store_true")
+    p.add_argument("--doMetrics", help="survey metrics",
+                   action="store_true")
+    p.add_argument("--doAnimateSkymaps", help="animate skymaps",
+                   action="store_true")
+    p.add_argument("--doPlotSkymaps", help="plot skymaps", action="store_true")
+    p.add_argument("--doSlicer", help="efficiency studies",
+                   action="store_true")
+    p.add_argument("--doLimitingMagnitudes", help="add limiting magnitudes",
+                   action="store_true")
+    p.add_argument("--doOuterLoopOnly", help="just the outer loop, no inner",
                    action="store_true")
 
     return p
@@ -136,25 +142,6 @@ def get_observed(latest_time, mission, healpix, schedulenames, prob):
     prob = prob / np.sum(prob)
 
     return prob
-
-
-def compute_overlap(mission, centers, healpix):
-    res = healpix.pixel_area.to_value(u.arcmin**2)
-    ipix = {}
-    for ii, cent1 in enumerate(centers):
-        ipix[ii] = mission.fov.footprint_healpix(healpix, cent1)
-    overlaps = []
-    for ii, cent1 in enumerate(centers):
-        if np.mod(ii, 100) == 0:
-            print('Computing %d/%d tiles' % (ii, len(centers)))
-        overlap = 0.0
-        for jj, cent2 in enumerate(centers):
-            if ii <= jj:
-                continue
-            over = np.intersect1d(ipix[ii], ipix[jj])
-            overlap = np.max([overlap, len(over)*res])
-        overlaps.append(overlap)
-    print('max overlap: %.5f arcmin^2' % (np.max(overlaps)))
 
 
 def merge_tables(schedulenames):
@@ -193,8 +180,6 @@ def main(args=None):
 
     mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
-    tiles = QTable.read(args.skygrid_file, format='ascii.ecsv')
-    centers = tiles['center']
     orb = mission.orbit
 
     # Set up grids
@@ -204,9 +189,6 @@ def main(args=None):
                 u.dimensionless_unscaled)))
 
     coords = healpix.healpix_to_skycoord(np.arange(healpix.npix))
-
-    if args.doOverlap:
-        compute_overlap(mission, centers, healpix)
 
     outdir = args.output
     if not os.path.isdir(outdir):
@@ -288,8 +270,10 @@ def main(args=None):
             idx = int(np.floor(len(gwfits)*np.random.rand()))
             gwskymap = gwfits[idx]
             exptime = gwexps[idx]
+            time_step = gwexps[idx]
         else:
             exptime = args.exptime
+            time_step = args.time_step
 
         if os.path.isfile(schedulename):
             schedulenames.append(schedulename)
@@ -306,6 +290,7 @@ def main(args=None):
 
             prob = get_observed(start_time, mission, healpix,
                                 schedulenames, prob)
+            prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
             if args.doDust:
                 prob = prob*V
 
@@ -319,6 +304,7 @@ def main(args=None):
                                            SkyCoord(raquad, decquad))
             n[p] = 1.
             prob = n / np.sum(n)
+            prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
             if args.doDust:
                 prob = prob*V
 
@@ -342,6 +328,7 @@ def main(args=None):
             prob = n / np.sum(n)
             prob = get_observed(start_time, mission, healpix,
                                 schedulenames, prob)
+            prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
             if args.doDust:
                 prob = prob*V
 
@@ -361,17 +348,38 @@ def main(args=None):
             schedulename_tmp = '%s/survey_%s_%05d_%s.csv' % (outdir,
                                                              survey,
                                                              jj, filt)
-            system_command = ("%s %s -o %s --mission %s --exptime '%s' "
-                              "--time-step '%s' --roll-step '%s' "
-                              "--skygrid-file %s --duration '%s' "
-                              "--timeout %d") % (
-                executable,
-                skymapname, schedulename_tmp, args.mission,
-                str(exptime), str(args.time_step), str(args.roll_step),
-                args.skygrid_file.name, str(args.duration),
-                args.timeout)
-            print(system_command)
-            os.system(system_command)
+            if not args.doOuterLoopOnly:
+                system_command = ("%s %s -o %s --mission %s --exptime '%s' "
+                                  "--time-step '%s' --roll-step '%s' "
+                                  "--skygrid-file %s --duration '%s' "
+                                  "--timeout %d") % (
+                    executable,
+                    skymapname, schedulename_tmp, args.mission,
+                    str(exptime), str(time_step), str(args.roll_step),
+                    args.skygrid_file.name, str(args.duration),
+                    args.timeout)
+                print(system_command)
+                os.system(system_command)
+            else:
+                skymap = read_sky_map(skymapname,
+                                      moc=True)['UNIQ', 'PROBDENSITY']
+                prob = rasterize(
+                    skymap, nside_to_level(healpix.nside))['PROB']
+                prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
+                idx = np.argmax(prob)
+
+                theta, phi = hp.pix2ang(healpix.nside, np.arange(len(prob)))
+                ra = np.rad2deg(phi)[idx]
+                dec = np.rad2deg(0.5*np.pi - theta)[idx]
+
+                result = QTable(data={'time': [start_time],
+                                      'exptime': [exptime],
+                                      'location': [orb(start_time
+                                                       ).earth_location],
+                                      'center': [SkyCoord(ra*u.deg,
+                                                          dec*u.deg)],
+                                      'roll': [0 * u.deg]})
+                result.write(schedulename_tmp, format='ascii.ecsv')
             schedulename_filters.append(schedulename_tmp)
 
             with u.add_enabled_equivalencies(equivalencies.orbital(orb)):
@@ -379,7 +387,11 @@ def main(args=None):
 
         cnt = 0
         for ii, schedulename_filter in enumerate(schedulename_filters):
-            schedule = QTable.read(schedulename_filter, format='ascii.ecsv')
+            try:
+                schedule = QTable.read(schedulename_filter,
+                                       format='ascii.ecsv')
+            except Exception:
+                continue
             if len(schedule) == 0:
                 continue
             schedule.add_column(filters[ii], name='filter')
@@ -388,6 +400,9 @@ def main(args=None):
             else:
                 scheduleall_tmp = vstack([scheduleall_tmp, schedule])
             cnt = cnt + 1
+        if cnt == 0:
+            scheduleall_tmp = schedule
+            schedule.add_column([], name='filter')
 
         if args.doLimitingMagnitudes:
             from uvex.sensitivity import limiting_mag
@@ -414,6 +429,7 @@ def main(args=None):
     schedulename = '%s/metrics/survey_all.csv' % (outdir)
     skymapname = '%s/metrics/survey_all.fits' % (outdir)
     gifname = '%s/metrics/survey_all.mp4' % (outdir)
+    gifskymapname = '%s/metrics/skymaps_all.mp4' % (outdir)
     metricsname = '%s/metrics' % (outdir)
     if not os.path.isdir(metricsname):
         os.makedirs(metricsname)
@@ -446,5 +462,12 @@ def main(args=None):
         system_command = '%s %s %s %s --mission %s -o %s --nside %d' % (
             executable, args.config, skymapname, schedulename, args.mission,
             metricsname, args.nside)
+        print(system_command)
+        os.system(system_command)
+
+    if args.doAnimateSkymaps:
+        executable = 'dorado-scheduling-animate-skymaps'
+        system_command = '%s %s -o %s --nside %d' % (
+            executable, schedulename, gifskymapname, args.nside)
         print(system_command)
         os.system(system_command)
