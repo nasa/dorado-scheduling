@@ -30,19 +30,18 @@ class Dust:
     ref_ev : float (1.)
         The reference E(B-V) value to use. Things in MAF assume 1.
     """
-    def __init__(self, config, R_v=3.1, ref_ebv=1.):
+    def __init__(self, filters=['FUV', 'NUV'],
+                 bandpasses=[[1350, 1750], [1750, 2800]],
+                 zeropoints=[22.0, 23.5],
+                 R_v=3.1, ref_ebv=1.):
         # Calculate dust extinction values
         self.Ax1 = {}
         self.bandpassDict = {}
         self.zeropointDict = {}
 
-        filtslist = config["filters"]["filters"].split(",")
-        zpslist = [float(x) for x in
-                   config["filters"]["zeropoints"].split(",")]
-        bandpasses = [x for x in config["filters"]["bandpasses"].split(";")]
-        for ii, filt in enumerate(filtslist):
-            self.bandpassDict[filt] = eval(bandpasses[ii])
-            self.zeropointDict[filt] = zpslist[ii]
+        for ii, filt in enumerate(filters):
+            self.bandpassDict[filt] = bandpasses[ii]
+            self.zeropointDict[filt] = zeropoints[ii]
 
         redlaw = ReddeningLaw(CCM89(Rv=R_v))
         for filtername in self.bandpassDict:
