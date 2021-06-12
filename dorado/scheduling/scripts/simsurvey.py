@@ -199,7 +199,7 @@ def main(args=None):
         from ..dust import Dust
 
         planck = PlanckQuery()
-        dust_properties = Dust(config)
+        dust_properties = Dust()
 
         Ax1 = dust_properties.Ax1
         zeropointDict = dust_properties.zeropointDict
@@ -442,8 +442,8 @@ def main(args=None):
 
     if args.doMetrics:
         executable = 'dorado-scheduling-survey-metrics'
-        system_command = '%s %s %s --mission %s -o %s --skygrid-file %s' % (
-            executable, skymapname, schedulename, args.mission,
+        system_command = '%s %s --mission %s -o %s --skygrid-file %s' % (
+            executable, schedulename, args.mission,
             metricsname, args.skygrid_file.name)
         print(system_command)
         os.system(system_command)
@@ -459,9 +459,9 @@ def main(args=None):
 
     if args.doSlicer:
         executable = 'dorado-scheduling-survey-slicer'
-        system_command = '%s %s %s %s --mission %s -o %s --nside %d' % (
-            executable, args.config, skymapname, schedulename, args.mission,
-            metricsname, args.nside)
+        system_command = '%s %s --mission %s -o %s --skygrid-file %s' % (
+            executable, schedulename, args.mission, metricsname,
+            args.skygrid_file.name)
         print(system_command)
         os.system(system_command)
 

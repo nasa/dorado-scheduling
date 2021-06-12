@@ -18,8 +18,6 @@ log = logging.getLogger(__name__)
 
 def parser():
     p = ArgumentParser(prog='dorado-scheduling-metrics')
-    p.add_argument('skymap', metavar='FILE.fits[.gz]',
-                   type=FileType('rb'), help='Input sky map')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
                    type=FileType('rb'), default='-',
                    help='Schedule filename')
@@ -74,6 +72,7 @@ def main(args=None):
     survey_set = list(set(schedule["survey"]))
     colors = seaborn.color_palette('Set2', n_colors=len(survey_set))
 
+    log.info('splitting schedule')
     dts = {}
     exposures = {}
     for survey in survey_set:

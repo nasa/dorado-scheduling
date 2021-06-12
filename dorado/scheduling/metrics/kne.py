@@ -1,22 +1,8 @@
 import numpy as np
 from scipy.interpolate import interpolate as interp
+import astropy.units as u
 
 from gwemlightcurves.KNModels.io.Me2017 import calc_lc_UV
-
-
-def uniformSphere(npoints, seed=42):
-    """
-    Just make RA, dec points on a sphere
-    """
-    np.random.seed(seed)
-    u = np.random.uniform(size=npoints)
-    v = np.random.uniform(size=npoints)
-
-    ra = 2.*np.pi * u
-    dec = np.arccos(2.*v - 1.)
-    # astro convention of -90 to 90
-    dec -= np.pi/2.
-    return np.degrees(ra), np.degrees(dec)
 
 
 class KN_lc(object):
@@ -83,8 +69,7 @@ class KNePopMetric:
         Simple detection criteria: detect at least once
         """
         result = 1
-        # detected in at least two bands
-        around_peak = np.where((t > 0) & (t < 30) &
+        around_peak = np.where((t > 0) & (t < 7) &
                                (mags < dataSlice[self.m5Col]))[0]
         filters = dataSlice[self.filterCol][around_peak]
         if np.size(filters) < 1:
@@ -97,8 +82,7 @@ class KNePopMetric:
         Simple detection criteria: detect at least twice
         """
         result = 1
-        # detected in at least two bands
-        around_peak = np.where((t > 0) & (t < 30) &
+        around_peak = np.where((t > 0) & (t < 7) &
                                (mags < dataSlice[self.m5Col]))[0]
         filters = dataSlice[self.filterCol][around_peak]
         if np.size(filters) < 2:
@@ -112,8 +96,7 @@ class KNePopMetric:
         detect at least twice, with at least two color
         """
         result = 1
-        # detected in at least two bands
-        around_peak = np.where((t > 0) & (t < 30) &
+        around_peak = np.where((t > 0) & (t < 7) &
                                (mags < dataSlice[self.m5Col]))[0]
         filters = np.unique(dataSlice[self.filterCol][around_peak])
         if np.size(filters) < 2:
@@ -121,7 +104,7 @@ class KNePopMetric:
 
         return result
 
-    def run(self, dataSlice, slicePoint=None):
+    def run(self, dataSlice, slicePoint=None, extinction=None):
         result = {}
         t = dataSlice["time"] - slicePoint['peak_time']
         mags = np.zeros(t.size, dtype=float)
@@ -133,12 +116,13 @@ class KNePopMetric:
                                                    filtername,
                                                    lc_indx=lc_indx)
             # Apply dust extinction on the light curve
-            # A_x = (self.a[filtername][0]+self.b[filtername][0]/self.R_v)*
-            # (self.R_v*slicePoint['ebv'])
-            # mags[infilt] -= A_x
+            if extinction is not None:
+                mags[infilt] += extinction[filtername]
 
             distmod = 5*np.log10(slicePoint['distance']*1e6) - 5.0
             mags[infilt] += distmod
+            mags[infilt] = mags[infilt]
+        mags = mags * u.ABmag
 
         result['single_detect'] = self._single_detect(dataSlice, slicePoint,
                                                       mags, t.jd)
@@ -168,15 +152,15 @@ def generateKNPopSlicer(t_start=1, t_end=3652, n_events=10000,
     Parameters
     ----------
     t_start : float (1)
-        The night to start tde events on (days)
+        The night to start KN events on (days)
     t_end : float (3652)
-        The final night of TDE events
+        The final night of KN events
     n_events : int (10000)
-        The number of TDE events to generate
+        The number of KN events to generate
     seed : float
         The seed passed to np.random
-    n_files : int (7)
-        The number of different TDE lightcurves to use
+    n_files : int (100)
+        The number of different KN lightcurves to use
     """
 
     def rndm(a, b, g, size=1):
@@ -185,7 +169,6 @@ def generateKNPopSlicer(t_start=1, t_end=3652, n_events=10000,
         ag, bg = a**g, b**g
         return (ag + (bg - ag)*r)**(1./g)
 
-    ra, dec = uniformSphere(n_events, seed=seed)
     peak_times = np.random.uniform(low=t_start, high=t_end, size=n_events)
     file_indx = np.floor(np.random.uniform(low=0,
                                            high=n_files,
@@ -193,10 +176,8 @@ def generateKNPopSlicer(t_start=1, t_end=3652, n_events=10000,
     distance = rndm(10, 300, 4, size=n_events)
 
     slicer = []
-    for r, d, p, f, i in zip(ra, dec, peak_times, file_indx, distance):
-        slicer.append({'ra': r,
-                       'dec': d,
-                       'peak_time': p,
+    for p, f, i in zip(peak_times, file_indx, distance):
+        slicer.append({'peak_time': p,
                        'file_indx': f,
                        'distance': i})
 

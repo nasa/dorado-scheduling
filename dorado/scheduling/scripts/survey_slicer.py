@@ -11,15 +11,13 @@ import logging
 from ligo.skymap.tool import ArgumentParser, FileType
 
 from .. import mission as _mission
+from .. import skygrid
 
 log = logging.getLogger(__name__)
 
 
 def parser():
     p = ArgumentParser(prog='dorado-scheduling-survey-slicer')
-    p.add_argument('config', help='config file')
-    p.add_argument('skymap', metavar='FILE.fits[.gz]',
-                   type=FileType('rb'), help='Input sky map')
     p.add_argument('schedule', metavar='SCHEDULE.ecsv',
                    type=FileType('rb'), default='-',
                    help='Schedule filename')
@@ -29,8 +27,16 @@ def parser():
     p.add_argument('--output', '-o',
                    type=str, default='simsurvey/metrics',
                    help='output survey')
-    p.add_argument(
-        '--nside', type=int, default=32, help='HEALPix sampling resolution')
+
+    group = p.add_mutually_exclusive_group(required=False)
+    group.add_argument(
+        '--skygrid-method', default='healpix',
+        choices=[key.replace('_', '-') for key in skygrid.__all__],
+        help='Sky grid method')
+    group.add_argument(
+        '--skygrid-file', metavar='TILES.ecsv',
+        type=FileType('rb'),
+        help='tiles filename')
 
     return p
 
@@ -38,61 +44,33 @@ def parser():
 def main(args=None):
     args = parser().parse_args(args)
 
-    import configparser
     import os
     import numpy as np
-    from ligo.skymap.io import read_sky_map
-    from ligo.skymap.bayestar import rasterize
     from ligo.skymap import plot
-    from astropy_healpix import HEALPix, nside_to_level
-    from astropy.coordinates import ICRS
     from astropy.table import QTable
     from astropy import units as u
     from astropy.time import Time
     import matplotlib
     import matplotlib.pyplot as plt
     from matplotlib.pyplot import cm
+    from dustmaps.planck import PlanckQuery
 
     from ..metrics.kne import KNePopMetric, generateKNPopSlicer
-
-    config = configparser.ConfigParser()
-    config.read(args.config)
+    from ..dust import Dust
 
     mission = getattr(_mission, args.mission)
-    healpix = HEALPix(args.nside, order='nested', frame=ICRS())
+    tiles = QTable.read(args.skygrid_file, format='ascii.ecsv')
+    centers = tiles['center']
 
     output = args.output
     if not os.path.isdir(output):
         os.makedirs(output)
 
-    log.info('reading sky map')
-    # Read multi-order sky map and rasterize to working resolution
-    skymap = read_sky_map(args.skymap, moc=True)['UNIQ', 'PROBDENSITY']
-    prob = rasterize(skymap,
-                     nside_to_level(healpix.nside))['PROB']
-    if healpix.order == 'ring':
-        prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
-
     log.info('reading observing schedule')
     schedule = QTable.read(args.schedule.name, format='ascii.ecsv')
-
-    filtslist = config["filters"]["filters"].split(",")
-    magslist = [float(x) for x in config["filters"]["limmags"].split(",")]
-    weights = [0] + [float(x) for x in
-                     config["filters"]["weights"].split(",")]
-    weights_cumsum = np.cumsum(weights)
-
-    limmags, filts = [], []
-    randvals = np.random.rand(len(schedule))
-    for jj in range(len(schedule)):
-        randval = randvals[jj]
-        idx = int(np.where((weights_cumsum[1:] >= randval) &
-                           (weights_cumsum[:-1] <= randval))[0][0])
-
-        limmags.append(magslist[idx])
-        filts.append(filtslist[idx])
-    schedule.add_column(limmags, name='limmag')
-    schedule.add_column(filts, name='filter')
+    for col in schedule.colnames:
+        schedule[col].info.indices = []
+    schedule.add_index('time')
 
     times = schedule["time"]
 
@@ -106,22 +84,25 @@ def main(args=None):
                                  t_start=np.min(times.jd),
                                  t_end=np.max(times.jd))
 
+    idx, _, _ = schedule["center"].match_to_catalog_sky(centers)
+
     log.info('splitting schedule')
-    centerstrs = []
-    centers_set = []
-    centerstrs_set = []
-    surveys = []
-    centid = []
-    for row in schedule:
-        cent = row["center"]
-        centerstr = "%.5f_%.5f" % (cent.ra.deg, cent.dec.deg)
-        if centerstr not in centerstrs:
-            centers_set.append(cent)
-            centerstrs_set.append(centerstr)
-        centerstrs.append(centerstr)
-        surveys.append(row["survey"])
-        centid.append(centerstrs_set.index(centerstr))
-    schedule["centid"] = centid
+    filename = os.path.join(output, 'counts.dat')
+    fid = open(filename, 'w')
+
+    exposures = {}
+    for cc, cent in enumerate(centers):
+        if np.mod(cc, 100) == 0:
+            print('splitting %d/%d' % (cc, len(centers)))
+
+        idy = np.where(idx == cc)[0]
+        if len(idy) == 0:
+            continue
+        exps = schedule.iloc[idy]
+        exposures[cc] = exps
+
+        print('%d %d' % (cc, len(exps)), file=fid, flush=True)
+    fid.close()
 
     mejs = 10**np.random.uniform(-3, -1, n_files)
     vejs = np.random.uniform(0.05, 0.30, n_files)
@@ -131,44 +112,41 @@ def main(args=None):
     log.info('generating metric')
     metric = KNePopMetric(mejs, vejs, betas, kappas)
     metrics_list = ['single_detect', 'multi_detect', 'multi_color_detect']
-    detections, exposures, efficiency = {}, {}, {}
+    detections, injections, efficiency = {}, {}, {}
     for m in metrics_list:
-        detections[m] = np.zeros((len(centerstrs_set),))
-        exposures[m] = np.zeros((len(centerstrs_set),))
-        efficiency[m] = np.zeros((len(centerstrs_set),))
-
-    filename = os.path.join(output, 'counts.dat')
-    fid = open(filename, 'w')
-    for cc, centerstr in enumerate(centerstrs_set):
-        if np.mod(cc, 100) == 0:
-            print('Running %d/%d' % (cc, len(centerstrs_set)))
-
-        kk = np.where(schedule["centid"] == cc)[0]
-        print('%d %d' % (cc, len(kk)), file=fid, flush=True)
-    fid.close()
+        detections[m] = np.zeros((len(centers),))
+        injections[m] = np.zeros((len(centers),))
+        efficiency[m] = np.zeros((len(centers),))
 
     filename = os.path.join(output, 'eff.dat')
     fid = open(filename, 'w')
 
-    for cc, centerstr in enumerate(centerstrs_set):
-        if np.mod(cc, 100) == 0:
-            print('Running %d/%d' % (cc, len(centerstrs_set)))
-        if cc == 2225:
+    planck = PlanckQuery()
+    dust_properties = Dust()
+    Ax1 = dust_properties.Ax1
+    ebv = planck(centers)
+
+    for cc, e in zip(exposures.keys(), ebv):
+        if np.mod(int(cc), 100) == 0:
+            print('Running %d/%d' % (cc, len(centers)))
+
+        exps = exposures[cc]
+        if len(exps) == 0:
             continue
 
-        kk = np.where(schedule["centid"] == cc)[0]
-        if len(kk) == 0:
-            continue
-        if len(kk) < 2000:
-            continue
+        # Apply dust extinction on the light curve
+        extinction = {}
+        for filt in Ax1.keys():
+            extinction[filt] = Ax1[filt] * e
+
         for slicePoint in slicer:
-            result = metric.run(schedule[kk], slicePoint=slicePoint)
+            result = metric.run(exps, slicePoint=slicePoint,
+                                extinction=extinction)
             for m in metrics_list:
                 detections[m][cc] = detections[m][cc] + result[m]
-                exposures[m][cc] = exposures[m][cc] + 1
+                injections[m][cc] = injections[m][cc] + 1
         for m in metrics_list:
-            efficiency[m][cc] = detections[m][cc] / exposures[m][cc]
-        print(cc, len(kk), m, efficiency[m][cc])
+            efficiency[m][cc] = detections[m][cc] / injections[m][cc]
 
         print('%d %.10f %.10f %.10f' % (cc,
                                         efficiency['single_detect'][cc],
@@ -189,7 +167,7 @@ def main(args=None):
         ax = plt.axes([0.05, 0.05, 0.85, 0.9],
                       projection='astro hours mollweide')
         ax.grid()
-        for cc, center in enumerate(centers_set):
+        for cc, center in enumerate(centers):
             poly = mission.fov.footprint(center).icrs
             idx = np.argmin(np.abs(colorbar - efficiency[m][cc]))
             footprint_color = colors[idx]
