@@ -38,6 +38,17 @@ def parser():
         type=FileType('rb'),
         help='tiles filename')
 
+    p.add_argument(
+        '-j', '--jobs', type=int, default=1, const=None, nargs='?',
+        help='Number of threads')
+
+    p.add_argument(
+        '-n', '--ninj', type=int, default=10000,
+        help='Number of injections')
+
+    p.add_argument("--doParallel", help="enable parallelization",
+                   action="store_true")
+
     return p
 
 
@@ -80,7 +91,8 @@ def main(args=None):
     # random spots on the sphere
     n_files = 100
     log.info('generating injections')
-    slicer = generateKNPopSlicer(seed=42, n_events=10000, n_files=n_files,
+    slicer = generateKNPopSlicer(seed=42, n_events=args.ninj,
+                                 n_files=n_files,
                                  t_start=np.min(times.jd),
                                  t_end=np.max(times.jd))
 
@@ -132,6 +144,8 @@ def main(args=None):
 
         exps = exposures[cc]
         if len(exps) == 0:
+            print('%d %.10f %.10f %.10f' % (cc, 0.0, 0.0, 0.0),
+                  file=fid, flush=True)
             continue
 
         # Apply dust extinction on the light curve
@@ -139,9 +153,20 @@ def main(args=None):
         for filt in Ax1.keys():
             extinction[filt] = Ax1[filt] * e
 
-        for slicePoint in slicer:
-            result = metric.run(exps, slicePoint=slicePoint,
-                                extinction=extinction)
+        if args.doParallel:
+            from joblib import Parallel, delayed
+            results = Parallel(n_jobs=args.jobs)(
+                delayed(metric.run)(exps,
+                                    slicePoint,
+                                    extinction)
+                for slicePoint in slicer)
+        else:
+            results = []
+            for slicePoint in slicer:
+                result = metric.run(exps, slicePoint=slicePoint,
+                                    extinction=extinction)
+                results.append(result)
+        for result in results:
             for m in metrics_list:
                 detections[m][cc] = detections[m][cc] + result[m]
                 injections[m][cc] = injections[m][cc] + 1
