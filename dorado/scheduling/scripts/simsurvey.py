@@ -17,7 +17,7 @@ import pandas as pd
 from ligo.skymap.tool import ArgumentParser, FileType
 
 from astropy.time import Time
-from astropy.table import QTable, vstack
+from astropy.table import Table, QTable, vstack
 from astropy_healpix import nside_to_level
 from astropy.coordinates import SkyCoord
 from astropy import units as u
@@ -115,26 +115,46 @@ def parser():
                    action="store_true")
     p.add_argument("--doOuterLoopOnly", help="just the outer loop, no inner",
                    action="store_true")
+    p.add_argument("--doParallel", help="enable parallelization",
+                   action="store_true")
 
     return p
 
 
-def get_observed(latest_time, mission, healpix, schedulenames, prob):
+def get_observed(latest_time, mission, healpix, schedulenames, prob,
+                 centers, tau=60.0):
 
-    ras, decs, tts = [], [], []
+    cnt = 0
     for schedulename in schedulenames:
-        schedule = QTable.read(schedulename, format='ascii.ecsv')
-        for row in schedule:
-            ras.append(row["center"].ra.deg)
-            decs.append(row["center"].dec.deg)
-            tts.append(row["time"])
+        scheduletmp = QTable.read(schedulename, format='ascii.ecsv')
+        if len(scheduletmp) == 0:
+            continue
+        if cnt == 0:
+            schedule = scheduletmp
+        else:
+            schedule = vstack([schedule, scheduletmp])
+        cnt = cnt + 1
+    if cnt == 0:
+        return prob / np.sum(prob)
 
+    for col in schedule.colnames:
+        schedule[col].info.indices = []
+    schedule.add_index('time')
+
+    idx, _, _ = schedule["center"].match_to_catalog_sky(centers)
     probscale = np.ones(prob.shape)
-    for ra, dec, tt in zip(ras, decs, tts):
-        ipix = mission.fov.footprint_healpix(healpix, SkyCoord(ra*u.deg,
-                                                               dec*u.deg))
+    for cc, cent in enumerate(centers):
+        if np.mod(cc, 100) == 0:
+            print('%d/%d' % (cc, len(centers)))
+
+        idy = np.where(idx == cc)[0]
+        if len(idy) == 0:
+            continue
+        exps = schedule.iloc[idy]
+        tt = max(exps["time"])
+
+        ipix = mission.fov.footprint_healpix(healpix, cent)
         dt = latest_time - tt
-        tau = 60.0
         scale = 1 - np.exp(-dt.jd/tau)
         probscale[ipix] = probscale[ipix] * scale
 
@@ -182,10 +202,23 @@ def main(args=None):
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
     orb = mission.orbit
 
+    surveys = config["simsurvey"]["surveys"].split(",")
+    weights = [0] + [float(x) for x in
+                     config["simsurvey"]["weights"].split(",")]
+    weights_cumsum = np.cumsum(weights)
+    filters = config["simsurvey"]["filters"].split(",")
+
+    # Set up pointing grid
+    if args.skygrid_file is not None:
+        centers = Table.read(args.skygrid_file, format='ascii.ecsv')['center']
+    else:
+        centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
+            args.skygrid_step)
+
     # Set up grids
     with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
         niter = int(np.round(
-            (args.duration_survey / args.duration).to_value(
+            (args.duration_survey / (len(filters) * args.duration)).to_value(
                 u.dimensionless_unscaled)))
 
     coords = healpix.healpix_to_skycoord(np.arange(healpix.npix))
@@ -225,13 +258,6 @@ def main(args=None):
 
     start_time = Time(args.start_time, format='isot')
 
-    surveys = config["simsurvey"]["surveys"].split(",")
-    weights = [0] + [float(x) for x in
-                     config["simsurvey"]["weights"].split(",")]
-    weights_cumsum = np.cumsum(weights)
-
-    filters = config["simsurvey"]["filters"].split(",")
-
     randvals = np.random.rand(niter)
 
     if args.gw_too_file is not None:
@@ -251,8 +277,12 @@ def main(args=None):
     tind = 0
 
     for jj in range(niter):
+        print('Evaluating iteration: %d/%d' % (jj, niter))
 
-        randval = randvals[jj]
+        if jj < np.floor(niter/2.0):
+            randval = 0.0
+        else:
+            randval = randvals[jj]*0.5 + 0.5
         idx = np.where((weights_cumsum[1:] >= randval) &
                        (weights_cumsum[:-1] <= randval))[0]
 
@@ -271,9 +301,11 @@ def main(args=None):
             gwskymap = gwfits[idx]
             exptime = gwexps[idx]
             time_step = gwexps[idx]
+            delay = 8 * u.hr
         else:
             exptime = args.exptime
             time_step = args.time_step
+            delay = 0 * u.hr
 
         if os.path.isfile(schedulename):
             schedulenames.append(schedulename)
@@ -284,31 +316,7 @@ def main(args=None):
                 tind = np.mod(tind, quadlen)
             continue
 
-        if survey == "galactic_plane":
-            prob = (np.abs(coords.galactic.b.deg) <= 15.0)
-            prob = prob / prob.sum()
-
-            prob = get_observed(start_time, mission, healpix,
-                                schedulenames, prob)
-            prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
-            if args.doDust:
-                prob = prob*V
-
-        elif survey == "kilonova":
-            n = 0.01 * np.ones(healpix.npix)
-
-            tindex = int(quadlen/2)
-            tquad = quad.loc[tindex]
-            raquad, decquad = tquad["center"].ra, tquad["center"].dec
-            p = quad_fov.footprint_healpix(healpix,
-                                           SkyCoord(raquad, decquad))
-            n[p] = 1.
-            prob = n / np.sum(n)
-            prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
-            if args.doDust:
-                prob = prob*V
-
-        elif survey == "GW":
+        if survey == "GW":
             skymap = read_sky_map(gwskymap,
                                   moc=True)['UNIQ', 'PROBDENSITY']
             prob = rasterize(
@@ -316,29 +324,39 @@ def main(args=None):
             prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
             if args.doDust:
                 prob = prob*V
-
-        elif survey == "baseline":
+        elif survey in ["galactic_plane", "kilonova", "baseline"]:
             n = 0.01 * np.ones(healpix.npix)
-
-            tquad = quad.loc[tind]
-            raquad, decquad = tquad["center"].ra, tquad["center"].dec
-            p = quad_fov.footprint_healpix(healpix,
-                                           SkyCoord(raquad, decquad))
-            n[p] = 1.
             prob = n / np.sum(n)
             prob = get_observed(start_time, mission, healpix,
-                                schedulenames, prob)
+                                schedulenames, prob, centers)
+
+            if survey == "galactic_plane":
+                p = (np.abs(coords.galactic.b.deg) <= 15.0)
+            elif survey == "kilonova":
+                tindex = 37
+                tquad = quad.loc[tindex]
+                raquad, decquad = tquad["center"].ra, tquad["center"].dec
+                p = quad_fov.footprint_healpix(healpix,
+                                               SkyCoord(raquad, decquad))
+            elif survey == "baseline":
+                tquad = quad.loc[tind]
+                raquad, decquad = tquad["center"].ra, tquad["center"].dec
+                p = quad_fov.footprint_healpix(healpix,
+                                               SkyCoord(raquad, decquad))
+                tind = tind + 1
+                tind = np.mod(tind, quadlen)
+
+            prob[p] = 1.
+            prob = prob / np.sum(prob)
             prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
             if args.doDust:
                 prob = prob*V
 
-            tind = tind + 1
-            tind = np.mod(tind, quadlen)
-
         executable = 'dorado-scheduling'
         schedulename_filters = []
         for ii, filt in enumerate(filters):
-            write_sky_map(skymapname, prob, moc=True, gps_time=start_time.gps)
+            write_sky_map(skymapname, prob, moc=True,
+                          gps_time=(start_time-delay).gps)
 
             if args.doPlotSkymaps:
                 system_command = 'ligo-skymap-plot %s -o %s' % (
@@ -352,12 +370,12 @@ def main(args=None):
                 system_command = ("%s %s -o %s --mission %s --exptime '%s' "
                                   "--time-step '%s' --roll-step '%s' "
                                   "--skygrid-file %s --duration '%s' "
-                                  "--timeout %d") % (
+                                  "--timeout %d --delay '%s'") % (
                     executable,
                     skymapname, schedulename_tmp, args.mission,
                     str(exptime), str(time_step), str(args.roll_step),
                     args.skygrid_file.name, str(args.duration),
-                    args.timeout)
+                    args.timeout, str(delay))
                 print(system_command)
                 os.system(system_command)
             else:
@@ -406,13 +424,22 @@ def main(args=None):
 
         if args.doLimitingMagnitudes:
             from uvex.sensitivity import limiting_mag
-            limmags = []
-            for ii, row in enumerate(scheduleall_tmp):
-                obstime, exposure = row['time'], row['exptime']
-                coord, band = row['center'], row['filter']
-                limmag = limiting_mag(coord, obstime,
-                                      exposure=exposure, band=band)
-                limmags.append(limmag)
+            if args.doParallel:
+                from joblib import Parallel, delayed
+                limmags = Parallel(n_jobs=args.jobs)(
+                    delayed(limiting_mag)(row['center'],
+                                          row['time'],
+                                          row['exptime'],
+                                          row['filter'])
+                    for row in scheduleall_tmp)
+            else:
+                limmags = []
+                for ii, row in enumerate(scheduleall_tmp):
+                    obstime, exposure = row['time'], row['exptime']
+                    coord, band = row['center'], row['filter']
+                    limmag = limiting_mag(coord, obstime,
+                                          exposure=exposure, band=band)
+                    limmags.append(limmag)
             scheduleall_tmp.add_column(limmags, name='limmag')
 
         scheduleall_tmp.write(schedulename, format='ascii.ecsv')
