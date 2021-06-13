@@ -70,39 +70,59 @@ def main(args=None):
 
     idx, _, _ = schedule["center"].match_to_catalog_sky(centers)
     survey_set = list(set(schedule["survey"]))
+    filter_set = list(set(schedule["filter"]))
     colors = seaborn.color_palette('Set2', n_colors=len(survey_set))
+    linestyles = ['-', '--', '-.', ':']
 
     log.info('splitting schedule')
     dts = {}
     exposures = {}
     for survey in survey_set:
-        dts[survey] = []
-        exposures[survey] = np.zeros((len(centers), 1))
-    exposures['all'] = np.zeros((len(centers), 1))
+        dts[survey] = {}
+        exposures[survey] = {}
+        for filt in filter_set:
+            dts[survey][filt] = []
+            exposures[survey][filt] = np.zeros((len(centers), 1))
+    exposures['all'] = {}
+    for filt in filter_set:
+        exposures['all'][filt] = np.zeros((len(centers), 1))
     for cc, cent in enumerate(centers):
+        if np.mod(cc, 100) == 0:
+            print('%d/%d' % (cc, len(centers)))
+
         idy = np.where(idx == cc)[0]
         if len(idy) == 0:
             continue
         exps = schedule.iloc[idy]
-        exposures['all'][cc] = len(exps)
-        for ss, survey in enumerate(survey_set):
-            idz = np.where(exps["survey"] == survey)[0]
-            if len(idz) == 0:
+        for filt in filter_set:
+            idf = np.where(exps["filter"] == filt)[0]
+            if len(idf) == 0:
                 continue
-            exposures[survey][cc] = len(idz)
-            for ii in range(len(idz)-1):
-                jj, kk = idz[ii], idz[ii+1]
-                dt = exps[kk]["time"] - exps[jj]["time"]
-                if np.isclose(dt.jd, 0.0):
+            expsslice = exps.iloc[idf]
+            exposures['all'][filt][cc] = len(expsslice)
+            for ss, survey in enumerate(survey_set):
+                idz = np.where(expsslice["survey"] == survey)[0]
+                if len(idz) == 0:
                     continue
-                dts[survey].append(dt.jd)
+                exposures[survey][filt][cc] = len(idz)
+                for ii in range(len(idz)-1):
+                    jj, kk = idz[ii], idz[ii+1]
+                    dt = expsslice[kk]["time"] - expsslice[jj]["time"]
+                    if np.isclose(dt.jd, 0.0):
+                        continue
+                    dts[survey][filt].append(dt.jd)
+
+    log.info('plotting metrics')
 
     fig = plt.figure(figsize=(8, 6))
     bin_edges = np.linspace(0, 60, 61)
     for ii, survey in enumerate(survey_set):
-        hist, _ = np.histogram(dts[survey], bins=bin_edges)
-        bins = (bin_edges[1:]+bin_edges[:-1])/2.0
-        plt.step(bins, hist, color=colors[ii], linestyle='--', label=survey)
+        for jj, filt in enumerate(filter_set):
+            hist, _ = np.histogram(dts[survey][filt], bins=bin_edges)
+            bins = (bin_edges[1:]+bin_edges[:-1])/2.0
+            plt.step(bins, hist, color=colors[ii],
+                     linestyle=linestyles[jj],
+                     label='%s - %s ' % (survey, filt))
     plt.xlabel('Time between observations [days]')
     plt.ylabel('Counts')
     plt.legend(loc=1)
@@ -111,34 +131,36 @@ def main(args=None):
     plt.close()
 
     colors = cm.rainbow(np.linspace(0, 1, 10))
-    vmin, vmax = 0, 30
-    colorbar = np.linspace(vmin, vmax, len(colors))
-    norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
 
     for survey in survey_set + ["all"]:
-        fig = plt.figure(figsize=(12, 6))
-        ax = plt.axes([0.05, 0.05, 0.85, 0.9],
-                      projection='astro hours mollweide')
-        ax.grid()
-        for cc, center in enumerate(centers):
-            poly = mission.fov.footprint(center).icrs
-            idx = np.argmin(np.abs(colorbar - exposures[survey][cc]))
-            footprint_color = colors[idx]
-            vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
-            for cut_vertices in plot.cut_prime_meridian(vertices):
-                patch = plt.Polygon(np.rad2deg(cut_vertices),
-                                    transform=ax.get_transform('world'),
-                                    facecolor=footprint_color,
-                                    edgecolor=footprint_color,
-                                    alpha=0.5)
-                ax.add_patch(patch)
-        cax = ax.inset_axes([0.97, 0.2, 0.05, 0.6], transform=ax.transAxes)
-        cbar = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cm.rainbow),
-                            cax=cax)
-        cbar.set_label(r'Number of Observations')
-        plotname = os.path.join(outdir, 'counts_%s.pdf' % survey)
-        plt.savefig(plotname)
-        plt.close()
+        for jj, filt in enumerate(filter_set):
+            fig = plt.figure(figsize=(12, 6))
+            ax = plt.axes([0.05, 0.05, 0.85, 0.9],
+                          projection='astro hours mollweide')
+            ax.grid()
+            vmin, vmax = 0, np.max(exposures[survey][filt])
+            colorbar = np.linspace(vmin, vmax, len(colors))
+            norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
+            for cc, center in enumerate(centers):
+                poly = mission.fov.footprint(center).icrs
+                idx = np.argmin(np.abs(colorbar - exposures[survey][filt][cc]))
+                footprint_color = colors[idx]
+                vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
+                for cut_vertices in plot.cut_prime_meridian(vertices):
+                    patch = plt.Polygon(np.rad2deg(cut_vertices),
+                                        transform=ax.get_transform('world'),
+                                        facecolor=footprint_color,
+                                        edgecolor=footprint_color,
+                                        alpha=0.5)
+                    ax.add_patch(patch)
+            cax = ax.inset_axes([0.97, 0.2, 0.05, 0.6], transform=ax.transAxes)
+            cbar = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cm.rainbow),
+                                cax=cax)
+            cbar.set_label(r'Number of Observations')
+            plotname = os.path.join(outdir,
+                                    'counts_%s_%s.pdf' % (survey, filt))
+            plt.savefig(plotname)
+            plt.close()
 
 
 if __name__ == '__main__':
