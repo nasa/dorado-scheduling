@@ -202,11 +202,51 @@ def main(args=None):
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
     orb = mission.orbit
 
-    surveys = config["simsurvey"]["surveys"].split(",")
-    weights = [0] + [float(x) for x in
-                     config["simsurvey"]["weights"].split(",")]
-    weights_cumsum = np.cumsum(weights)
-    filters = config["simsurvey"]["filters"].split(",")
+    # check for surveys
+    survey_block = False
+    cnt = 0
+    survey_blocks = {}
+    while not survey_block:
+        label = f"block{cnt}_surveys"
+        weights = f"block{cnt}_weights"
+        duration = f"block{cnt}_duration"
+        filts = f"block{cnt}_filters"
+
+        if label not in config["simsurvey"]:
+            break
+
+        survey_blocks[cnt] = {}
+        survey_blocks[cnt]["surveys"] = config["simsurvey"][label].split(",")
+        survey_blocks[cnt]["weights"] = [0] + \
+            [float(x) for x in config["simsurvey"][weights].split(",")]
+        survey_blocks[cnt]["weights_cumsum"] = np.cumsum(
+            survey_blocks[cnt]["weights"])
+        survey_blocks[cnt]["duration"] = u.Quantity(
+            config["simsurvey"][duration])
+        survey_blocks[cnt]["filters"] = config["simsurvey"][filts].split(",")
+
+        # Set up grids
+        with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
+            niter = int(np.round(
+                (survey_blocks[cnt]["duration"] /
+                 (len(survey_blocks[cnt]["filters"]) *
+                  args.duration)).to_value(u.dimensionless_unscaled)))
+        survey_blocks[cnt]["niter"] = niter
+
+        cnt = cnt + 1
+
+    niter = 0
+    iters = [0]
+    for ii, key in enumerate(survey_blocks.keys()):
+        niter = niter + survey_blocks[key]["niter"]
+        if ii == 0:
+            duration = survey_blocks[key]["duration"]
+        else:
+            duration = duration + survey_blocks[key]["duration"]
+        iters.append(niter)
+    iters_cumsum = np.cumsum(iters)
+
+    assert duration == args.duration_survey
 
     # Set up pointing grid
     if args.skygrid_file is not None:
@@ -214,12 +254,6 @@ def main(args=None):
     else:
         centers = getattr(skygrid, args.skygrid_method.replace('-', '_'))(
             args.skygrid_step)
-
-    # Set up grids
-    with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
-        niter = int(np.round(
-            (args.duration_survey / (len(filters) * args.duration)).to_value(
-                u.dimensionless_unscaled)))
 
     coords = healpix.healpix_to_skycoord(np.arange(healpix.npix))
 
@@ -279,14 +313,17 @@ def main(args=None):
     for jj in range(niter):
         print('Evaluating iteration: %d/%d' % (jj, niter))
 
-        if jj < np.floor(niter/2.0):
-            randval = 0.0
-        else:
-            randval = randvals[jj]*0.5 + 0.5
-        idx = np.where((weights_cumsum[1:] >= randval) &
-                       (weights_cumsum[:-1] <= randval))[0]
+        idy = np.where((iters_cumsum[1:] > jj) & (iters_cumsum[:-1] <= jj))[0]
+        key = list(survey_blocks.keys())[int(idy)]
 
-        survey = surveys[int(idx)]
+        randval = randvals[jj]
+        idx = np.where((survey_blocks[key]["weights_cumsum"][1:] >
+                        randval) &
+                       (survey_blocks[key]["weights_cumsum"][:-1] <=
+                        randval))[0]
+        filters = survey_blocks[key]["filters"]
+
+        survey = survey_blocks[key]["surveys"][int(idx)]
         schedulename = '%s/survey_%s_%05d.csv' % (outdir, survey, jj)
         skymapname = '%s/skymap_%s_%05d.fits' % (outdir, survey, jj)
         gifname = '%s/skymap_%s_%05d.gif' % (outdir, survey, jj)
@@ -324,6 +361,8 @@ def main(args=None):
             prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
             if args.doDust:
                 prob = prob*V
+        elif survey == "dropout":
+            prob = 0.00 * np.ones(healpix.npix)
         elif survey in ["galactic_plane", "kilonova", "baseline"]:
             n = 0.01 * np.ones(healpix.npix)
             prob = n / np.sum(n)
@@ -366,7 +405,16 @@ def main(args=None):
             schedulename_tmp = '%s/survey_%s_%05d_%s.csv' % (outdir,
                                                              survey,
                                                              jj, filt)
-            if not args.doOuterLoopOnly:
+
+            if survey == "dropout":
+                result = QTable(data={'time': [],
+                                      'exptime': [],
+                                      'location': [],
+                                      'center': [],
+                                      'roll': []})
+                result.write(schedulename_tmp, format='ascii.ecsv')
+
+            elif not args.doOuterLoopOnly:
                 system_command = ("%s %s -o %s --mission %s --exptime '%s' "
                                   "--time-step '%s' --roll-step '%s' "
                                   "--skygrid-file %s --duration '%s' "

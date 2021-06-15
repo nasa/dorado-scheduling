@@ -86,6 +86,8 @@ def main(args=None):
 
     t = (times - times[0]).to(u.minute).value
 
+    nslice = int(len(times)/float(args.nframes))
+
     instantaneous_color, orbit_color, _, skymap_color, _, footprint_color = \
         seaborn.color_palette('Paired', n_colors=6)
 
@@ -128,7 +130,7 @@ def main(args=None):
     log.info('calculating field of regard')
     field_of_regard = mission.get_field_of_regard(
         healpix.healpix_to_skycoord(
-            np.arange(healpix.npix)), times, jobs=args.jobs)
+            np.arange(healpix.npix)), times[::nslice], jobs=args.jobs)
 
     orbit_field_of_regard = np.logical_or.reduce(field_of_regard)
     # continuous_viewing_zone = np.logical_and.reduce(field_of_regard)
@@ -164,7 +166,8 @@ def main(args=None):
 
     y = field_of_regard.sum(1) / healpix.npix * 100
     ax_time.fill_between(
-        t, y, np.repeat(100, len(y)), color=instantaneous_color, zorder=2.2)
+        t[::nslice], y,
+        np.repeat(100, len(y)), color=instantaneous_color, zorder=2.2)
 
     y = orbit_field_of_regard.sum() / healpix.npix * 100
     ax_time.axhspan(y, 100, color=orbit_color, zorder=2.3)
@@ -188,10 +191,8 @@ def main(args=None):
 
     old_artists = []
 
-    nslice = int(len(field_of_regard)/float(args.nframes))
-
     log.info('rendering animation frames')
-    with tqdm(total=len(field_of_regard)/float(nslice)) as progress:
+    with tqdm(total=len(field_of_regard)) as progress:
 
         def animate(i):
             for artist in old_artists:
@@ -227,7 +228,7 @@ def main(args=None):
             progress.update()
 
         frames = [ii for ii in range(len(field_of_regard))]
-        frames = frames[::nslice]
+        times = times[::nslice]
 
         ani = FuncAnimation(fig, animate, frames=frames)
         # ani.save(args.output.name, writer=PillowWriter())
