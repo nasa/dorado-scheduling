@@ -137,7 +137,7 @@ Notes
 
 uvex = Mission(
     constraints=(
-        EarthLimbConstraint(28 * u.deg),
+        EarthLimbConstraint(90 * u.deg),
         astroplan.SunSeparationConstraint(46 * u.deg),
         astroplan.MoonSeparationConstraint(23 * u.deg)
     ),
