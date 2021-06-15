@@ -142,7 +142,7 @@ uvex = Mission(
         astroplan.MoonSeparationConstraint(23 * u.deg)
     ),
     fov=FOV.from_rectangle(3.3 * u.deg),
-    orbit=_read_orbit('vela1.tle'),
+    orbit=_read_orbit('uvex_tle_300_290_i30_72h.tle.dat'),
     min_overhead=0 * u.s,
     max_angular_velocity=0.872 * u.deg / u.s,
     max_angular_acceleration=0.244 * u.deg / u.s**2
@@ -160,9 +160,10 @@ Notes
   the Galactic plane.
 
 * The orbit that is currently under consideration for UVEX is highly elliptical
-  with a perigee greater than 45,000 km. As a proxy, we use the actual two-line
-  elements for VELA 1, a historically important gamma-ray satellite with a
-  similar orbit.
+  with a perigee greater than 45,000 km. SSL has  generated an orbital
+  simulation for UVEX. Note that the torques exerted by the Moon will affect
+  the inclination of this orbit, which won't be captured in this
+  single-point TLE. If you want something with higher fidelity.
 
 * Maximum angular acceleration, maximum angular velocity, and overhead time are
   assumed to be the same as for Dorado.
