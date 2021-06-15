@@ -8,6 +8,7 @@
 """Simulate full survey."""
 
 import glob
+import copy
 import os
 import logging
 import healpy as hp
@@ -114,6 +115,8 @@ def parser():
     p.add_argument("--doLimitingMagnitudes", help="add limiting magnitudes",
                    action="store_true")
     p.add_argument("--doOuterLoopOnly", help="just the outer loop, no inner",
+                   action="store_true")
+    p.add_argument("--doLMCSMC", help="LMC/SMC survey",
                    action="store_true")
     p.add_argument("--doParallel", help="enable parallelization",
                    action="store_true")
@@ -229,8 +232,7 @@ def main(args=None):
         with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
             niter = int(np.round(
                 (survey_blocks[cnt]["duration"] /
-                 (len(survey_blocks[cnt]["filters"]) *
-                  args.duration)).to_value(u.dimensionless_unscaled)))
+                 args.duration)).to_value(u.dimensionless_unscaled))
         survey_blocks[cnt]["niter"] = niter
 
         cnt = cnt + 1
@@ -307,6 +309,15 @@ def main(args=None):
             glob.glob(os.path.join(args.gw_folder, '*.fits.fz'))
         gwexps = [args.extime]*len(gwfits)
 
+    if args.doLMCSMC:
+        lmc = SkyCoord(ra=80.894200*u.deg, dec=-69.756100*u.deg)
+        smc = SkyCoord(ra=13.158300*u.deg, dec=-72.800300*u.deg)
+
+        idx1, _, _ = lmc.match_to_catalog_sky(centers)
+        idx2, _, _ = smc.match_to_catalog_sky(centers)
+        idx = np.array([idx1, idx2])
+        smclmctiles = centers[idx]
+
     schedulenames = []
     tind = 0
 
@@ -330,7 +341,7 @@ def main(args=None):
 
         with u.add_enabled_equivalencies(equivalencies.orbital(orb)):
             times = start_time + args.delay + np.arange(
-                0, args.duration.to_value(u.s) * len(filters),
+                0, args.duration.to_value(u.s),
                 args.time_step.to_value(u.s)) * u.s
 
         if survey == "GW":
@@ -392,83 +403,94 @@ def main(args=None):
                 prob = prob*V
 
         executable = 'dorado-scheduling'
-        schedulename_filters = []
+        write_sky_map(skymapname, prob, moc=True,
+                      gps_time=(start_time-delay).gps)
+
+        if args.doPlotSkymaps:
+            system_command = 'ligo-skymap-plot %s -o %s' % (
+                skymapname, skymapname.replace("fits", "png"))
+            os.system(system_command)
+
+        schedulename = '%s/survey_%s_%05d.csv' % (outdir,
+                                                  survey,
+                                                  jj)
+
+        if survey == "dropout":
+            result = QTable(data={'time': [],
+                                  'exptime': [],
+                                  'location': [],
+                                  'center': [],
+                                  'roll': []})
+            result.write(schedulename, format='ascii.ecsv')
+
+        elif not args.doOuterLoopOnly:
+            system_command = ("%s %s -o %s --mission %s --exptime '%s' "
+                              "--time-step '%s' --roll-step '%s' "
+                              "--skygrid-file %s --duration '%s' "
+                              "--timeout %d --delay '%s'") % (
+                executable,
+                skymapname, schedulename, args.mission,
+                str(exptime), str(time_step), str(args.roll_step),
+                args.skygrid_file.name, str(args.duration),
+                args.timeout, str(delay))
+            print(system_command)
+            os.system(system_command)
+        else:
+            skymap = read_sky_map(skymapname,
+                                  moc=True)['UNIQ', 'PROBDENSITY']
+            prob = rasterize(
+                skymap, nside_to_level(healpix.nside))['PROB']
+            prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
+            idx = np.argmax(prob)
+
+            theta, phi = hp.pix2ang(healpix.nside, np.arange(len(prob)))
+            ra = np.rad2deg(phi)[idx]
+            dec = np.rad2deg(0.5*np.pi - theta)[idx]
+
+            result = QTable(data={'time': [start_time],
+                                  'exptime': [exptime],
+                                  'location': [orb(start_time
+                                                   ).earth_location],
+                                  'center': [SkyCoord(ra*u.deg,
+                                                      dec*u.deg)],
+                                  'roll': [0 * u.deg]})
+            result.write(schedulename, format='ascii.ecsv')
+
+        with u.add_enabled_equivalencies(equivalencies.orbital(orb)):
+            start_time = start_time + args.duration
+
+        schedule_tmp = QTable.read(schedulename, format='ascii.ecsv')
+        if args.doLMCSMC and not (survey == "dropout"):
+            start_time = times[-1] + exptime
+
+            smclmctimes = start_time + np.arange(
+                0, args.exptime.to_value(u.s) * 2,
+                args.exptime.to_value(u.s)) * u.s
+
+            check = mission.get_field_of_regard(smclmctiles, smclmctimes,
+                                                jobs=args.jobs)
+            # I am only adding this if I can do both
+            if np.trace(check) == 2:
+                result = QTable(data={'time': smclmctimes,
+                                      'exptime': [args.exptime, args.exptime],
+                                      'location': orb(smclmctimes
+                                                      ).earth_location,
+                                      'center': smclmctiles,
+                                      'roll': [0 * u.deg, 0 * u.deg]})
+                schedule_tmp = vstack([schedule_tmp, result])
+                start_time = smclmctimes[-1] + args.exptime
+
         for ii, filt in enumerate(filters):
-            write_sky_map(skymapname, prob, moc=True,
-                          gps_time=(start_time-delay).gps)
-
-            if args.doPlotSkymaps:
-                system_command = 'ligo-skymap-plot %s -o %s' % (
-                    skymapname, skymapname.replace("fits", "png"))
-                os.system(system_command)
-
-            schedulename_tmp = '%s/survey_%s_%05d_%s.csv' % (outdir,
-                                                             survey,
-                                                             jj, filt)
-
-            if survey == "dropout":
-                result = QTable(data={'time': [],
-                                      'exptime': [],
-                                      'location': [],
-                                      'center': [],
-                                      'roll': []})
-                result.write(schedulename_tmp, format='ascii.ecsv')
-
-            elif not args.doOuterLoopOnly:
-                system_command = ("%s %s -o %s --mission %s --exptime '%s' "
-                                  "--time-step '%s' --roll-step '%s' "
-                                  "--skygrid-file %s --duration '%s' "
-                                  "--timeout %d --delay '%s'") % (
-                    executable,
-                    skymapname, schedulename_tmp, args.mission,
-                    str(exptime), str(time_step), str(args.roll_step),
-                    args.skygrid_file.name, str(args.duration),
-                    args.timeout, str(delay))
-                print(system_command)
-                os.system(system_command)
+            schedule_tmp_filt = copy.deepcopy(schedule_tmp)
+            if len(schedule_tmp_filt) == 0:
+                schedule_tmp_filt.add_column([], name='filter')
             else:
-                skymap = read_sky_map(skymapname,
-                                      moc=True)['UNIQ', 'PROBDENSITY']
-                prob = rasterize(
-                    skymap, nside_to_level(healpix.nside))['PROB']
-                prob = prob[healpix.ring_to_nested(np.arange(len(prob)))]
-                idx = np.argmax(prob)
-
-                theta, phi = hp.pix2ang(healpix.nside, np.arange(len(prob)))
-                ra = np.rad2deg(phi)[idx]
-                dec = np.rad2deg(0.5*np.pi - theta)[idx]
-
-                result = QTable(data={'time': [start_time],
-                                      'exptime': [exptime],
-                                      'location': [orb(start_time
-                                                       ).earth_location],
-                                      'center': [SkyCoord(ra*u.deg,
-                                                          dec*u.deg)],
-                                      'roll': [0 * u.deg]})
-                result.write(schedulename_tmp, format='ascii.ecsv')
-            schedulename_filters.append(schedulename_tmp)
-
-            with u.add_enabled_equivalencies(equivalencies.orbital(orb)):
-                start_time = start_time + args.duration
-
-        cnt = 0
-        for ii, schedulename_filter in enumerate(schedulename_filters):
-            try:
-                schedule = QTable.read(schedulename_filter,
-                                       format='ascii.ecsv')
-            except Exception:
-                continue
-            if len(schedule) == 0:
-                continue
-            schedule.add_column(filters[ii], name='filter')
-            if cnt == 0:
-                scheduleall_tmp = schedule
+                schedule_tmp_filt.add_column(filt, name='filter')
+            if ii == 0:
+                schedule = schedule_tmp_filt
             else:
-                scheduleall_tmp = vstack([scheduleall_tmp, schedule])
-            cnt = cnt + 1
-        if cnt == 0:
-            scheduleall_tmp = schedule
-            schedule.add_column([], name='filter')
+                schedule = vstack([schedule, schedule_tmp_filt])
+        schedule.sort('time')
 
         if args.doLimitingMagnitudes:
             from uvex.sensitivity import limiting_mag
@@ -479,18 +501,18 @@ def main(args=None):
                                           row['time'],
                                           row['exptime'],
                                           row['filter'])
-                    for row in scheduleall_tmp)
+                    for row in schedule)
             else:
                 limmags = []
-                for ii, row in enumerate(scheduleall_tmp):
+                for ii, row in enumerate(schedule):
                     obstime, exposure = row['time'], row['exptime']
                     coord, band = row['center'], row['filter']
                     limmag = limiting_mag(coord, obstime,
                                           exposure=exposure, band=band)
                     limmags.append(limmag)
-            scheduleall_tmp.add_column(limmags, name='limmag')
+            schedule.add_column(limmags, name='limmag')
 
-        scheduleall_tmp.write(schedulename, format='ascii.ecsv')
+        schedule.write(schedulename, format='ascii.ecsv')
 
         if args.doPlotSkymaps:
             system_command = 'ligo-skymap-plot %s -o %s' % (
