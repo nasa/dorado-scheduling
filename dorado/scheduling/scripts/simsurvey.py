@@ -118,6 +118,8 @@ def parser():
                    action="store_true")
     p.add_argument("--doLMCSMC", help="LMC/SMC survey",
                    action="store_true")
+    p.add_argument("--doDownlink", help="Downlink times",
+                   action="store_true")
     p.add_argument("--doParallel", help="enable parallelization",
                    action="store_true")
 
@@ -318,6 +320,12 @@ def main(args=None):
         idx = np.array([idx1, idx2])
         smclmctiles = centers[idx]
 
+    if args.doDownlink:
+        with u.add_enabled_equivalencies(equivalencies.orbital(mission.orbit)):
+            downlink_times = start_time + np.arange(
+                0, args.duration_survey.to_value(u.s),
+                (6*u.hr).to_value(u.s)) * u.s
+
     schedulenames = []
     tind = 0
 
@@ -464,20 +472,24 @@ def main(args=None):
             start_time = times[-1] + exptime
 
             smclmctimes = start_time + np.arange(
-                0, args.exptime.to_value(u.s) * 2,
+                0, args.exptime.to_value(u.s) * 7,
                 args.exptime.to_value(u.s)) * u.s
 
             check = mission.get_field_of_regard(smclmctiles, smclmctimes,
                                                 jobs=args.jobs)
             # I am only adding this if I can do both
-            if np.trace(check) == 2:
+            if np.trace(check) == 7:
                 result = QTable(data={'time': smclmctimes,
-                                      'exptime': [args.exptime, args.exptime],
+                                      'exptime': [5*args.exptime,
+                                                  2*args.exptime],
                                       'location': orb(smclmctimes
                                                       ).earth_location,
                                       'center': smclmctiles,
                                       'roll': [0 * u.deg, 0 * u.deg]})
-                schedule_tmp = vstack([schedule_tmp, result])
+                if len(schedule_tmp) > 0:
+                    schedule_tmp = vstack([schedule_tmp, result])
+                else:
+                    schedule_tmp = copy.deepcopy(result)
                 start_time = smclmctimes[-1] + args.exptime
 
         for ii, filt in enumerate(filters):
@@ -489,8 +501,20 @@ def main(args=None):
             if ii == 0:
                 schedule = schedule_tmp_filt
             else:
+                # Don't need empty rows...
+                if len(schedule_tmp_filt) == 0:
+                    continue
                 schedule = vstack([schedule, schedule_tmp_filt])
         schedule.sort('time')
+        if args.doDownlink:
+            if len(schedule) > 1:
+                idy = np.where((schedule[0]["time"] <= downlink_times) &
+                               (schedule[1]["time"] > downlink_times))[0]
+                for tt in downlink_times[idy]:
+                    idx = np.where(schedule["time"] >= tt)[0]
+                    if len(idx) == 0:
+                        continue
+                    schedule["time"] = schedule["time"] + 40*u.min
 
         if args.doLimitingMagnitudes:
             from uvex.sensitivity import limiting_mag
