@@ -46,8 +46,13 @@ def parser():
         '-n', '--ninj', type=int, default=10000,
         help='Number of injections')
 
+    p.add_argument(
+        '-f', '--field-number', type=int,
+        help='field number')
+
     p.add_argument("--doParallel", help="enable parallelization",
                    action="store_true")
+    p.add_argument("--doPlots", help="make plot", action="store_true")
 
     return p
 
@@ -99,11 +104,18 @@ def main(args=None):
     idx, _, _ = schedule["center"].match_to_catalog_sky(centers)
 
     log.info('splitting schedule')
-    filename = os.path.join(output, 'counts.dat')
+    if args.field_number is not None:
+        filename = os.path.join(output, 'counts_%05d.dat' % args.field_number)
+    else:
+        filename = os.path.join(output, 'counts.dat')
     fid = open(filename, 'w')
 
     exposures = {}
     for cc, cent in enumerate(centers):
+        if args.field_number is not None:
+            if not cc == args.field_number:
+                continue
+
         if np.mod(cc, 100) == 0:
             print('splitting %d/%d' % (cc, len(centers)))
 
@@ -130,15 +142,22 @@ def main(args=None):
         injections[m] = np.zeros((len(centers),))
         efficiency[m] = np.zeros((len(centers),))
 
-    filename = os.path.join(output, 'eff.dat')
-    fid = open(filename, 'w')
-
     planck = PlanckQuery()
     dust_properties = Dust()
     Ax1 = dust_properties.Ax1
     ebv = planck(centers)
 
     for cc, e in zip(exposures.keys(), ebv):
+        if args.field_number is not None:
+            if not cc == args.field_number:
+                continue
+
+        filename = os.path.join(output, 'eff_%05d.dat' % cc)
+        if os.path.isfile(filename):
+            continue
+
+        fid = open(filename, 'w')
+
         if np.mod(int(cc), 100) == 0:
             print('Running %d/%d' % (cc, len(centers)))
 
@@ -146,6 +165,7 @@ def main(args=None):
         if len(exps) == 0:
             print('%d %.10f %.10f %.10f' % (cc, 0.0, 0.0, 0.0),
                   file=fid, flush=True)
+            fid.close()
             continue
 
         # Apply dust extinction on the light curve
@@ -178,59 +198,70 @@ def main(args=None):
                                         efficiency['multi_detect'][cc],
                                         efficiency['multi_color_detect'][cc]),
               file=fid, flush=True)
-    fid.close()
+        fid.close()
 
-    log.info('plotting efficiency')
+    for cc, e in zip(exposures.keys(), ebv):
+        filename = os.path.join(output, 'eff_%05d.dat' % cc)
+        if not os.path.isfile(filename):
+            continue
+        data_out = np.loadtxt(filename)
+        efficiency['single_detect'][cc] = data_out[1]
+        efficiency['multi_detect'][cc] = data_out[2]
+        efficiency['multi_color_detect'][cc] = data_out[3]
 
-    colors = cm.rainbow(np.linspace(0, 1, 100))
-    for m in metrics_list:
-        vmin, vmax = 0, np.max(efficiency[m])
-        colorbar = np.linspace(vmin, vmax, len(colors))
-        norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
+    if args.doPlots:
 
-        fig = plt.figure(figsize=(12, 6))
-        ax = plt.axes([0.05, 0.05, 0.85, 0.9],
-                      projection='astro hours mollweide')
-        ax.grid()
-        for cc, center in enumerate(centers):
-            poly = mission.fov.footprint(center).icrs
-            idx = np.argmin(np.abs(colorbar - efficiency[m][cc]))
-            footprint_color = colors[idx]
-            vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
-            for cut_vertices in plot.cut_prime_meridian(vertices):
-                patch = plt.Polygon(np.rad2deg(cut_vertices),
-                                    transform=ax.get_transform('world'),
-                                    facecolor=footprint_color,
-                                    edgecolor=footprint_color,
-                                    alpha=0.5)
-                ax.add_patch(patch)
-        cax = ax.inset_axes([0.97, 0.2, 0.05, 0.6], transform=ax.transAxes)
-        cbar = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cm.rainbow),
-                            cax=cax)
-        cbar.set_label(r'Efficiency')
-        plotname = os.path.join(output, 'eff_%s.pdf' % m)
+        log.info('plotting efficiency')
+
+        colors = cm.rainbow(np.linspace(0, 1, 100))
+        for m in metrics_list:
+            vmin, vmax = 0, np.max(efficiency[m])
+            colorbar = np.linspace(vmin, vmax, len(colors))
+            norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
+
+            fig = plt.figure(figsize=(12, 6))
+            ax = plt.axes([0.05, 0.05, 0.85, 0.9],
+                          projection='astro hours mollweide')
+            ax.grid()
+            for cc, center in enumerate(centers):
+                poly = mission.fov.footprint(center).icrs
+                idx = np.argmin(np.abs(colorbar - efficiency[m][cc]))
+                footprint_color = colors[idx]
+                vertices = np.column_stack((poly.ra.rad, poly.dec.rad))
+                for cut_vertices in plot.cut_prime_meridian(vertices):
+                    patch = plt.Polygon(np.rad2deg(cut_vertices),
+                                        transform=ax.get_transform('world'),
+                                        facecolor=footprint_color,
+                                        edgecolor=footprint_color,
+                                        alpha=0.5)
+                    ax.add_patch(patch)
+            cax = ax.inset_axes([0.97, 0.2, 0.05, 0.6], transform=ax.transAxes)
+            cbar = fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cm.rainbow),
+                                cax=cax)
+            cbar.set_label(r'Efficiency')
+            plotname = os.path.join(output, 'eff_%s.png' % m)
+            plt.savefig(plotname)
+            plt.close()
+
+        log.info('plotting lightcurves')
+
+        # let's plot up a few of the lightcurves
+        ivals = [0, 1, 2, 3, 4, 5]
+
+        plt.figure()
+        for i in ivals:
+            t = Time(np.arange(0, 10), format='jd')
+            distmod = 5*np.log10(slicer[i]['distance']*1e6) - 5.0
+            lc = metric.lightcurves.interp(t, 'FUV',
+                                           lc_indx=slicer[i]['file_indx'])
+            plt.plot(t.jd, lc+distmod, color='blue', label='%i, FUV' % i)
+            lc = metric.lightcurves.interp(t, 'NUV',
+                                           lc_indx=slicer[i]['file_indx'])
+            plt.plot(t.jd, lc+distmod, color='red', label='%i, NUV' % i)
+        plt.ylim([30, 20])
+        plt.xlabel('t (days)')
+        plt.ylabel('mag')
+        plt.legend()
+        plotname = os.path.join(output, 'lc.pdf')
         plt.savefig(plotname)
         plt.close()
-
-    log.info('plotting lightcurves')
-
-    # let's plot up a few of the lightcurves
-    ivals = [0, 1, 2, 3, 4, 5]
-
-    plt.figure()
-    for i in ivals:
-        t = Time(np.arange(0, 10), format='jd')
-        distmod = 5*np.log10(slicer[i]['distance']*1e6) - 5.0
-        lc = metric.lightcurves.interp(t, 'FUV',
-                                       lc_indx=slicer[i]['file_indx'])
-        plt.plot(t.jd, lc+distmod, color='blue', label='%i, FUV' % i)
-        lc = metric.lightcurves.interp(t, 'NUV',
-                                       lc_indx=slicer[i]['file_indx'])
-        plt.plot(t.jd, lc+distmod, color='red', label='%i, NUV' % i)
-    plt.ylim([30, 20])
-    plt.xlabel('t (days)')
-    plt.ylabel('mag')
-    plt.legend()
-    plotname = os.path.join(output, 'lc.pdf')
-    plt.savefig(plotname)
-    plt.close()

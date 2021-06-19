@@ -84,8 +84,8 @@ class KNePopMetric:
         result = 1
         around_peak = np.where((t > 0) & (t < 7) &
                                (mags < dataSlice[self.m5Col]))[0]
-        filters = dataSlice[self.filterCol][around_peak]
-        if np.size(filters) < 2:
+        times = t[around_peak]
+        if np.size(np.unique(times)) < 2:
             return 0
 
         return result
