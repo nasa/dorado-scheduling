@@ -291,6 +291,7 @@ def main(args=None):
     quad = QTable.read(config["simsurvey"]["quadfile"], format='ascii.ecsv')
     quad.add_index('field_id')
     quadlen = len(quad)
+    quadcnt = np.zeros(quadlen)
     quad_fov = float(config["simsurvey"]["quad_field_of_view"])
     quad_fov = FOV.from_rectangle(quad_fov * u.deg)
 
@@ -367,9 +368,6 @@ def main(args=None):
             schedulenames.append(schedulename)
 
             start_time = times[-1] + exptime
-            if survey == "baseline":
-                tind = tind + 1
-                tind = np.mod(tind, quadlen)
             continue
 
         if survey == "GW":
@@ -389,7 +387,7 @@ def main(args=None):
                                 schedulenames, prob, centers)
 
             if survey == "galactic_plane":
-                p = (np.abs(coords.galactic.b.deg) <= 15.0)
+                p = (np.abs(coords.galactic.b.deg) <= 10.0)
             elif survey == "kilonova":
                 tindex = 37
                 tquad = quad.loc[tindex]
@@ -397,12 +395,21 @@ def main(args=None):
                 p = quad_fov.footprint_healpix(healpix,
                                                SkyCoord(raquad, decquad))
             elif survey == "baseline":
+                field_of_regard = mission.get_field_of_regard(
+                    quad["center"], times)
+                quad_perc = np.sum(field_of_regard, axis=0) / len(times)
+                observable = np.where(quad_perc > 0.5)[0]
+                if len(observable) == 0:
+                    tind = np.argmax(quad_perc)
+                else:
+                    ttmp = np.argmin(quadcnt[observable])
+                    tind = observable[ttmp]
+                quadcnt[tind] = quadcnt[tind] + 1
+
                 tquad = quad.loc[tind]
                 raquad, decquad = tquad["center"].ra, tquad["center"].dec
                 p = quad_fov.footprint_healpix(healpix,
                                                SkyCoord(raquad, decquad))
-                tind = tind + 1
-                tind = np.mod(tind, quadlen)
 
             prob[p] = 1.
             prob = prob / np.sum(prob)
@@ -554,6 +561,9 @@ def main(args=None):
     metricsname = '%s/metrics' % (outdir)
     if not os.path.isdir(metricsname):
         os.makedirs(metricsname)
+    efficiencyname = '%s/efficiency' % (outdir)
+    if not os.path.isdir(efficiencyname):
+        os.makedirs(efficiencyname)
 
     scheduleall.write(schedulename, format='ascii.ecsv')
 
@@ -581,7 +591,7 @@ def main(args=None):
     if args.doSlicer:
         executable = 'dorado-scheduling-survey-slicer'
         system_command = '%s %s --mission %s -o %s --skygrid-file %s' % (
-            executable, schedulename, args.mission, metricsname,
+            executable, schedulename, args.mission, efficiencyname,
             args.skygrid_file.name)
         print(system_command)
         os.system(system_command)
