@@ -41,6 +41,12 @@ def parser():
     group.add_argument(
         '--duration', type=u.Quantity, default='1 orbit',
         help='Duration of observing plan (any time units)')
+    group.add_argument(
+        '--apparent-magnitude', type=float, default=20,
+        help='Apparent AB magnitude of source (prior to Milky Way extinction)')
+    group.add_argument(
+        '--dorado-sensitivity', choices=('cbe', 'baseline', 'threshold'),
+        default='cbe', help='Dorado sensitivity')
 
     group = p.add_argument_group(
         'discretization options',
@@ -93,6 +99,7 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
+    from dorado.sensitivity import bandpasses
     from docplex.mp.context import Context
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
@@ -110,6 +117,11 @@ def main(args=None):
 
     mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
+    bandpass = {
+        'cbe': bandpasses.NUV_D_CBE,
+        'baseline': bandpasses.NUV_D_BASELINE,
+        'threshold': bandpasses.NUV_D_THRESHOLD
+    }[args.dorado_sensitivity]
 
     # Read multi-order sky map and rasterize to working resolution
     event_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
@@ -154,7 +166,8 @@ def main(args=None):
     stopwatch = Stopwatch()
     stopwatch.start()
     result = schedule(
-        mission, prob, healpix, centers, rolls, times, exptime, nexp, context)
+        mission, prob, healpix, centers, rolls, times, exptime, nexp,
+        args.apparent_magnitude * u.ABmag, bandpass, context)
     stopwatch.stop()
 
     result.meta['cmdline'] = shlex_join(sys.argv)

@@ -196,7 +196,7 @@ def main(args=None):
                         patch = plt.Polygon(
                             np.rad2deg(cut_vertices),
                             transform=ax_sky.get_transform('world'),
-                            facecolor='none', edgecolor=footprint_color)
+                            facecolor=str(1 - row['exptime'] / schedule['exptime'].max()), edgecolor=footprint_color)
                         old_artists.append(ax_sky.add_patch(patch))
             old_artists.extend(ax_sky.contourf_hpx(
                 field_of_regard[i].astype(float), levels=[0, 0.5],
