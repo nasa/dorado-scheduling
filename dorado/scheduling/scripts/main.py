@@ -138,6 +138,9 @@ def main(args=None):
     # Configure solver context
     context = Context.make_default_context()
     context.solver.log_output = True
+    # Disable the solution pool. We are not examining multiple solutions,
+    # and the solution pool can grow to take up a lot of memory.
+    context.cplex_parameters.mip.pool.capacity = 0
     if args.timeout is not None:
         context.cplex_parameters.timelimit = args.timeout
         # Since we have a time limit,
