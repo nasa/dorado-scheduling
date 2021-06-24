@@ -169,7 +169,7 @@ def get_observed(latest_time, mission, healpix, schedulenames, prob,
     return prob
 
 
-def merge_tables(schedulenames):
+def merge_tables(schedulenames, centers):
 
     cnt = 0
     for ii, schedulename in enumerate(schedulenames):
@@ -179,8 +179,12 @@ def merge_tables(schedulenames):
         fitsfile = fitsfile.replace("survey_%s" % survey, "skymap_%s" % survey)
         if len(schedule) == 0:
             continue
+
+        idx, _, _ = schedule["center"].match_to_catalog_sky(centers)
+
         schedule.add_column(survey, name='survey')
         schedule.add_column(fitsfile, name='skymap')
+        schedule.add_column(idx, name='tile_number')
         if cnt == 0:
             scheduleall = schedule
         else:
@@ -236,19 +240,39 @@ def main(args=None):
                 (survey_blocks[cnt]["duration"] /
                  args.duration)).to_value(u.dimensionless_unscaled))
         survey_blocks[cnt]["niter"] = niter
+        survey_blocks[cnt]["randvals"] = np.random.rand(niter)
 
+        surveylist, repeatlist = [], []
+        for jj in range(niter):
+            randval = survey_blocks[cnt]["randvals"][jj]
+            idx = np.where((survey_blocks[cnt]["weights_cumsum"][1:] >
+                            randval) &
+                           (survey_blocks[cnt]["weights_cumsum"][:-1] <=
+                            randval))[0]
+            survey = survey_blocks[cnt]["surveys"][int(idx)]
+            surveylist.append(survey)
+            if survey in ["kilonova","GW"]:
+                repeatlist.append(jj)
+        for jj in repeatlist:
+            if not jj == niter-1:
+                surveylist[jj+1] = surveylist[jj]
+        
+        survey_blocks[cnt]["surveylist"] = surveylist
         cnt = cnt + 1
 
     niter = 0
-    iters = [0]
+    surveylist, filterslist = [], []
     for ii, key in enumerate(survey_blocks.keys()):
         niter = niter + survey_blocks[key]["niter"]
         if ii == 0:
             duration = survey_blocks[key]["duration"]
+            surveylist = survey_blocks[key]["surveylist"]
+            filterslist = [survey_blocks[key]["filters"]
+                           for ii in range(niter)]
         else:
             duration = duration + survey_blocks[key]["duration"]
-        iters.append(niter)
-    iters_cumsum = np.cumsum(iters)
+            surveylist = surveylist + survey_blocks[key]["surveylist"]
+            filterslist = filterslist + [survey_blocks[key]["filters"] for ii in range(niter)]
 
     assert duration == args.duration_survey
 
@@ -297,8 +321,6 @@ def main(args=None):
 
     start_time = Time(args.start_time, format='isot')
 
-    randvals = np.random.rand(niter)
-
     if args.gw_too_file is not None:
         df = pd.read_csv(args.gw_too_file, delimiter=',')
         gwfits, gwexps = [], []
@@ -333,17 +355,9 @@ def main(args=None):
     for jj in range(niter):
         print('Evaluating iteration: %d/%d' % (jj, niter))
 
-        idy = np.where((iters_cumsum[1:] > jj) & (iters_cumsum[:-1] <= jj))[0]
-        key = list(survey_blocks.keys())[int(idy)]
+        survey = surveylist[jj]
+        filters = filterslist[jj]
 
-        randval = randvals[jj]
-        idx = np.where((survey_blocks[key]["weights_cumsum"][1:] >
-                        randval) &
-                       (survey_blocks[key]["weights_cumsum"][:-1] <=
-                        randval))[0]
-        filters = survey_blocks[key]["filters"]
-
-        survey = survey_blocks[key]["surveys"][int(idx)]
         schedulename = '%s/survey_%s_%05d.csv' % (outdir, survey, jj)
         skymapname = '%s/skymap_%s_%05d.fits' % (outdir, survey, jj)
         gifname = '%s/skymap_%s_%05d.gif' % (outdir, survey, jj)
@@ -553,7 +567,7 @@ def main(args=None):
         schedulenames.append(schedulename)
         start_time = times[-1] + exptime
 
-    scheduleall = merge_tables(schedulenames)
+    scheduleall = merge_tables(schedulenames, centers)
     schedulename = '%s/metrics/survey_all.csv' % (outdir)
     skymapname = '%s/metrics/survey_all.fits' % (outdir)
     gifname = '%s/metrics/survey_all.mp4' % (outdir)
@@ -594,6 +608,7 @@ def main(args=None):
             executable, schedulename, args.mission, efficiencyname,
             args.skygrid_file.name)
         print(system_command)
+        print(stop)
         os.system(system_command)
 
     if args.doAnimateSkymaps:
