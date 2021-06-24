@@ -251,12 +251,12 @@ def main(args=None):
                             randval))[0]
             survey = survey_blocks[cnt]["surveys"][int(idx)]
             surveylist.append(survey)
-            if survey in ["kilonova","GW"]:
+            if survey in ["kilonova", "GW"]:
                 repeatlist.append(jj)
         for jj in repeatlist:
             if not jj == niter-1:
                 surveylist[jj+1] = surveylist[jj]
-        
+
         survey_blocks[cnt]["surveylist"] = surveylist
         cnt = cnt + 1
 
@@ -272,7 +272,8 @@ def main(args=None):
         else:
             duration = duration + survey_blocks[key]["duration"]
             surveylist = surveylist + survey_blocks[key]["surveylist"]
-            filterslist = filterslist + [survey_blocks[key]["filters"] for ii in range(niter)]
+            filterslist = filterslist + [survey_blocks[key]["filters"]
+                                         for ii in range(niter)]
 
     assert duration == args.duration_survey
 
@@ -608,7 +609,6 @@ def main(args=None):
             executable, schedulename, args.mission, efficiencyname,
             args.skygrid_file.name)
         print(system_command)
-        print(stop)
         os.system(system_command)
 
     if args.doAnimateSkymaps:
