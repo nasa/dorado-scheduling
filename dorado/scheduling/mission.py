@@ -64,8 +64,12 @@ class Mission:
 
 dorado = Mission(
     constraints=(
-        TrappedParticleFluxConstraint(flux=1*u.cm**-2*u.s**-1, energy=20*u.MeV,
+        TrappedParticleFluxConstraint(flux=1*u.cm**-2*u.s**-1,
+                                      energy=20*u.MeV,
                                       particle='p', solar='max'),
+        TrappedParticleFluxConstraint(flux=100*u.cm**-2*u.s**-1,
+                                      energy=1*u.MeV,
+                                      particle='e', solar='max'),
         BrightEarthLimbConstraint(28 * u.deg),
         EarthLimbConstraint(6 * u.deg),
         astroplan.SunSeparationConstraint(46 * u.deg),
@@ -81,9 +85,12 @@ dorado = Mission(
 
 Notes
 -----
-* The trapped particle flux constraints are based on parameters for an
+* The first trapped particle flux constraint is based on parameters for an
   `investigation that was done for Fermi LAT
   <https://inspirehep.net/literature/759859>`_.
+
+* The second trapped particle flux constraint is designed to eliminate
+  observations within the polar horns.
 
 * Earth, Sun, and Moon constraints are based on the `Swift Technical Handbook
   <https://swift.gsfc.nasa.gov/proposals/tech_appd/swiftta_v14/node24.html>`_
