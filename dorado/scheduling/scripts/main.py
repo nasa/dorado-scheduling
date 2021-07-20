@@ -47,6 +47,7 @@ def parser():
     group.add_argument(
         '--dorado-sensitivity', choices=('cbe', 'baseline', 'threshold'),
         default='cbe', help='Dorado sensitivity')
+    group.add_argument('--orbit', help='Override orbit')
 
     group = p.add_argument_group(
         'discretization options',
@@ -116,6 +117,9 @@ def main(args=None):
         raise AssertionError('this code should not be reached')
 
     mission = getattr(_mission, args.mission)
+    if args.orbit is not None:
+        mission.orbit = _mission._read_orbit(args.orbit)
+
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
     sensitivity = {
         'cbe': dorado.sensitivity.cbe,
