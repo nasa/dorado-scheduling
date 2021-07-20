@@ -99,7 +99,7 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
-    from dorado.sensitivity import bandpasses
+    import dorado.sensitivity
     from docplex.mp.context import Context
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
@@ -117,10 +117,10 @@ def main(args=None):
 
     mission = getattr(_mission, args.mission)
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
-    bandpass = {
-        'cbe': bandpasses.NUV_D_CBE,
-        'baseline': bandpasses.NUV_D_BASELINE,
-        'threshold': bandpasses.NUV_D_THRESHOLD
+    sensitivity = {
+        'cbe': dorado.sensitivity.cbe,
+        'baseline': dorado.sensitivity.baseline,
+        'threshold': dorado.sensitivity.threshold
     }[args.dorado_sensitivity]
 
     # Read multi-order sky map and rasterize to working resolution
@@ -167,7 +167,7 @@ def main(args=None):
     stopwatch.start()
     result = schedule(
         mission, prob, healpix, centers, rolls, times, exptime, nexp,
-        args.apparent_magnitude * u.ABmag, bandpass, context)
+        args.apparent_magnitude * u.ABmag, sensitivity, context)
     stopwatch.stop()
 
     result.meta['cmdline'] = shlex_join(sys.argv)

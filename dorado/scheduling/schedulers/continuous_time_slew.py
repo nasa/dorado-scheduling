@@ -12,7 +12,6 @@ from operator import itemgetter
 from astropy.coordinates import EarthLocation
 from astropy.table import Table
 from astropy import units as u
-from dorado.sensitivity import get_exptime
 import numpy as np
 from synphot import BlackBody1D, SourceSpectrum
 from tqdm.auto import tqdm
@@ -24,7 +23,7 @@ log = getLogger(__name__)
 
 
 def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
-             apparent_magnitude, bandpass, context=None):
+             apparent_magnitude, sensitivity, context=None):
     jobs = 1 if context is None else (
         context.cplex_parameters.threads.get() or None)
     if len(rolls) > 1:
@@ -69,16 +68,15 @@ def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
     source_spectrum = SourceSpectrum(
         BlackBody1D, temperature=10000 * u.K
     ).normalize(
-        apparent_magnitude, bandpass
+        apparent_magnitude, sensitivity.band
     )
-    exptime_map = get_exptime(
+    exptime_map = sensitivity.get_exptime(
         source_spectrum,
         snr=5,
         coord=healpix.healpix_to_skycoord(np.arange(healpix.npix)),
         time=times[0],
         night=False,
-        redden=True,
-        bandpass=bandpass).to_value(u.s)
+        redden=True).to_value(u.s)
 
     min_exptime_s = 120.0
     duration_s = (times[-1] - times[0]).to_value(u.s)

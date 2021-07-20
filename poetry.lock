@@ -295,9 +295,9 @@ synphot = "*"
 
 [package.source]
 type = "git"
-url = "https://github.com/nasa/dorado-sensitivity.git"
-reference = "main"
-resolved_reference = "9a99ce33c11b44f76f0bb8ffa4a9dca032d12c17"
+url = "https://github.com/lpsinger/dorado-sensitivity.git"
+reference = "mission-profiles"
+resolved_reference = "29ac86b893d95da692c1fee0877efb996df5abce"
 
 [[package]]
 name = "dust-extinction"
@@ -1633,7 +1633,7 @@ test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "5c3c04822b4dc1e98e166e8f7f3c858494f1dcc775d9d27164a707c1b4189274"
+content-hash = "de3e35d9f1ecf1821e65c47ba00328af69d73b15eb0b1a7e27d67d667fc37ea2"
 
 [metadata.files]
 afterglowpy = [
