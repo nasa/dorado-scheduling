@@ -29,15 +29,13 @@ astropy-healpix = ">=0.6"
 cdshealpix = "*"
 cplex = "*"
 docplex = "*"
-dust_extinction = "*"
-dustmaps = "*"
+dorado-sensitivity = {git = "https://github.com/lpsinger/dorado-sensitivity.git", rev = "mission-profiles"}
 gwemlightcurves = "*"
 "ligo.skymap" = "^0.5.2"
 radbelt = "*"
 seaborn = "*"
 sgp4 = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
-synphot = "*"
 
 # For docs
 packaging = {version="*", optional=true}

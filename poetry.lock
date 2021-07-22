@@ -278,6 +278,28 @@ optional = true
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "dorado-sensitivity"
+version = "0.3.0"
+description = "Dorado sensitivity and exposure time calculator"
+category = "main"
+optional = false
+python-versions = "^3.7"
+develop = false
+
+[package.dependencies]
+dust_extinction = ">=0.8"
+dustmaps = ">=1.0.8"
+pyyaml = "*"
+scipy = "*"
+synphot = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/lpsinger/dorado-sensitivity.git"
+reference = "mission-profiles"
+resolved_reference = "29ac86b893d95da692c1fee0877efb996df5abce"
+
+[[package]]
 name = "dust-extinction"
 version = "1.0"
 description = "Interstellar Dust Extinction Models"
@@ -1611,7 +1633,7 @@ test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
-content-hash = "0fc95e390fcc8cf04d796adcf1e511f8bf1068028e1db289a29fd08fef1f5d9c"
+content-hash = "de3e35d9f1ecf1821e65c47ba00328af69d73b15eb0b1a7e27d67d667fc37ea2"
 
 [metadata.files]
 afterglowpy = [
@@ -1916,6 +1938,7 @@ docutils = [
     {file = "docutils-0.16-py2.py3-none-any.whl", hash = "sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af"},
     {file = "docutils-0.16.tar.gz", hash = "sha256:c2de3a60e9e7d07be26b7f2b00ca0309c207e06c100f9cc2a94931fc75a478fc"},
 ]
+dorado-sensitivity = []
 dust-extinction = [
     {file = "dust_extinction-1.0.tar.gz", hash = "sha256:5fbcef2d837a481d6665a4aa937cc2e92318cb51f14a5a7a4c2a9a08dcb4e636"},
 ]

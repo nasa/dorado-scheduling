@@ -41,6 +41,13 @@ def parser():
     group.add_argument(
         '--duration', type=u.Quantity, default='1 orbit',
         help='Duration of observing plan (any time units)')
+    group.add_argument(
+        '--apparent-magnitude', type=float, default=20,
+        help='Apparent AB magnitude of source (prior to Milky Way extinction)')
+    group.add_argument(
+        '--dorado-sensitivity', choices=('cbe', 'baseline', 'threshold'),
+        default='cbe', help='Dorado sensitivity')
+    group.add_argument('--orbit', help='Override orbit')
 
     group = p.add_argument_group(
         'discretization options',
@@ -93,6 +100,7 @@ def main(args=None):
     from astropy.io import fits
     from astropy.time import Time
     from astropy.table import Table
+    import dorado.sensitivity
     from docplex.mp.context import Context
     from ligo.skymap.io import read_sky_map
     from ligo.skymap.bayestar import rasterize
@@ -109,7 +117,15 @@ def main(args=None):
         raise AssertionError('this code should not be reached')
 
     mission = getattr(_mission, args.mission)
+    if args.orbit is not None:
+        mission.orbit = _mission._read_orbit(args.orbit)
+
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
+    sensitivity = {
+        'cbe': dorado.sensitivity.cbe,
+        'baseline': dorado.sensitivity.baseline,
+        'threshold': dorado.sensitivity.threshold
+    }[args.dorado_sensitivity]
 
     # Read multi-order sky map and rasterize to working resolution
     event_time = Time(fits.getval(args.skymap, 'DATE-OBS', ext=1))
@@ -154,7 +170,8 @@ def main(args=None):
     stopwatch = Stopwatch()
     stopwatch.start()
     result = schedule(
-        mission, prob, healpix, centers, rolls, times, exptime, nexp, context)
+        mission, prob, healpix, centers, rolls, times, exptime, nexp,
+        args.apparent_magnitude * u.ABmag, sensitivity, context)
     stopwatch.stop()
 
     result.meta['cmdline'] = shlex_join(sys.argv)
