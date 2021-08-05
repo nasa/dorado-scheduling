@@ -32,7 +32,7 @@ def schedule(mission, prob, healpix, centers, rolls, times, exptime, nexp,
     log.info('evaluating field of regard')
     regard = mission.get_field_of_regard(centers, times, jobs=jobs)
 
-    # Disard fields that are never in the field of regard.
+    # Discard fields that are never in the field of regard.
     keep = regard.any(axis=0)
     centers = centers[keep]
     regard = regard[:, keep]
