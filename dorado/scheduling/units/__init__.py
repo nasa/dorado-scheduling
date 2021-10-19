@@ -16,13 +16,13 @@ First, some imports::
 
 >>> from astropy import units as u
 >>> from dorado.scheduling import data
->>> from dorado.scheduling import Orbit
+>>> from dorado.scheduling import TLE
 >>> from importlib import resources
 
 Load an example two-line element:
 
 >>> with resources.path(data, 'dorado-625km-sunsync.tle') as p:
-...     orbit = Orbit(p)
+...     orbit = TLE(p)
 
 Now convert from units of the orbital period to units of seconds:
 

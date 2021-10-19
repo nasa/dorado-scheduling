@@ -51,6 +51,7 @@ hypothesis = {version="*", optional=true}
 pytest = {version="*", optional=true}
 pytest-doctestplus = {version="*", optional=true}
 skyfield =  {version="*", optional=true}
+spiceypy = "*"
 
 [tool.poetry.extras]
 doc = ["packaging", "pep517", "pydata-sphinx-theme", "sphinx-argparse-cli", "sphinx-gallery"]
