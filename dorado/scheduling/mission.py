@@ -18,7 +18,7 @@ from . import data
 from .constraints import (BrightEarthLimbConstraint, EarthLimbConstraint,
                           TrappedParticleFluxConstraint, get_field_of_regard)
 from .fov import FOV
-from .orbit import Orbit
+from .orbit import Orbit, Spice, TLE
 from ._slew import slew_separation, slew_time
 
 __all__ = ('Mission', 'dorado', 'ultrasat', 'uvex')
@@ -26,7 +26,7 @@ __all__ = ('Mission', 'dorado', 'ultrasat', 'uvex')
 
 def _read_orbit(filename):
     with resources.path(data, filename) as p:
-        return Orbit(p)
+        return TLE(p)
 
 
 @dataclass
@@ -149,7 +149,11 @@ uvex = Mission(
         astroplan.MoonSeparationConstraint(23 * u.deg)
     ),
     fov=FOV.from_rectangle(3.3 * u.deg),
-    orbit=_read_orbit('uvex_tle_300_290_i30_72h.tle.dat'),
+    orbit=Spice(
+        'MGS SIMULATION',
+        'https://archive.stsci.edu/missions/tess/models/TESS_EPH_PRE_LONG_2021252_21.bsp',
+        'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_000101_220110_211018.bpc',
+        'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc'),
     min_overhead=0 * u.s,
     max_angular_velocity=0.872 * u.deg / u.s,
     max_angular_acceleration=0.244 * u.deg / u.s**2
@@ -166,11 +170,8 @@ Notes
 * There is no Galactic plane constraints, because the UVEX mission will survey
   the Galactic plane.
 
-* The orbit that is currently under consideration for UVEX is highly elliptical
-  with a perigee greater than 45,000 km. SSL has  generated an orbital
-  simulation for UVEX. Note that the torques exerted by the Moon will affect
-  the inclination of this orbit, which won't be captured in this
-  single-point TLE. If you want something with higher fidelity.
+* The orbit used is that of TESS, valid from 2021-10-09 13:00 to
+  2023-03-11 13:00 UTC.
 
 * Maximum angular acceleration, maximum angular velocity, and overhead time are
   assumed to be the same as for Dorado.
