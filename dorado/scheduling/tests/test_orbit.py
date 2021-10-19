@@ -16,7 +16,7 @@ from skyfield.framelib import itrs as sf_itrs
 import pytest
 
 from .. import data
-from .. import Orbit
+from .. import TLE
 
 # Three test cases for time argument: scalar, vector, 2D array
 TIME0 = Time('2020-03-01')
@@ -30,7 +30,7 @@ TIME2 = TIME0 + dt1 + dt2
 def test_get_posvel_skyfield(time):
     """Test SGP4 orbit propagation against high-level Skyfield interface."""
     with resources.path(data, 'dorado-625km-sunsync.tle') as path:
-        orbit = Orbit(path)
+        orbit = TLE(path)
         sf_satellite, = sf.load.tle_file(str(path))
 
     coord = orbit(time)

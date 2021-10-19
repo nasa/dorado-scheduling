@@ -6,6 +6,6 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 from .fov import FOV
-from .orbit import Spice, TLE
+from .orbit import Orbit, Spice, TLE
 from ._slew import slew_time
 __all__ = ('Orbit', 'FOV', 'Spice', 'TLE', 'slew_time')
