@@ -144,9 +144,9 @@ Notes
 
 uvex = Mission(
     constraints=(
-        EarthLimbConstraint(90 * u.deg),
+        EarthLimbConstraint(25 * u.deg),
         astroplan.SunSeparationConstraint(46 * u.deg),
-        astroplan.MoonSeparationConstraint(23 * u.deg)
+        astroplan.MoonSeparationConstraint(25 * u.deg)
     ),
     fov=FOV.from_rectangle(3.3 * u.deg),
     orbit=Spice(
@@ -164,8 +164,10 @@ Notes
 -----
 * UVEX is a MIDEX concept that is under development by Caltech.
 
-* The Earth, Sun, and Moon constraints are assumed to be the same as those for
-  Dorado.
+* The Earth, Sun, and Moon constraints come from the baffle design
+  (Brian Grefenstette, private communication). These constraints are
+  appropriate for ToOs but not for the survey. The survey has stricter Earth
+  and Moon constraints due to foreground sensitivity requirements.
 
 * There is no Galactic plane constraints, because the UVEX mission will survey
   the Galactic plane.
