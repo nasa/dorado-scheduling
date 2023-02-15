@@ -6,8 +6,7 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 from astropy.coordinates import Angle
-from astropy.coordinates.matrix_utilities import (
-    matrix_product, rotation_matrix)
+from astropy.coordinates.matrix_utilities import rotation_matrix
 from astropy import units as u
 import numpy as np
 
@@ -77,8 +76,8 @@ def slew_separation(center1, center2, roll1=0 * u.rad, roll2=0 * u.rad):
     assert center1.is_equivalent_frame(center2)
     center1 = center1.spherical
     center2 = center2.spherical
-    mat = matrix_product(rotation_matrix(roll2 - roll1, 'x'),
-                         rotation_matrix(-center1.lat, 'y'),
-                         rotation_matrix(center1.lon - center2.lon, 'z'),
-                         rotation_matrix(center2.lat, 'y'))
+    mat = (rotation_matrix(roll2 - roll1, 'x') @
+           rotation_matrix(-center1.lat, 'y') @
+           rotation_matrix(center1.lon - center2.lon, 'z') @
+           rotation_matrix(center2.lat, 'y'))
     return Angle(np.arccos(0.5 * (matrix_trace(mat) - 1)) * u.rad).to(u.deg)
