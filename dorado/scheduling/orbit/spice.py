@@ -47,7 +47,7 @@ class Spice(Orbit):
     >>> orbit = Spice(
     ...     'MGS SIMULATION',
     ...     'https://archive.stsci.edu/missions/tess/models/TESS_EPH_PRE_LONG_2021252_21.bsp',
-    ...     'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_000101_220110_211018.bpc',
+    ...     'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_latest_high_prec.bpc',
     ...     'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc')
     >>> orbit(Time('2021-10-31 00:00') + np.arange(3) * u.hour)
     <SkyCoord (ITRS: obstime=['2021-10-31 00:00:00.000' '2021-10-31 01:00:00.000'

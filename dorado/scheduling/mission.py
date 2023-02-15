@@ -152,7 +152,7 @@ uvex = Mission(
     orbit=Spice(
         'MGS SIMULATION',
         'https://archive.stsci.edu/missions/tess/models/TESS_EPH_PRE_LONG_2021252_21.bsp',  # noqa: E501
-        'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_000101_220110_211018.bpc',  # noqa: E501
+        'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/earth_latest_high_prec.bpc',  # noqa: E501
         'https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc'),  # noqa: E501
     min_overhead=0 * u.s,
     max_angular_velocity=0.872 * u.deg / u.s,
