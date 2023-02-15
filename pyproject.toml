@@ -21,7 +21,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Astronomy"]
 
 [tool.poetry.dependencies]
-python = "^3.7, <3.9"  # cplex does not yet have wheels built for Python 3.9
+python = "^3.8, <3.11"  # cplex does not yet have wheels built for Python 3.11
 antiprism-python = "*"
 astroplan = ">=0.7"
 astropy = ">=4.2.1"
@@ -32,7 +32,7 @@ docplex = "*"
 dust_extinction = "*"
 dustmaps = "*"
 gwemlightcurves = "*"
-"ligo.skymap" = "^0.5.2"
+"ligo.skymap" = ">=1.0.0"
 radbelt = "*"
 seaborn = "*"
 sgp4 = "*"
