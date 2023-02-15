@@ -45,10 +45,10 @@ class TLE(Orbit):
 
     >>> time = Time('2021-04-16 15:27')
     >>> orbit(time)
-    <SkyCoord (ITRS: obstime=2021-04-16 15:27:00.000): (x, y, z) in km
-        (3902.59776726, -5209.69991116, 2582.69921222)
+    <SkyCoord (ITRS: obstime=2021-04-16 15:27:00.000, location=(0., 0., 0.) km): (x, y, z) in km
+        (3902.59787475, -5209.69979179, 2582.6992906)
      (v_x, v_y, v_z) in km / s
-        (-2.9282713, 1.25697383, 6.93396922)>
+        (-2.92827146, 1.25697376, 6.93396917)>
 
     Or evaluate at an array of times:
 

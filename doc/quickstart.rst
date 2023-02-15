@@ -48,7 +48,7 @@ To generate an observing plan
 
         >>> from astropy.table import QTable
         >>> QTable.read('examples/6.ecsv').pprint_all()
-                  time          exptime                     location                                     center                roll
+                  time          exptime                location [x, y, z]                                center                roll
                                   min                          km                                       deg,deg                deg 
         ----------------------- ------- ------------------------------------------------ ------------------------------------- ----
         2012-05-02T18:58:32.699    10.0   (-1751.61720795, -4316.9006114, 5223.01273074)  115.31249999999999,18.20995686428301 20.0
@@ -91,7 +91,7 @@ sky position is contained in any of the fields in an observing plan::
     <QTable length=9>
               time          exptime ...   roll  found
                               min   ...   deg        
-             object         float64 ... float64  bool
+              Time          float64 ... float64  bool
     ----------------------- ------- ... ------- -----
     2012-05-02T18:58:32.699    10.0 ...    20.0 False
     2012-05-02T19:08:32.699    10.0 ...    80.0 False
