@@ -20,6 +20,12 @@ To set up the CPLEX optimization engine
         and install the free academic version of ILOG CPLEX Optimization
         Studio.
 
+        If running on an HPC like SDSC Expanse, copy the `linux_x86_64`_ installer
+        file (e.g. `cplex_studio2211.linux_x86_64.bin`_) to the cluster. Then,
+        update the permissions of the file to make it executable and run it 
+        with `./cplex_studio2211.linux_x86_64.bin`_. The installation will then
+        run in the command line.
+
         After running the installer, you may need to set the
         `CPLEX_STUDIO_DIR201`_ environment variable so that the CPLEX Python
         interface can locate your licensed copy of CPLEX.
