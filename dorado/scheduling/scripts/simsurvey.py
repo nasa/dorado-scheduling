@@ -207,7 +207,7 @@ def main(args=None):
     config = configparser.ConfigParser()
     config.read(args.config)
 
-    mission = getattr(_mission, args.mission)
+    mission = getattr(_mission, args.mission)()
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
     orb = mission.orbit
 

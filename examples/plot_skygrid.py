@@ -15,7 +15,7 @@ import numpy as np
 # %%
 # Determine the area of the field of view.
 
-fov = mission.dorado.fov
+fov = mission.dorado().fov
 centers = skygrid.sinusoidal(50 * u.deg**2)
 footprints = fov.footprint(centers).icrs
 verts = np.moveaxis(np.stack([footprints.ra.deg, footprints.dec.deg]), 0, -1)

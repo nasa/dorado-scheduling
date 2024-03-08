@@ -74,7 +74,7 @@ def main(args=None):
     from ..metrics.kne import KNePopMetric, generateKNPopSlicer
     from ..dust import Dust
 
-    mission = getattr(_mission, args.mission)
+    mission = getattr(_mission, args.mission)()
     tiles = QTable.read(args.skygrid_file, format='ascii.ecsv')
     centers = tiles['center']
 

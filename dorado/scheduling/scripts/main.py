@@ -108,7 +108,7 @@ def main(args=None):
     else:
         raise AssertionError('this code should not be reached')
 
-    mission = getattr(_mission, args.mission)
+    mission = getattr(_mission, args.mission)()
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
     # Read multi-order sky map and rasterize to working resolution
