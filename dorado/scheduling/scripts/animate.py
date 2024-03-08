@@ -75,7 +75,7 @@ def main(args=None):
     import seaborn
     from tqdm import tqdm
 
-    mission = getattr(_mission, args.mission)
+    mission = getattr(_mission, args.mission)()
     healpix = HEALPix(args.nside, order='nested', frame=ICRS())
 
     log.info('reading sky map')

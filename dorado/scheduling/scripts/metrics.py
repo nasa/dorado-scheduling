@@ -54,7 +54,7 @@ def main(args=None):
     import numpy as np
     import seaborn
 
-    mission = getattr(_mission, args.mission)
+    mission = getattr(_mission, args.mission)()
     tiles = Table.read(args.skygrid_file, format='ascii.ecsv')
     centers = tiles['center']
 

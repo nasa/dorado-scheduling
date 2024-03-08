@@ -23,7 +23,7 @@ hpx = HEALPix(nside=512, frame=ICRS())
 # %%
 # Determine the area of the field of view.
 
-fov = mission.dorado.fov
+fov = mission.dorado().fov
 fov_area = len(fov.footprint_healpix(hpx)) * hpx.pixel_area
 
 # %%

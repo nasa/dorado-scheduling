@@ -83,7 +83,7 @@ sky position is contained in any of the fields in an observing plan::
     >>> target = SkyCoord(66.91436579*u.deg, -61.98378895*u.deg)
     >>> target_pixel = healpix.skycoord_to_healpix(target)
     >>> schedule = QTable.read('examples/6.ecsv')
-    >>> fov = mission.dorado.fov
+    >>> fov = mission.dorado().fov
     >>> footprints = [fov.footprint_healpix(healpix, row['center'], row['roll'])
     ...               for row in schedule]
     >>> schedule['found'] = [target_pixel in footprint for footprint in footprints]
