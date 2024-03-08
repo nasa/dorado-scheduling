@@ -21,7 +21,7 @@ To set up the CPLEX optimization engine
         Studio.
 
         After running the installer, you may need to set the
-        `CPLEX_STUDIO_DIR201`_ environment variable so that the CPLEX Python
+        `CPLEX_STUDIO_DIR2211`_ environment variable so that the CPLEX Python
         interface can locate your licensed copy of CPLEX.
 
     b)  For all other users, including US Government (e.g. NASA) employees, we
@@ -31,7 +31,8 @@ To set up the CPLEX optimization engine
         Optimization Studio installer because the necessary components are
         built into the CPLEX Python interface. Simply set the
         `CPLEX_STUDIO_KEY`_ environment variable to the API key that you
-        received from IBM.
+        received from IBM and set the `CPLEX_STUDIO_KEY_SERVER` environment
+        variable to "https://scx-cos.docloud.ibm.com/cos/query/v1/apikeys".
 
     For other CPLEX installation scenarios, see the `docplex instructions`_.
 
@@ -116,5 +117,5 @@ sky position is contained in any of the fields in an observing plan::
 .. _`docplex instructions`: https://ibmdecisionoptimization.github.io/docplex-doc/mp/getting_started.html
 .. _`IBM Academic Initiative`: https://www.ibm.com/academic/technology/data-science
 .. _`Developer Subscription`: https://www.ibm.com/products/ilog-cplex-optimization-studio/pricing
-.. _`CPLEX_STUDIO_DIR201`: https://www.ibm.com/support/pages/entering-your-api-key-and-setting-cplexstudiokey-environment-variable
-.. _`CPLEX_STUDIO_KEY`: https://www.ibm.com/support/pages/entering-your-api-key-and-setting-cplexstudiokey-environment-variable
+.. _`CPLEX_STUDIO_DIR2211`: https://www.ibm.com/support/pages/entering-your-api-key-and-setting-cplexstudio-environment-variables
+.. _`CPLEX_STUDIO_KEY`: https://www.ibm.com/support/pages/entering-your-api-key-and-setting-cplexstudio-environment-variables
