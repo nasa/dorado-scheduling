@@ -52,13 +52,14 @@ pytest-doctestplus = {version="*", optional=true}
 skyfield =  {version="*", optional=true}
 spiceypy = "*"
 
+# For dev
+flake8 = {version="*", optional=true}
+ipykernel = {version="*", optional=true}
+
 [tool.poetry.extras]
 doc = ["packaging", "pep517", "pydata-sphinx-theme", "sphinx-argparse-cli", "sphinx-gallery"]
 test = ["hypothesis", "pytest", "pytest-doctestplus", "skyfield"]
-
-[tool.poetry.dev-dependencies]
-flake8 = "*"
-ipykernel = "*"
+dev = ["flake8", "ipykernel"]
 
 [tool.poetry.scripts]
 dorado-scheduling = "dorado.scheduling.scripts.main:main"
