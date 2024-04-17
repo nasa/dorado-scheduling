@@ -36,6 +36,7 @@ radbelt = "*"
 seaborn = "*"
 sgp4 = "*"
 shapely = "*"  # for ligo.skymap.plot.poly.cut_prime_meridian
+spiceypy = "*"
 synphot = "*"
 
 # For docs
@@ -50,7 +51,6 @@ hypothesis = {version="*", optional=true}
 pytest = {version="*", optional=true}
 pytest-doctestplus = {version="*", optional=true}
 skyfield =  {version="*", optional=true}
-spiceypy = "*"
 
 # For dev
 flake8 = {version="*", optional=true}
