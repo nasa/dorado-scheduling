@@ -6,12 +6,13 @@
 # SPDX-License-Identifier: NASA-1.3
 #
 from astropy.units.equivalencies import Equivalency
+from astropy import units as u
 
 from .orbital import orbit as _orbit
 
 
 def orbital(orbit):
-    return Equivalency([(_orbit, orbit.period.unit,
-                         lambda x: x * orbit.period.value,
-                         lambda x: x / orbit.period.value)],
+    return Equivalency([(_orbit, u.min,
+                         lambda x: x * orbit.period.to_value(u.min),
+                         lambda x: x / orbit.period.to_value(u.min))],
                        name='orbital')
