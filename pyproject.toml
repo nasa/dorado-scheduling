@@ -16,11 +16,13 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "License :: OSI Approved",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Astronomy"]
 
 [tool.poetry.dependencies]
-python = "^3.11, <3.12"  # cplex only has wheels built for Python 3.11
+python = "^3.9, <3.12"  # cplex only has wheels built for Python 3.9-3.12
 antiprism-python = "*"
 astroplan = ">=0.7"
 astropy = ">=4.2.1"
