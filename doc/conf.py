@@ -69,8 +69,8 @@ autosummary_generate = True
 # -- Options for extlinks extension ------------------------------------------
 
 extlinks = {
-    'arxiv': ('https://arxiv.org/abs/%s', 'arXiv:'),
-    'doi': ('https://doi.org/%s', 'doi:')
+    'arxiv': ('https://arxiv.org/abs/%s', 'arXiv:%s'),
+    'doi': ('https://doi.org/%s', 'doi:%s')
 }
 
 
