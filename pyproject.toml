@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dorado-scheduling"
-version = "0.1.0"
+version = "0.2.0"
 description = "Dorado observation planning and scheduling simulations"
 authors = ["Leo Singer <leo.singer@ligo.org>"]
 license = "NOSA"
