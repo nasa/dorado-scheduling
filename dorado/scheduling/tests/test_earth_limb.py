@@ -14,10 +14,17 @@ from hypothesis.strategies import floats
 
 from ..constraints.earth_limb import EarthLimbConstraint
 
+givens = given(
+    lon=floats(-180, 180, allow_subnormal=False),
+    lat=floats(-90, 90, allow_subnormal=False),
+    ra=floats(0, 360, allow_subnormal=False),
+    dec=floats(-90, 90, allow_subnormal=False),
+    time=floats(51544.5, 51909.75, allow_subnormal=False),
+    min=floats(-90, 90, allow_subnormal=False)
+)
 
-@given(lon=floats(-180, 180), lat=floats(-90, 90),
-       ra=floats(0, 360), dec=floats(-90, 90),
-       time=floats(51544.5, 51909.75), min=floats(-90, 90))
+
+@givens
 @settings(deadline=None)
 def test_observer_on_surface(lon, lat, ra, dec, time, min):
     """Test an obsever on the surface of the Earth."""
@@ -35,9 +42,7 @@ def test_observer_on_surface(lon, lat, ra, dec, time, min):
         assert not observable
 
 
-@given(lon=floats(-180, 180), lat=floats(-90, 90),
-       ra=floats(0, 360), dec=floats(-90, 90),
-       time=floats(51544.5, 51909.75), min=floats(-90, 90))
+@givens
 @settings(deadline=None)
 def test_low_earth_orbit(lon, lat, ra, dec, time, min):
     """Test an observer in low Earth orbit."""
@@ -55,9 +60,7 @@ def test_low_earth_orbit(lon, lat, ra, dec, time, min):
         assert not observable
 
 
-@given(lon=floats(-180, 180), lat=floats(-90, 90),
-       ra=floats(0, 360), dec=floats(-90, 90),
-       time=floats(51544.5, 51909.75), min=floats(-90, 90))
+@givens
 @settings(deadline=None)
 def test_distant_obsever(lon, lat, ra, dec, time, min):
     """Test a very distant observer."""
