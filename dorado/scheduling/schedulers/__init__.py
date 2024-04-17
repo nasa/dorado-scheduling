@@ -5,10 +5,14 @@
 #
 # SPDX-License-Identifier: NASA-1.3
 #
+import logging
+
 import cplex
 from docplex.mp.callbacks.cb_mixin import ConstraintCallbackMixin
 from docplex.mp.model import Model as _Model
 import numpy as np
+
+log = logging.getLogger(__name__)
 
 
 class Model(_Model):
@@ -16,6 +20,7 @@ class Model(_Model):
 
     def _var_array(self, vartype, shape=(), *args, **kwargs):
         size = np.prod(shape, dtype=int)
+        log.debug('Creating variable array of shape %r, size %d', shape, size)
         vars = np.reshape(self.var_list(size, vartype, *args, **kwargs), shape)
         if vars.ndim == 0:
             vars = vars.item()
