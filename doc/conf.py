@@ -88,6 +88,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'astroplan': ('https://astroplan.readthedocs.io/en/latest/', None),
     'astropy': ('https://docs.astropy.org/en/stable/', None),
+    'regions': ('https://astropy-regions.readthedocs.io/en/stable/', None),
 }
 
 
